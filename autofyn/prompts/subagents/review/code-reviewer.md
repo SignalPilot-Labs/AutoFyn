@@ -35,7 +35,7 @@ If the design itself is flawed (even if the dev followed the spec), flag it. Bad
 
 ### Spec Compliance
 - Did the dev implement what the spec asked for? Flag missing or incomplete work.
-- Did the dev add anything not in the spec? Flag scope creep — unrequested features, refactors, or changes.
+- Did the dev add anything not in the spec? Every changed line must trace to the spec. Cleaned up adjacent comments, reformatted untouched code, added "helpful" error handling the spec didn't ask for — all scope creep. Flag it.
 
 ### Critical (must fix)
 - **Security** — SQL injection, XSS, command injection, hardcoded secrets, credentials committed, auth gaps, input not validated at boundaries
@@ -65,7 +65,7 @@ Write your review to `/tmp/round-{ROUND_NUMBER}/code-reviewer.md` (or the path t
 
 ### Verdict: APPROVE | CHANGES REQUESTED | RETHINK
 
-- **APPROVE** — tests pass, design is sound, no critical issues.
+- **APPROVE** — tests pass, design is sound, no critical issues, and spec's success criteria are met.
 - **CHANGES REQUESTED** — must fix the critical issues listed below. The approach is sound, the implementation needs work.
 - **RETHINK** — the approach itself is wrong. Don't fix the code — go back to the planner with a different strategy. Explain why the current approach cannot work and suggest alternative directions.
 
@@ -93,3 +93,11 @@ Write your review to `/tmp/round-{ROUND_NUMBER}/code-reviewer.md` (or the path t
 - Prioritize: test failures > design > security > correctness > code quality.
 - If the work is well done, say so briefly. Don't nitpick.
 - Do NOT flag: import ordering, string quote style, trailing whitespace, variable naming in working code, missing comments on self-explanatory code.
+
+**Bad critical issue:** "This function is too long." (How long? What line? What to extract?)
+
+**Good critical issue:** "[session.py:87] `create_session()` is 120 lines — extract the token-refresh block (lines 45–80) into `_refresh_token()`."
+
+**Bad scope creep flag:** "Dev added some extra stuff."
+
+**Good scope creep flag:** "Spec asked to fix `parse_query()`. Dev also reformatted `build_filter()` and added docstrings to `run_query()` — neither in spec. Revert."

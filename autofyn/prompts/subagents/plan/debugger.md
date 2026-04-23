@@ -22,6 +22,7 @@ Write to `/tmp/round-{ROUND_NUMBER}/debugger.md` (or the path the orchestrator g
 - **Files** — which files to modify, and what changes in each.
 - **Design** — the minimal correct fix in prose. Describe what to change, not the code. Don't refactor beyond what the bug requires.
 - **Constraints** — contracts, tests, or behavior the dev must preserve.
+- **Success criteria** — How to verify the fix works. At minimum: a regression test that passes. Not "it should work" — a concrete check.
 - **Read list** — files the dev should read for context.
 
 Just the spec — no preamble, no meta-commentary. Do not return the spec as a message. Write it to the file.
@@ -36,3 +37,11 @@ Just the spec — no preamble, no meta-commentary. Do not return the spec as a m
 - If the bug is in a dependency or external service, say so — the spec may be "pin version X" or "stop using Y".
 - Be specific — file paths and line numbers everywhere.
 - Fail fast — don't propose fallback logic that hides the bug instead of fixing it.
+
+**Bad root cause:** "The API is returning wrong data." (Where? Why? Which line?)
+
+**Good root cause:** "session.py:42 passes `user_id` as a string but `get_session()` expects int — the `WHERE` clause silently matches zero rows."
+
+**Bad fix spec:** "Add error handling around the API call."
+
+**Good fix spec:** "Cast `user_id` to int at the boundary in session.py:42. Add a regression test that calls `get_session('123')` and asserts it returns the session."
