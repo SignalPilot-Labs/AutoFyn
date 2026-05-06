@@ -43,18 +43,17 @@ async def stream_start_events(
     or Slurm job metadata.
     """
     mounts_json = json.dumps(host_mounts)
-    apptainer_binds = (
-        _compute_apptainer_binds(host_mounts) if sandbox_type == "slurm" else ""
-    )
-    docker_volumes = (
-        _compute_docker_volumes(host_mounts) if sandbox_type == "docker" else ""
+    mount_flags = (
+        _compute_apptainer_binds(host_mounts)
+        if sandbox_type == "slurm"
+        else _compute_docker_volumes(host_mounts)
     )
 
     env = {
         "AF_RUN_KEY": run_key,
+        "AF_SANDBOX_PORT": "0",
         "AF_HOST_MOUNTS_JSON": mounts_json,
-        "AF_APPTAINER_BINDS": apptainer_binds if apptainer_binds else "",
-        "AF_DOCKER_VOLUMES": docker_volumes if docker_volumes else "",
+        "AF_HOST_MOUNTS": mount_flags,
         "AF_HEARTBEAT_TIMEOUT": str(heartbeat_timeout),
     }
 
@@ -97,7 +96,12 @@ async def _stream_events(
 def _parse_marker(match: re.Match[str], ssh_target: str) -> dict[str, Any]:
     """Parse a marker regex match into an event dict."""
     marker_name = match.group(1)
-    marker_data: dict[str, Any] = json.loads(match.group(2))
+    raw_json = match.group(2)
+    try:
+        marker_data: dict[str, Any] = json.loads(raw_json)
+    except json.JSONDecodeError as exc:
+        log.warning("Malformed %s marker JSON from %s: %s", marker_name, ssh_target, exc)
+        return {"event": "log", "line": f"Malformed marker JSON: {raw_json[:100]}"}
 
     if marker_name == AF_QUEUED_MARKER:
         return {"event": "queued", "backend_id": marker_data.get("backend_id")}
