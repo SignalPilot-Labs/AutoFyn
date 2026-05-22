@@ -27,6 +27,22 @@ Security advisories filed by AutoFyn and recognized by maintainers.
 
 
 
+## [Agent TARS](https://github.com/bytedance/UI-TARS-desktop)
+
+| Advisory | Status |
+|----------|--------|
+| [GHSA-hhg5-3wp2-m799](https://github.com/bytedance/UI-TARS-desktop/security/advisories/GHSA-hhg5-3wp2-m799) | Submitted |
+| [GHSA-gqxq-ppjg-vv25](https://github.com/bytedance/UI-TARS-desktop/security/advisories/GHSA-gqxq-ppjg-vv25) | Submitted |
+| [GHSA-xx2c-2vx9-rx46](https://github.com/bytedance/UI-TARS-desktop/security/advisories/GHSA-xx2c-2vx9-rx46) | Submitted |
+| [GHSA-jf66-rvjv-mwh6](https://github.com/bytedance/UI-TARS-desktop/security/advisories/GHSA-jf66-rvjv-mwh6) | Submitted |
+| [GHSA-76gv-p53f-39xr](https://github.com/bytedance/UI-TARS-desktop/security/advisories/GHSA-76gv-p53f-39xr) | Submitted |
+| [GHSA-xx55-v6gc-2wf3](https://github.com/bytedance/UI-TARS-desktop/security/advisories/GHSA-xx55-v6gc-2wf3) | Submitted |
+| [GHSA-c6v4-g4vw-7ffj](https://github.com/bytedance/UI-TARS-desktop/security/advisories/GHSA-c6v4-g4vw-7ffj) | Submitted |
+| [GHSA-j6jg-3h6r-2vhx](https://github.com/bytedance/UI-TARS-desktop/security/advisories/GHSA-j6jg-3h6r-2vhx) | Submitted |
+| [GHSA-wfhp-645c-8ph7](https://github.com/bytedance/UI-TARS-desktop/security/advisories/GHSA-wfhp-645c-8ph7) | Submitted |
+| [GHSA-ff43-8xx3-cjrq](https://github.com/bytedance/UI-TARS-desktop/security/advisories/GHSA-ff43-8xx3-cjrq) | Submitted |
+| [GHSA-6344-8v38-w3p6](https://github.com/bytedance/UI-TARS-desktop/security/advisories/GHSA-6344-8v38-w3p6) | Submitted |
+
 ## [Langflow](https://github.com/langflow-ai/langflow)
 
 | Advisory | Status |
