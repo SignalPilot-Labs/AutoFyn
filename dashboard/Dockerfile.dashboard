@@ -1,6 +1,6 @@
 # Versions pinned in build.sh (source of truth).
 ARG PYTHON_VERSION=3.12
-ARG NODE_VERSION=22
+ARG NODE_VERSION=24
 ARG UV_VERSION=0.11
 
 # Stage 1: Build Next.js app (standalone output — no node_modules in final image)

@@ -7,7 +7,7 @@
 # Defaults here are fallbacks for standalone docker build.
 
 ARG PYTHON_VERSION=3.12
-ARG NODE_VERSION=22
+ARG NODE_VERSION=24
 ARG GVISOR_VERSION=20260323.0
 ARG UV_VERSION=0.11
 
