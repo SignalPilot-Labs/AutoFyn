@@ -43,6 +43,15 @@ Security advisories filed by AutoFyn and recognized by maintainers.
 | [GHSA-ff43-8xx3-cjrq](https://github.com/bytedance/UI-TARS-desktop/security/advisories/GHSA-ff43-8xx3-cjrq) | Submitted |
 | [GHSA-6344-8v38-w3p6](https://github.com/bytedance/UI-TARS-desktop/security/advisories/GHSA-6344-8v38-w3p6) | Submitted |
 
+## [pnpm](https://github.com/pnpm/pnpm)
+
+| Advisory | Status |
+|----------|--------|
+| [GHSA-rxhj-4m44-96r4](https://github.com/pnpm/pnpm/security/advisories/GHSA-rxhj-4m44-96r4) | Submitted |
+| [GHSA-q6j5-fjx5-2mc3](https://github.com/pnpm/pnpm/security/advisories/GHSA-q6j5-fjx5-2mc3) | Submitted |
+| [GHSA-6mpj-v8wh-qhhr](https://github.com/pnpm/pnpm/security/advisories/GHSA-6mpj-v8wh-qhhr) | Submitted |
+| [GHSA-p4xf-rf54-rj3x](https://github.com/pnpm/pnpm/security/advisories/GHSA-p4xf-rf54-rj3x) | Submitted |
+
 ## [Langflow](https://github.com/langflow-ai/langflow)
 
 | Advisory | Status |
