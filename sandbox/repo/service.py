@@ -309,7 +309,7 @@ class RepoService:
         """Push working branch. Returns error string on failure, None on success."""
         s = self.state
         result = await git(
-            ["push", "-u", "origin", s.working_branch], CMD_TIMEOUT, cwd=REPO_WORK_DIR,
+            ["push", "--no-verify", "-u", "origin", s.working_branch], CMD_TIMEOUT, cwd=REPO_WORK_DIR,
         )
         if result.exit_code != 0:
             err = scrub_secrets(result.stderr.strip())[:STDERR_SHORT_LIMIT]
