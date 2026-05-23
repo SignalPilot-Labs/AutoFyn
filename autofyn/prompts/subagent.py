@@ -25,6 +25,7 @@ TOOLS_REVIEW_FULL = ["Read", "Write", "Glob", "Grep", "Bash", "WebSearch", "WebF
 AGENTS_WITH_VERIFICATION: tuple[str, ...] = (
     "build/backend-dev",
     "build/frontend-dev",
+    "build/sql-dev",
     "review/code-reviewer",
     "review/ui-reviewer",
     "review/security-reviewer",
@@ -100,6 +101,17 @@ SUBAGENT_DEFS: tuple[SubagentDef, ...] = (
         description=(
             "Implements React, Next.js, TypeScript UI, CSS, and styling from"
             " the architect's spec. Never use for Python/backend work."
+        ),
+        model=TIER_SONNET,
+        tools=TOOLS_BUILD,
+    ),
+    SubagentDef(
+        name="sql-dev",
+        phase="build",
+        description=(
+            "Implements SQL queries and dbt models from the architect's spec."
+            " Writes model files, schema.yml entries, and runs dbt compile/run/test"
+            " to validate. Never use for Python, APIs, or UI work."
         ),
         model=TIER_SONNET,
         tools=TOOLS_BUILD,

@@ -55,3 +55,25 @@ Keep it short (10-20 lines):
 - **Spec concerns** — things in the SPEC itself that are wrong (bad design, wrong file boundary, coupling, broken interface). Leave empty if the spec is fine. The orchestrator reads this and routes the report back to the planner before review.
 - **Warnings** — things in your implementation that felt fragile or worth a closer look.
 - **Verify** — what the reviewer should pay attention to.
+
+## dbt & SQL Coding Patterns
+
+### When to write dbt models vs raw SQL
+
+- Use dbt models when the SQL will be reused, tested, or versioned. Use raw SQL only for one-off exploration or admin scripts.
+- Python code that calls SQL must use parameterized queries (`%s` / `$1` placeholders) — never f-string interpolation. f-string SQL is an injection vector and breaks parameterized query caching.
+
+### Invoking dbt from Python
+
+- Use `subprocess.run(["dbt", "run", "--select", model_name], check=True, capture_output=True)` — not `os.system`. Import `subprocess` at the top of the file. With `check=True`, a non-zero exit raises `subprocess.CalledProcessError`; catch it and surface `e.stderr.decode()` in your exception message — never swallow dbt failures silently. A dbt failure that doesn't raise is a hidden data bug.
+- Do not pass `--no-version-check` or suppress warnings — real warnings indicate real problems.
+
+### Schema.yml for new models
+
+- Every new model you create must have a corresponding `schema.yml` entry (or be added to the existing one in the same `models/` subdirectory).
+- Minimum entry: `name`, `description`, one `unique` test and one `not_null` test on the primary key column.
+- If you create a Python table directly (via SQLAlchemy or psycopg2), document it in `schema.yml` as an external source — do not duplicate it as a dbt model.
+
+### Materializations from Python context
+
+- When Python code creates tables directly, those tables are external sources from dbt's perspective. Declare them in `sources.yml` so dbt models can reference them via `{{ source('schema', 'table') }}` rather than hardcoding table names.

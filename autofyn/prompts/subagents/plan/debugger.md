@@ -46,3 +46,31 @@ Just the spec — no preamble, no meta-commentary. Do not return the spec as a m
 **Bad fix spec:** "Add error handling around the API call."
 
 **Good fix spec:** "Cast `user_id` to int at the boundary in session.py:42. Add a regression test that calls `get_session('123')` and asserts it returns the session."
+
+## SQL & dbt Debugging
+
+### Reproduce SQL bugs
+
+- Run `dbt compile --select model_name` and capture the rendered SQL from `target/compiled/`. Compiled SQL is the ground truth — Jinja problems are invisible before this step.
+- Execute the compiled SQL directly against the warehouse (`psql $DATABASE_URL -f target/compiled/...`, `sqlite3 db.sqlite < ...`, or equivalent) to get the raw database error without dbt's wrapper.
+- For data quality test failures: run `dbt test --select model_name`, then read the failing test's generated query from `target/compiled/` to see exactly which value violated the constraint and on which row.
+
+### Root cause patterns
+
+- **Type mismatches:** query `information_schema.columns` for the actual column types; compare against the cast the model assumes. A `CAST` that silently returns NULL (e.g., casting a non-numeric string to INTEGER in PostgreSQL without `TRY_CAST`) is the most common silent failure.
+- **NULL propagation:** before blaming a JOIN strategy, run `SELECT COUNT(*) FROM table WHERE join_key IS NULL` to measure how many rows carry a NULL join key. An INNER JOIN silently drops them all.
+- **Wrong dialect syntax:** note which features are dialect-specific — DuckDB `LIST`/`UNNEST`, BigQuery `ARRAY_AGG`/`STRUCT`, Snowflake `QUALIFY`, PostgreSQL `RETURNING`. The fix spec must name the target dialect and the correct syntax for it.
+- **`dbt run` vs `dbt compile` discrepancy:** compiled SQL looks correct but `dbt run` fails → check Jinja rendering: `var()` values not set in `dbt_project.yml`, `source()` schema/name mismatched with `sources.yml`, or macro expansion producing invalid SQL.
+
+### EXPLAIN ANALYZE
+
+- **PostgreSQL:** `EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT) <query>;` — cite the actual row count vs the planner's estimate on the slowest node, and the node type (Seq Scan, Hash Join, etc.) with its cost.
+- **SQLite / DuckDB:** `EXPLAIN QUERY PLAN <query>;` — cite sequential scans on large tables as the root cause for performance bugs; note whether any index is being used.
+- The fix spec must include: which table needs the index, which columns, and the `CREATE INDEX` statement shape (just the shape — the dev writes the full DDL).
+
+### dbt run errors — common root causes
+
+- **`Relation not found`:** the source table doesn't exist in the declared schema, or `sources.yml` has the wrong `schema` or `name`. Verify with `\dt` (psql), `SHOW TABLES` (DuckDB/Snowflake), or `sqlite_master` (SQLite).
+- **`Column not found`:** the model references a column that doesn't exist in the source. Cross-check with `information_schema.columns` for the exact column name (case matters in some dialects).
+- **`Duplicate key violation` on `unique` test:** upstream deduplication is missing. Spec the fix as a CTE with `ROW_NUMBER() OVER (PARTITION BY key ORDER BY updated_at DESC)` or `QUALIFY ROW_NUMBER() ... = 1` (Snowflake/DuckDB).
+- **Wrong result set (EX failure on Spider 2.0):** run `(SELECT ... FROM result) EXCEPT (SELECT ... FROM gold)` — rows returned are in the agent's output but not in gold. Run the inverse `EXCEPT` to find rows missing from the output. Cite both directions in the fix spec.
