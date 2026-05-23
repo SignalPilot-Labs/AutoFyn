@@ -236,6 +236,7 @@ STARTER_PRESET_KEYS: tuple[str, ...] = (
     "bug_bash",
     "code_quality",
     "test_coverage",
+    "spider2_dbt",
 )
 VALID_PRESET_PATTERN: str = f"^({'|'.join(STARTER_PRESET_KEYS)})$"
 

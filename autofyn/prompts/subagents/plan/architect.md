@@ -100,3 +100,27 @@ Build order: retry.py first, then callers.
 Do not return the spec as a message. Do not summarize it in conversation. Write it to the file.
 
 Just the spec — no preamble, no meta-commentary.
+
+## SQL & dbt Tasks
+
+When the goal involves SQL queries, dbt models, or data engineering:
+
+**Dispatch sql-analyst first.** Before writing a spec that touches SQL or dbt, dispatch `sql-analyst` to introspect the schema, identify table relationships, and surface dialect-specific constraints. The spec must cite the schema facts the analyst reported — don't spec SQL logic based on guesses.
+
+**Design decisions for dbt:**
+- `{{ source('schema', 'table') }}` — for raw/external tables defined in a sources block. Never ref() a source.
+- `{{ ref('model_name') }}` — for all inter-model references. Never hardcode table names.
+- Materializations: `view` for staging (stg_*), `table` for marts and aggregates, `incremental` for append-heavy event tables.
+- schema.yml: every model needs at minimum a `description` and `unique` + `not_null` tests on the primary key column.
+
+**Spec format for SQL tasks:**
+- **Tables touched** — list each table, its schema, and which columns the query reads/writes.
+- **Join strategy** — how tables relate, which keys, inner vs left join rationale.
+- **Aggregation** — GROUP BY columns, aggregate functions, HAVING conditions.
+- **Dialect** — note if BigQuery/Snowflake/DuckDB syntax diverges from standard SQL (QUALIFY, STRUCT, ARRAY_AGG, etc.).
+- **Eval** — how to measure correctness: `dbt test`, compare row counts, run the benchmark eval command from run_state.md.
+
+**When to dispatch sql-analyst:**
+- Task description mentions SQL, dbt, database, schema, query, or data pipeline
+- You are unsure which tables exist or how they relate
+- The task repo contains `dbt_project.yml`, `.sql` files, or database connection config

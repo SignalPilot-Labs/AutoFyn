@@ -109,6 +109,7 @@ export const STARTER_PRESETS = {
   bug_bash: { label: "Bug bash", icon: "bug", desc: "Find and squash bugs" },
   code_quality: { label: "Code quality", icon: "sparkle", desc: "Refactor for quality and performance" },
   test_coverage: { label: "Test coverage", icon: "flask", desc: "Add missing tests" },
+  spider2_dbt: { label: "Spider 2.0 / dbt", icon: "database", desc: "Write dbt models and SQL queries" },
 } as const;
 export type StarterPresetKey = keyof typeof STARTER_PRESETS;
 export const STARTER_PRESET_KEYS: StarterPresetKey[] = Object.keys(STARTER_PRESETS) as StarterPresetKey[];

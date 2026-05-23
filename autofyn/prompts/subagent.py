@@ -33,7 +33,7 @@ AGENTS_WITH_VERIFICATION: tuple[str, ...] = (
 # All subagents except code-explorer get run_state.md context for round > 1.
 # Explorer gets its context from the orchestrator's dispatch prompt — it
 # doesn't need cross-round state.
-AGENTS_WITHOUT_RUN_STATE: tuple[str, ...] = ("explore/code-explorer",)
+AGENTS_WITHOUT_RUN_STATE: tuple[str, ...] = ("explore/code-explorer", "explore/sql-analyst")
 
 
 SUBAGENT_DEFS: tuple[SubagentDef, ...] = (
@@ -45,6 +45,17 @@ SUBAGENT_DEFS: tuple[SubagentDef, ...] = (
             "Maps codebase structure, traces dependencies, finds implementations."
             " Call when you need to understand how code is organized or where"
             " something lives. Be targeted — tell it what to look for."
+        ),
+        model=TIER_SONNET,
+        tools=TOOLS_RESEARCH,
+    ),
+    SubagentDef(
+        name="sql-analyst",
+        phase="explore",
+        description=(
+            "Schema explorer and SQL analyst. Use for database schema introspection,"
+            " SQL query analysis, EXPLAIN ANALYZE interpretation, dbt model exploration,"
+            " and iterative SQL refinement. Call before writing any SQL or dbt models."
         ),
         model=TIER_SONNET,
         tools=TOOLS_RESEARCH,
