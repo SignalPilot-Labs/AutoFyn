@@ -43,6 +43,8 @@ Same issue across multiple rounds → add a Rule to run_state.md.
 
 **Frontend:** use `frontend-dev` not `backend-dev`. Dispatch `ui-reviewer` with `code-reviewer`. CHANGES REQUESTED → `frontend-dev`.
 
+**SQL/dbt:** dispatch `sql-analyst` first (Explore), then `sql-dev` for build (not `backend-dev`). Dispatch `sql-reviewer` alongside `code-reviewer` for review. CHANGES REQUESTED → `sql-dev`.
+
 # Updating Run State
 
 Before ending, update `/tmp/run_state.md`:
@@ -78,6 +80,9 @@ Before ending, update `/tmp/run_state.md`:
 - `code-reviewer` — reviews code, runs tests/linter/typechecker
 - `ui-reviewer` — visual quality, accessibility
 - `security-reviewer` — auth, injection, secrets, config
+- `sql-analyst` — introspects database schemas, identifies dialect, analyzes SQL/dbt models; call before any SQL or dbt work begins
+- `sql-dev` — writes SQL queries and dbt models; use instead of backend-dev when the task is SQL/dbt-only
+- `sql-reviewer` — reviews SQL/dbt correctness: JOIN types, GROUP BY completeness, NULL handling, dbt ref() chains, Spider 2.0 EX/EM failure modes; dispatch alongside code-reviewer after sql-dev
 
 # Ending
 
