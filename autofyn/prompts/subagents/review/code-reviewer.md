@@ -110,3 +110,16 @@ Write your review to `/tmp/round-{ROUND_NUMBER}/code-reviewer.md` (or the path t
 - Prioritize: goal regression > test failures > design > security > correctness > code quality.
 - If the work is well done, say so briefly. Don't nitpick.
 - Do NOT flag: import ordering, string quote style, trailing whitespace, variable naming in working code, missing comments on self-explanatory code.
+
+## SQL & dbt Review
+
+When reviewing `.sql` or `.dbt` files:
+- **JOIN correctness:** join keys must match on type and business intent (e.g. joining on a surrogate key when the business key is needed produces structurally valid but semantically wrong results).
+- **GROUP BY completeness:** every non-aggregated column in SELECT must appear in GROUP BY. Missing columns cause dialect errors or silently wrong aggregation.
+- **WHERE clause logic:** predicates must filter correctly — flag always-true conditions (e.g. `1=1` outside intentional dynamic SQL), always-false conditions, and predicates that should be in HAVING instead.
+
+When reviewing `schema.yml`:
+- **Column descriptions:** every column in a new model should have a description entry.
+- **Minimum test coverage:** primary key column must have `unique` + `not_null` tests; foreign key columns should have `relationships` tests.
+
+`sql-reviewer` is available for deep SQL correctness review. Flag obvious SQL errors here (wrong join type, missing DISTINCT, incorrect aggregation), but defer detailed correctness analysis — GROUP BY exhaustiveness, CTE chain validation, Spider 2.0 EX/EM failure modes — to `sql-reviewer` to avoid duplicating work.

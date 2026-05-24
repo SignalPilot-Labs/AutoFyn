@@ -162,6 +162,17 @@ SUBAGENT_DEFS: tuple[SubagentDef, ...] = (
         model=TIER_OPUS,
         tools=TOOLS_REVIEW,
     ),
+    SubagentDef(
+        name="sql-reviewer",
+        phase="review",
+        description=(
+            "Reviews SQL queries and dbt models for correctness: JOIN conditions,"
+            " GROUP BY completeness, ref() chain validity, schema consistency,"
+            " and Spider 2.0 EX/EM correctness. Call after sql-dev builds SQL/dbt artifacts."
+        ),
+        model=TIER_SONNET,
+        tools=TOOLS_REVIEW,
+    ),
 )
 
 
