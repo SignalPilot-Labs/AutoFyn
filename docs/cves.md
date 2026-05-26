@@ -1,4 +1,4 @@
-# 11 Recognized CVEs
+# 14 Recognized CVEs
 
 Security advisories filed by AutoFyn and recognized by maintainers.
 
@@ -47,10 +47,9 @@ Security advisories filed by AutoFyn and recognized by maintainers.
 
 | Advisory | Status |
 |----------|--------|
-| [GHSA-rxhj-4m44-96r4](https://github.com/pnpm/pnpm/security/advisories/GHSA-rxhj-4m44-96r4) | Submitted |
-| [GHSA-q6j5-fjx5-2mc3](https://github.com/pnpm/pnpm/security/advisories/GHSA-q6j5-fjx5-2mc3) | Submitted |
-| [GHSA-6mpj-v8wh-qhhr](https://github.com/pnpm/pnpm/security/advisories/GHSA-6mpj-v8wh-qhhr) | Submitted |
-| [GHSA-p4xf-rf54-rj3x](https://github.com/pnpm/pnpm/security/advisories/GHSA-p4xf-rf54-rj3x) | Submitted |
+| [GHSA-rxhj-4m44-96r4](https://github.com/pnpm/pnpm/security/advisories/GHSA-rxhj-4m44-96r4) | Recognized |
+| [GHSA-q6j5-fjx5-2mc3](https://github.com/pnpm/pnpm/security/advisories/GHSA-q6j5-fjx5-2mc3) | Recognized |
+| [GHSA-p4xf-rf54-rj3x](https://github.com/pnpm/pnpm/security/advisories/GHSA-p4xf-rf54-rj3x) | Recognized |
 
 ## [Langflow](https://github.com/langflow-ai/langflow)
 
