@@ -107,6 +107,7 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, activeRe
   const [remoteSandboxes, setRemoteSandboxes] = useState<RemoteSandboxConfig[]>([]);
   const [selectedSandboxId, setSelectedSandboxId] = useState<string | null>(null);
   const [startCmd, setStartCmd] = useState(DEFAULT_DOCKER_START_CMD);
+  const [sandboxValid, setSandboxValid] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const submittingRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -473,6 +474,7 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, activeRe
                     onSelect={handleSandboxSelect}
                     startCmd={startCmd}
                     onStartCmdChange={setStartCmd}
+                    onValidChange={setSandboxValid}
                   />
                 </CollapsibleSection>
 
@@ -494,7 +496,7 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, activeRe
                 <div className="flex gap-2">
                   <Button variant="ghost" size="md" onClick={onClose}>Cancel</Button>
                   <Button
-                    variant="success" size="md" onClick={() => void handleStart()} disabled={busy || submitting}
+                    variant="success" size="md" onClick={() => void handleStart()} disabled={busy || submitting || !sandboxValid}
                     icon={<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="3 2 8 5 3 8" /></svg>}
                   >
                     {busy || submitting ? "Starting..." : "New Run"}
