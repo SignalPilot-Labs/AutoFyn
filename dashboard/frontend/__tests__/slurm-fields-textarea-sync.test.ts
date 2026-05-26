@@ -62,8 +62,8 @@ describe("SlurmFieldsCard: textarea-to-fields sync (BUG 3)", () => {
   });
 
   it("useEffect watching startCmd calls setSlurm(parsed) when parse succeeds", () => {
-    const effectIdx = SRC.indexOf("if (parsed) setSlurm(parsed)");
-    expect(effectIdx).toBeGreaterThan(-1);
+    expect(SRC).toContain("setSlurm(parsed)");
+    expect(SRC).toContain("isSlurmValid(parsed)");
   });
 
   it("useEffect dependency array contains startCmd", () => {
@@ -71,7 +71,7 @@ describe("SlurmFieldsCard: textarea-to-fields sync (BUG 3)", () => {
     const effectStart = SRC.indexOf("if (internalChangeRef.current)");
     expect(effectStart).toBeGreaterThan(-1);
     const afterEffect = SRC.slice(effectStart);
-    const depArrayIdx = afterEffect.indexOf("}, [startCmd])");
+    const depArrayIdx = afterEffect.indexOf("}, [startCmd, onValidChange])");
     expect(depArrayIdx).toBeGreaterThan(-1);
   });
 
@@ -90,6 +90,7 @@ describe("SlurmFieldsCard: parseSlurmCmd round-trip", () => {
       memory: "32G",
       gpu_gres: "a100:1",
       work_dir: "/scratch/user",
+      time: "0-04:00:00",
     };
     const cmd = buildSlurmCmd(fields);
     const parsed = parseSlurmCmd(cmd);
@@ -100,6 +101,7 @@ describe("SlurmFieldsCard: parseSlurmCmd round-trip", () => {
     expect(parsed!.memory).toBe("32G");
     expect(parsed!.gpu_gres).toBe("a100:1");
     expect(parsed!.work_dir).toBe("/scratch/user");
+    expect(parsed!.time).toBe("0-04:00:00");
   });
 
   it("parseSlurmCmd returns null for non-slurm commands", () => {
@@ -114,11 +116,13 @@ describe("SlurmFieldsCard: parseSlurmCmd round-trip", () => {
       memory: "",
       gpu_gres: "",
       work_dir: "",
+      time: "",
     });
     expect(cmd).toContain("PARTITION");
     expect(cmd).toContain("CPUS");
     expect(cmd).toContain("MEMORY");
     expect(cmd).toContain("WORK_DIR");
+    expect(cmd).toContain("TIME");
   });
 
   it("parseSlurmCmd strips placeholders back to empty strings", () => {
@@ -128,6 +132,7 @@ describe("SlurmFieldsCard: parseSlurmCmd round-trip", () => {
       memory: "",
       gpu_gres: "",
       work_dir: "",
+      time: "",
     });
     const parsed = parseSlurmCmd(cmd);
     expect(parsed).not.toBeNull();
@@ -135,6 +140,7 @@ describe("SlurmFieldsCard: parseSlurmCmd round-trip", () => {
     expect(parsed!.cpus).toBe("");
     expect(parsed!.memory).toBe("");
     expect(parsed!.work_dir).toBe("");
+    expect(parsed!.time).toBe("");
   });
 
   it("modifying a single field and rebuilding changes only that field", () => {
@@ -144,6 +150,7 @@ describe("SlurmFieldsCard: parseSlurmCmd round-trip", () => {
       memory: "16G",
       gpu_gres: "",
       work_dir: "/home/user",
+      time: "1-00:00:00",
     };
     const modified: SlurmFields = { ...original, cpus: "16" };
     const cmd = buildSlurmCmd(modified);
@@ -154,5 +161,6 @@ describe("SlurmFieldsCard: parseSlurmCmd round-trip", () => {
     expect(parsed!.partition).toBe("cpu");
     expect(parsed!.memory).toBe("16G");
     expect(parsed!.work_dir).toBe("/home/user");
+    expect(parsed!.time).toBe("1-00:00:00");
   });
 });

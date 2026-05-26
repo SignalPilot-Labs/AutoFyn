@@ -100,6 +100,7 @@ describe("SlurmFieldsCard: parseSlurmCmd round-trip", () => {
     expect(CARD_SRC).toContain('"CPUS"');
     expect(CARD_SRC).toContain('"MEMORY"');
     expect(CARD_SRC).toContain('"WORK_DIR"');
+    expect(CARD_SRC).toContain('"TIME"');
   });
 
   it("sanitizes shell metacharacters from field values", () => {
