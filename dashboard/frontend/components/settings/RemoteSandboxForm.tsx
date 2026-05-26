@@ -78,6 +78,8 @@ export function RemoteSandboxForm({
     onChange({ ...data, ...patch });
   };
 
+  const [slurmValid, setSlurmValid] = useState(false);
+
   const handleSubmit = (): void => {
     void onSave(data);
   };
@@ -158,6 +160,7 @@ export function RemoteSandboxForm({
           startCmd={data.default_start_cmd}
           onStartCmdChange={(cmd) => update({ default_start_cmd: cmd })}
           onWorkDirChange={(wd) => update({ work_dir: wd })}
+          onValidChange={setSlurmValid}
         />
       ) : (
         <FormField label="Start Command">
@@ -194,7 +197,7 @@ export function RemoteSandboxForm({
           variant="success"
           size="md"
           onClick={handleSubmit}
-          disabled={saving || !data.name.trim() || !data.ssh_target.trim()}
+          disabled={saving || !data.name.trim() || !data.ssh_target.trim() || (data.type === "slurm" && !slurmValid)}
         >
           {saving ? "Saving..." : isEdit ? "Update" : "Create"}
         </Button>

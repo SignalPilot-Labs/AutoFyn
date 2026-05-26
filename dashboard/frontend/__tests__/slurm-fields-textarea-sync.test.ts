@@ -14,7 +14,7 @@
 import { describe, it, expect } from "vitest";
 import * as fs from "fs";
 import * as path from "path";
-import { buildSlurmCmd, parseSlurmCmd } from "@/components/ui/SlurmFieldsCard";
+import { buildSlurmCmd, parseSlurmCmd, isSlurmValid } from "@/components/ui/SlurmFieldsCard";
 import type { SlurmFields } from "@/components/ui/SlurmFieldsCard";
 
 const SRC = fs.readFileSync(
@@ -62,8 +62,8 @@ describe("SlurmFieldsCard: textarea-to-fields sync (BUG 3)", () => {
   });
 
   it("useEffect watching startCmd calls setSlurm(parsed) when parse succeeds", () => {
-    const effectIdx = SRC.indexOf("if (parsed) setSlurm(parsed)");
-    expect(effectIdx).toBeGreaterThan(-1);
+    expect(SRC).toContain("setSlurm(parsed)");
+    expect(SRC).toContain("isSlurmValid(parsed)");
   });
 
   it("useEffect dependency array contains startCmd", () => {
@@ -71,7 +71,7 @@ describe("SlurmFieldsCard: textarea-to-fields sync (BUG 3)", () => {
     const effectStart = SRC.indexOf("if (internalChangeRef.current)");
     expect(effectStart).toBeGreaterThan(-1);
     const afterEffect = SRC.slice(effectStart);
-    const depArrayIdx = afterEffect.indexOf("}, [startCmd])");
+    const depArrayIdx = afterEffect.indexOf("}, [startCmd, onValidChange])");
     expect(depArrayIdx).toBeGreaterThan(-1);
   });
 
@@ -90,6 +90,7 @@ describe("SlurmFieldsCard: parseSlurmCmd round-trip", () => {
       memory: "32G",
       gpu_gres: "a100:1",
       work_dir: "/scratch/user",
+      time: "0-04:00:00",
     };
     const cmd = buildSlurmCmd(fields);
     const parsed = parseSlurmCmd(cmd);
@@ -100,6 +101,7 @@ describe("SlurmFieldsCard: parseSlurmCmd round-trip", () => {
     expect(parsed!.memory).toBe("32G");
     expect(parsed!.gpu_gres).toBe("a100:1");
     expect(parsed!.work_dir).toBe("/scratch/user");
+    expect(parsed!.time).toBe("0-04:00:00");
   });
 
   it("parseSlurmCmd returns null for non-slurm commands", () => {
@@ -114,11 +116,13 @@ describe("SlurmFieldsCard: parseSlurmCmd round-trip", () => {
       memory: "",
       gpu_gres: "",
       work_dir: "",
+      time: "",
     });
     expect(cmd).toContain("PARTITION");
     expect(cmd).toContain("CPUS");
     expect(cmd).toContain("MEMORY");
     expect(cmd).toContain("WORK_DIR");
+    expect(cmd).toContain("TIME");
   });
 
   it("parseSlurmCmd strips placeholders back to empty strings", () => {
@@ -128,6 +132,7 @@ describe("SlurmFieldsCard: parseSlurmCmd round-trip", () => {
       memory: "",
       gpu_gres: "",
       work_dir: "",
+      time: "",
     });
     const parsed = parseSlurmCmd(cmd);
     expect(parsed).not.toBeNull();
@@ -135,6 +140,7 @@ describe("SlurmFieldsCard: parseSlurmCmd round-trip", () => {
     expect(parsed!.cpus).toBe("");
     expect(parsed!.memory).toBe("");
     expect(parsed!.work_dir).toBe("");
+    expect(parsed!.time).toBe("");
   });
 
   it("modifying a single field and rebuilding changes only that field", () => {
@@ -144,6 +150,7 @@ describe("SlurmFieldsCard: parseSlurmCmd round-trip", () => {
       memory: "16G",
       gpu_gres: "",
       work_dir: "/home/user",
+      time: "1-00:00:00",
     };
     const modified: SlurmFields = { ...original, cpus: "16" };
     const cmd = buildSlurmCmd(modified);
@@ -154,5 +161,68 @@ describe("SlurmFieldsCard: parseSlurmCmd round-trip", () => {
     expect(parsed!.partition).toBe("cpu");
     expect(parsed!.memory).toBe("16G");
     expect(parsed!.work_dir).toBe("/home/user");
+    expect(parsed!.time).toBe("1-00:00:00");
+  });
+
+  it("parseSlurmCmd does not match --timeout as --time", () => {
+    const cmd =
+      "source /etc/profile && module load apptainer && " +
+      "srun --job-name=autofyn -p gpu -n 1 --cpus-per-task=4 --mem=16G --timeout=300 --time=2:00:00 " +
+      "bash -c 'W=/scratch/autofyn/runs/$AF_RUN_KEY && mkdir -p $W && " +
+      "apptainer exec --overlay $W --pwd /opt/autofyn -B $HOME $AF_HOST_MOUNTS /scratch/autofyn/sandbox.sif python3 -m server; rm -rf $W'";
+    const parsed = parseSlurmCmd(cmd);
+    expect(parsed).not.toBeNull();
+    expect(parsed!.time).toBe("2:00:00");
+  });
+});
+
+describe("isSlurmValid", () => {
+  it("returns true when all required fields are filled", () => {
+    expect(isSlurmValid({
+      partition: "gpu",
+      cpus: "4",
+      memory: "16G",
+      gpu_gres: "",
+      work_dir: "/scratch",
+      time: "4:00:00",
+    })).toBe(true);
+  });
+
+  it("returns false when any required field is empty", () => {
+    const base: SlurmFields = {
+      partition: "gpu",
+      cpus: "4",
+      memory: "16G",
+      gpu_gres: "",
+      work_dir: "/scratch",
+      time: "4:00:00",
+    };
+    expect(isSlurmValid({ ...base, partition: "" })).toBe(false);
+    expect(isSlurmValid({ ...base, cpus: "" })).toBe(false);
+    expect(isSlurmValid({ ...base, memory: "" })).toBe(false);
+    expect(isSlurmValid({ ...base, work_dir: "" })).toBe(false);
+    expect(isSlurmValid({ ...base, time: "" })).toBe(false);
+  });
+
+  it("returns false when a required field is whitespace-only", () => {
+    expect(isSlurmValid({
+      partition: "gpu",
+      cpus: "  ",
+      memory: "16G",
+      gpu_gres: "",
+      work_dir: "/scratch",
+      time: "4:00:00",
+    })).toBe(false);
+  });
+
+  it("does not require gpu_gres", () => {
+    expect(isSlurmValid({
+      partition: "gpu",
+      cpus: "4",
+      memory: "16G",
+      gpu_gres: "",
+      work_dir: "/scratch",
+      time: "4:00:00",
+    })).toBe(true);
   });
 });
