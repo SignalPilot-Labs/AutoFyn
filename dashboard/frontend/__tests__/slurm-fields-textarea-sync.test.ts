@@ -14,7 +14,7 @@
 import { describe, it, expect } from "vitest";
 import * as fs from "fs";
 import * as path from "path";
-import { buildSlurmCmd, parseSlurmCmd } from "@/components/ui/SlurmFieldsCard";
+import { buildSlurmCmd, parseSlurmCmd, isSlurmValid } from "@/components/ui/SlurmFieldsCard";
 import type { SlurmFields } from "@/components/ui/SlurmFieldsCard";
 
 const SRC = fs.readFileSync(
@@ -162,5 +162,67 @@ describe("SlurmFieldsCard: parseSlurmCmd round-trip", () => {
     expect(parsed!.memory).toBe("16G");
     expect(parsed!.work_dir).toBe("/home/user");
     expect(parsed!.time).toBe("1-00:00:00");
+  });
+
+  it("parseSlurmCmd does not match --timeout as --time", () => {
+    const cmd =
+      "source /etc/profile && module load apptainer && " +
+      "srun --job-name=autofyn -p gpu -n 1 --cpus-per-task=4 --mem=16G --timeout=300 --time=2:00:00 " +
+      "bash -c 'W=/scratch/autofyn/runs/$AF_RUN_KEY && mkdir -p $W && " +
+      "apptainer exec --overlay $W --pwd /opt/autofyn -B $HOME $AF_HOST_MOUNTS /scratch/autofyn/sandbox.sif python3 -m server; rm -rf $W'";
+    const parsed = parseSlurmCmd(cmd);
+    expect(parsed).not.toBeNull();
+    expect(parsed!.time).toBe("2:00:00");
+  });
+});
+
+describe("isSlurmValid", () => {
+  it("returns true when all required fields are filled", () => {
+    expect(isSlurmValid({
+      partition: "gpu",
+      cpus: "4",
+      memory: "16G",
+      gpu_gres: "",
+      work_dir: "/scratch",
+      time: "4:00:00",
+    })).toBe(true);
+  });
+
+  it("returns false when any required field is empty", () => {
+    const base: SlurmFields = {
+      partition: "gpu",
+      cpus: "4",
+      memory: "16G",
+      gpu_gres: "",
+      work_dir: "/scratch",
+      time: "4:00:00",
+    };
+    expect(isSlurmValid({ ...base, partition: "" })).toBe(false);
+    expect(isSlurmValid({ ...base, cpus: "" })).toBe(false);
+    expect(isSlurmValid({ ...base, memory: "" })).toBe(false);
+    expect(isSlurmValid({ ...base, work_dir: "" })).toBe(false);
+    expect(isSlurmValid({ ...base, time: "" })).toBe(false);
+  });
+
+  it("returns false when a required field is whitespace-only", () => {
+    expect(isSlurmValid({
+      partition: "gpu",
+      cpus: "  ",
+      memory: "16G",
+      gpu_gres: "",
+      work_dir: "/scratch",
+      time: "4:00:00",
+    })).toBe(false);
+  });
+
+  it("does not require gpu_gres", () => {
+    expect(isSlurmValid({
+      partition: "gpu",
+      cpus: "4",
+      memory: "16G",
+      gpu_gres: "",
+      work_dir: "/scratch",
+      time: "4:00:00",
+    })).toBe(true);
   });
 });

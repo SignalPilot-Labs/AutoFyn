@@ -77,6 +77,14 @@ describe("SandboxPicker: Slurm fields in run modal", () => {
     expect(PICKER_SRC).toContain("cmdCache.current.get(s.id)");
   });
 
+  it("passes onValidChange to SlurmFieldsCard", () => {
+    expect(PICKER_SRC).toContain("onValidChange={onValidChange}");
+  });
+
+  it("emits onValidChange(true) when switching to local Docker", () => {
+    expect(PICKER_SRC).toContain("onValidChange(true)");
+  });
+
   it("sets command before selection so remounted SlurmFieldsCard sees correct value", () => {
     // switchTo must call onStartCmdChange BEFORE onSelect.
     const switchBlock = PICKER_SRC.slice(
@@ -127,5 +135,14 @@ describe("StartRunModal: default run works without expanding sandbox", () => {
     // If saved sandbox ID not found in remoteSandboxes, must clear localStorage.
     expect(MODAL_SRC).toContain("localStorage.removeItem");
     expect(MODAL_SRC).toContain("Sandbox was deleted");
+  });
+
+  it("disables Start button when sandbox fields are invalid", () => {
+    expect(MODAL_SRC).toContain("sandboxValid");
+    expect(MODAL_SRC).toContain("!sandboxValid");
+  });
+
+  it("passes onValidChange to SandboxPicker", () => {
+    expect(MODAL_SRC).toContain("onValidChange={setSandboxValid}");
   });
 });

@@ -59,7 +59,7 @@ export function parseSlurmCmd(cmd: string): SlurmFields | null {
   const memory = stripPlaceholder(cmd.match(/--mem=(\S+)/)?.[1] ?? "");
   const gresMatch = cmd.match(/--gres=gpu:(\S+)/);
   const gpu_gres = gresMatch?.[1] ?? "";
-  const timeMatch = cmd.match(/--time=(\S+)/);
+  const timeMatch = cmd.match(/--time=(\S+?)(?:\s|$)/);
   const time = stripPlaceholder(timeMatch?.[1] ?? "");
   const workDirMatch = cmd.match(/W=(\S+?)\/autofyn\/runs/);
   const work_dir = stripPlaceholder(workDirMatch?.[1] ?? "");
@@ -91,7 +91,7 @@ const REQUIRED_SLURM_KEYS: readonly (keyof SlurmFields)[] = [
   "partition", "work_dir", "cpus", "memory", "time",
 ];
 
-function isSlurmValid(fields: SlurmFields): boolean {
+export function isSlurmValid(fields: SlurmFields): boolean {
   return REQUIRED_SLURM_KEYS.every((k) => fields[k].trim() !== "");
 }
 

@@ -18,9 +18,10 @@ interface SandboxPickerProps {
   onSelect: (id: string | null) => void;
   startCmd: string;
   onStartCmdChange: (cmd: string) => void;
+  onValidChange: (valid: boolean) => void;
 }
 
-export function SandboxPicker({ sandboxes, selectedId, onSelect, startCmd, onStartCmdChange }: SandboxPickerProps) {
+export function SandboxPicker({ sandboxes, selectedId, onSelect, startCmd, onStartCmdChange, onValidChange }: SandboxPickerProps) {
   const selectedSandbox = sandboxes.find((s) => s.id === selectedId) ?? null;
   const isSlurm = selectedSandbox?.type === "slurm";
 
@@ -38,12 +39,16 @@ export function SandboxPicker({ sandboxes, selectedId, onSelect, startCmd, onSta
 
   const handleLocalClick = useCallback(() => {
     switchTo(null, DEFAULT_DOCKER_START_CMD);
-  }, [switchTo]);
+    onValidChange(true);
+  }, [switchTo, onValidChange]);
 
   const handleRemoteClick = useCallback((s: RemoteSandboxConfig) => {
     const cached = cmdCache.current.get(s.id);
     switchTo(s.id, cached ?? s.default_start_cmd);
-  }, [switchTo]);
+    // Slurm validity will be emitted by SlurmFieldsCard on mount;
+    // for Docker remotes, always valid.
+    if (s.type !== "slurm") onValidChange(true);
+  }, [switchTo, onValidChange]);
 
   return (
     <div className="space-y-2">
@@ -79,6 +84,7 @@ export function SandboxPicker({ sandboxes, selectedId, onSelect, startCmd, onSta
           key={selectedId}
           startCmd={startCmd}
           onStartCmdChange={onStartCmdChange}
+          onValidChange={onValidChange}
         />
       ) : (
         <div>
