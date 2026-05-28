@@ -49,6 +49,17 @@ SUBAGENT_DEFS: tuple[SubagentDef, ...] = (
         model=TIER_SONNET,
         tools=TOOLS_RESEARCH,
     ),
+    SubagentDef(
+        name="security-explorer",
+        phase="explore",
+        description=(
+            "Maps attack surface, finds suspect code, identifies vulnerability"
+            " patterns. Call for security audits instead of code-explorer."
+            " Produces a prioritized list of suspects with exploit hypotheses."
+        ),
+        model=TIER_SONNET,
+        tools=TOOLS_RESEARCH,
+    ),
     # ── Plan phase ──
     SubagentDef(
         name="debugger",
