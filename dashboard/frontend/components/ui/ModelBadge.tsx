@@ -4,7 +4,7 @@ import { clsx } from "clsx";
 import { MODELS, resolveModelId } from "@/lib/constants";
 
 interface ModelBadgeProps {
-  /** Raw model_name from the Run (e.g. "claude-opus-4-6-..."). */
+  /** Raw model_name from the Run (e.g. "claude-opus-4-8-..."). */
   modelName: string | null | undefined;
   /** Show a small model-icon to the left of the label. */
   showIcon?: boolean;

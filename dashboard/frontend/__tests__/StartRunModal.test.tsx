@@ -44,7 +44,7 @@ describe("StartRunModal", () => {
     // "Model" label appears in CollapsibleSection header
     expect(document.body.textContent).toContain("Model");
     // Summary text includes model label when collapsed
-    expect(document.body.textContent).toContain("Claude Opus 4.6");
+    expect(document.body.textContent).toContain("Claude Opus 4.8");
   });
 
   it("shows branch selector with main", () => {
@@ -79,7 +79,7 @@ describe("StartRunModal", () => {
     // Budget section shows "Unlimited" when collapsed and budget is disabled
     expect(document.body.textContent).toContain("Unlimited");
     // Model section summary includes model name when collapsed
-    expect(document.body.textContent).toContain("Claude Opus 4.6");
+    expect(document.body.textContent).toContain("Claude Opus 4.8");
     // Env section summary shows "No vars" when empty
     expect(document.body.textContent).toContain("No vars");
   });

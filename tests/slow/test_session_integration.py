@@ -22,7 +22,7 @@ from sdk.session import Session
 
 BASE_OPTS = {
     "run_id": "run-integration",
-    "model": "claude-opus-4-6",
+    "model": "claude-opus-4-8",
     "effort": "high",
     "system_prompt": "test",
     "cwd": "/tmp",

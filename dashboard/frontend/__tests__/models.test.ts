@@ -9,8 +9,8 @@ import {
 } from "@/lib/constants";
 
 describe("Model constants", () => {
-  it("DEFAULT_MODEL is claude-opus-4-6", () => {
-    expect(DEFAULT_MODEL).toBe("claude-opus-4-6");
+  it("DEFAULT_MODEL is claude-opus-4-8", () => {
+    expect(DEFAULT_MODEL).toBe("claude-opus-4-8");
   });
 
   it("exactly 3 models supported", () => {
@@ -38,8 +38,8 @@ describe("Model constants", () => {
 });
 
 describe("resolveModelId", () => {
-  it("resolves claude-opus-4-6 from DB string", () => {
-    expect(resolveModelId("claude-opus-4-6")).toBe("claude-opus-4-6");
+  it("resolves claude-opus-4-8 from DB string", () => {
+    expect(resolveModelId("claude-opus-4-8")).toBe("claude-opus-4-8");
   });
 
   it("resolves claude-sonnet-4-6 from DB string", () => {
@@ -50,8 +50,12 @@ describe("resolveModelId", () => {
     expect(resolveModelId("claude-opus-4-5")).toBe("claude-opus-4-5");
   });
 
-  it("resolves opus substring to claude-opus-4-6", () => {
-    expect(resolveModelId("opus")).toBe("claude-opus-4-6");
+  it("migrates old claude-opus-4-6 DB values to 4-8", () => {
+    expect(resolveModelId("claude-opus-4-6")).toBe("claude-opus-4-8");
+  });
+
+  it("resolves opus substring to claude-opus-4-8", () => {
+    expect(resolveModelId("opus")).toBe("claude-opus-4-8");
   });
 
   it("resolves sonnet substring to claude-sonnet-4-6", () => {
@@ -69,14 +73,18 @@ describe("resolveModelId", () => {
 });
 
 describe("parseStoredModel", () => {
-  it("accepts new SDK IDs directly", () => {
-    expect(parseStoredModel("claude-opus-4-6")).toBe("claude-opus-4-6");
+  it("accepts current SDK IDs directly", () => {
+    expect(parseStoredModel("claude-opus-4-8")).toBe("claude-opus-4-8");
     expect(parseStoredModel("claude-sonnet-4-6")).toBe("claude-sonnet-4-6");
     expect(parseStoredModel("claude-opus-4-5")).toBe("claude-opus-4-5");
   });
 
+  it("migrates old claude-opus-4-6 to 4-8", () => {
+    expect(parseStoredModel("claude-opus-4-6")).toBe("claude-opus-4-8");
+  });
+
   it("migrates old opus alias", () => {
-    expect(parseStoredModel("opus")).toBe("claude-opus-4-6");
+    expect(parseStoredModel("opus")).toBe("claude-opus-4-8");
   });
 
   it("migrates old sonnet alias", () => {

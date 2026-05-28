@@ -72,7 +72,7 @@ CLEANABLE_RUN_STATUSES: frozenset[str] = frozenset(
 
 # ── Models ──
 # Pinned to exact SDK model IDs. No aliases, no translation layer.
-SUPPORTED_OPUS: str = "claude-opus-4-6"
+SUPPORTED_OPUS: str = "claude-opus-4-8"
 SUPPORTED_SONNET: str = "claude-sonnet-4-6"
 LEGACY_OPUS: str = "claude-opus-4-5"
 
@@ -82,7 +82,7 @@ VALID_MODELS_PATTERN: str = f"^({'|'.join(VALID_MODELS)})$"
 
 # Structured metadata for /api/models endpoint.
 SUPPORTED_MODELS: list[dict[str, str]] = [
-    {"id": SUPPORTED_OPUS, "label": "Claude Opus 4.6", "badge": "Opus", "tier": "opus"},
+    {"id": SUPPORTED_OPUS, "label": "Claude Opus 4.8", "badge": "Opus", "tier": "opus"},
     {"id": SUPPORTED_SONNET, "label": "Claude Sonnet 4.6", "badge": "Sonnet", "tier": "sonnet"},
     {"id": LEGACY_OPUS, "label": "Claude Opus 4.5", "badge": "Opus 4.5", "tier": "legacy"},
 ]
