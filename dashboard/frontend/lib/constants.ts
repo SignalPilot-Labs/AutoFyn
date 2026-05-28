@@ -121,10 +121,10 @@ export const RUN_ID_DISPLAY_LENGTH = 8;
 export const COPY_FEEDBACK_MS = 1500;
 
 // Model selector — uses exact SDK model IDs, no aliases.
-export type ModelId = "claude-opus-4-6" | "claude-sonnet-4-6" | "claude-opus-4-5";
+export type ModelId = "claude-opus-4-8" | "claude-sonnet-4-6" | "claude-opus-4-5";
 
 export const LOCALSTORAGE_MODEL_KEY = "autofyn_model";
-export const DEFAULT_MODEL: ModelId = "claude-opus-4-6";
+export const DEFAULT_MODEL: ModelId = "claude-opus-4-8";
 
 export interface ModelSpec {
   /** Full product label shown in the picker. */
@@ -140,8 +140,8 @@ export interface ModelSpec {
 }
 
 export const MODELS: Record<ModelId, ModelSpec> = {
-  "claude-opus-4-6": {
-    label: "Claude Opus 4.6",
+  "claude-opus-4-8": {
+    label: "Claude Opus 4.8",
     badge: "Opus",
     description: "Most capable, best for agents",
     context: "1M context",
@@ -164,23 +164,24 @@ export const MODELS: Record<ModelId, ModelSpec> = {
 };
 
 /** Ordered list for rendering the picker; derived from MODELS to avoid drift. */
-export const MODEL_IDS: ReadonlyArray<ModelId> = ["claude-opus-4-6", "claude-sonnet-4-6", "claude-opus-4-5"];
+export const MODEL_IDS: ReadonlyArray<ModelId> = ["claude-opus-4-8", "claude-sonnet-4-6", "claude-opus-4-5"];
 
 /** Normalise a raw model_name from the DB to a ModelId. */
 export function resolveModelId(modelName: string | null | undefined): ModelId | null {
   if (!modelName) return null;
   const lower = modelName.toLowerCase();
   if (lower.includes("opus-4-5") || lower.includes("opus-4.5")) return "claude-opus-4-5";
-  if (lower.includes("opus")) return "claude-opus-4-6";
+  if (lower.includes("opus-4-6") || lower.includes("opus-4.6")) return "claude-opus-4-8";
+  if (lower.includes("opus")) return "claude-opus-4-8";
   if (lower.includes("sonnet")) return "claude-sonnet-4-6";
   return null;
 }
 
 /** Parse a localStorage string into a valid ModelId, or null if missing/invalid. */
 export function parseStoredModel(raw: string | null): ModelId | null {
-  if (raw === "claude-opus-4-6" || raw === "claude-sonnet-4-6" || raw === "claude-opus-4-5") return raw;
+  if (raw === "claude-opus-4-8" || raw === "claude-sonnet-4-6" || raw === "claude-opus-4-5") return raw;
   // Migrate old aliases
-  if (raw === "opus") return "claude-opus-4-6";
+  if (raw === "opus" || raw === "claude-opus-4-6") return "claude-opus-4-8";
   if (raw === "sonnet") return "claude-sonnet-4-6";
   if (raw === "opus-4-5") return "claude-opus-4-5";
   return null;

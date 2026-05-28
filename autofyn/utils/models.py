@@ -15,7 +15,7 @@ from typing import Literal, TYPE_CHECKING
 
 from db.constants import RUN_STATUS_STARTING, SUPPORTED_SONNET
 _FALLBACK_MAP: dict[str, str | None] = {
-    "claude-opus-4-6": SUPPORTED_SONNET,
+    "claude-opus-4-8": SUPPORTED_SONNET,
     "claude-sonnet-4-6": None,
     "claude-opus-4-5": SUPPORTED_SONNET,
 }
