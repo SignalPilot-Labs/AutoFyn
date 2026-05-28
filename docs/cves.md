@@ -6,7 +6,7 @@ Security advisories filed by AutoFyn and confirmed by maintainers.
 
 | Advisory | Status |
 |----------|--------|
-| [HackerOne #3763598](https://hackerone.com/bugs?subject=user&report_id=3763598) | Confirmed (duplicate of ongoing investigation) |
+| [HackerOne #3763598](https://hackerone.com/reports/3763598) | Confirmed (duplicate of ongoing investigation) |
 
 ## [MetaMask Extension](https://github.com/MetaMask/metamask-extension)
 
