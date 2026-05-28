@@ -49,6 +49,15 @@ Security advisories filed by AutoFyn and confirmed by maintainers.
 | [GHSA-vrj5-499w-wr5h](https://github.com/infiniflow/ragflow/security/advisories/GHSA-vrj5-499w-wr5h) | Submitted |
 | [GHSA-qxq5-gc8h-4cvh](https://github.com/infiniflow/ragflow/security/advisories/GHSA-qxq5-gc8h-4cvh) | Submitted |
 
+## [Hermes Agent](https://github.com/NousResearch/hermes-agent)
+
+| Advisory | Status |
+|----------|--------|
+| [GHSA-jf7f-ff92-gh9m](https://github.com/NousResearch/hermes-agent/security/advisories/GHSA-jf7f-ff92-gh9m) | Submitted |
+| [GHSA-98qc-8qx8-v2cc](https://github.com/NousResearch/hermes-agent/security/advisories/GHSA-98qc-8qx8-v2cc) | Submitted |
+| [GHSA-7jgj-2229-g4cf](https://github.com/NousResearch/hermes-agent/security/advisories/GHSA-7jgj-2229-g4cf) | Submitted |
+| [GHSA-h3pj-hxvj-wf3r](https://github.com/NousResearch/hermes-agent/security/advisories/GHSA-h3pj-hxvj-wf3r) | Submitted |
+
 ## [Warp](https://github.com/warpdotdev/Warp)
 
 | Advisory | Status |
