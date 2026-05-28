@@ -20,9 +20,9 @@ from utils.constants import (
     GITHUB_DIFF_CACHE_MAX,
     GITHUB_ERROR_PREVIEW_LEN,
     HEADER_GITHUB_TOKEN,
+    MEMORY_DIR,
     ROUND_ARCHIVE_AGENT_DIR,
     ROUND_DIR_NAME_RE,
-    TMP_ROOT_FILES,
 )
 from utils.diff import fetch_github_diff
 
@@ -73,10 +73,10 @@ async def _collect_tmp_from_sandbox(
             continue
         for fname, content in sorted(files.items()):
             entries.append((f"tmp/{round_name}/{fname}", content))
-    for rel_path, abs_path, _filename in TMP_ROOT_FILES:
-        content = await client.file_system.read(abs_path)
-        if content is not None:
-            entries.append((rel_path, content))
+    memory_files = await client.file_system.read_dir(MEMORY_DIR)
+    if memory_files:
+        for fname, content in sorted(memory_files.items()):
+            entries.append((f"tmp/memory/{fname}", content))
     return entries
 
 
@@ -89,6 +89,8 @@ def _collect_tmp_from_archive(run_id: str) -> list[tuple[str, str]]:
     for round_dir in sorted(archive_root.iterdir()):
         if not round_dir.is_dir():
             continue
+        if not _ROUND_DIR_NAME.match(round_dir.name):
+            continue
         for f in sorted(round_dir.iterdir()):
             if not f.is_file():
                 continue
@@ -97,13 +99,15 @@ def _collect_tmp_from_archive(run_id: str) -> list[tuple[str, str]]:
             except (OSError, UnicodeDecodeError):
                 continue
             entries.append((f"tmp/{round_dir.name}/{f.name}", content))
-    for rel_path, _abs_path, filename in TMP_ROOT_FILES:
-        fpath = archive_root / filename
-        if fpath.is_file():
+    memory_dir = archive_root / "memory"
+    if memory_dir.is_dir():
+        for f in sorted(memory_dir.iterdir()):
+            if not f.is_file():
+                continue
             try:
-                entries.append((rel_path, fpath.read_text(encoding="utf-8")))
+                entries.append((f"tmp/memory/{f.name}", f.read_text(encoding="utf-8")))
             except (OSError, UnicodeDecodeError):
-                pass
+                continue
     return entries
 
 

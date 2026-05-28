@@ -3,7 +3,7 @@
 Bug: PR descriptions only contained round summaries, missing the full run state
 (goal, eval history, rules) that gives reviewers context on what the agent was doing.
 
-Fix: _run_teardown reads /tmp/run_state.md from the sandbox and appends it inside
+Fix: _run_teardown reads /tmp/memory/run_state.md from the sandbox and appends it inside
 a <details> block so it's collapsed by default but accessible.
 """
 
@@ -93,7 +93,7 @@ class TestTeardownPRRunState:
 
     @pytest.mark.asyncio
     async def test_run_state_read_uses_correct_path(self) -> None:
-        """run_state.md is read from /tmp/run_state.md."""
+        """run_state.md is read from /tmp/memory/run_state.md."""
         run = _make_run()
         sandbox = AsyncMock()
         sandbox.file_system.read = AsyncMock(return_value=None)
@@ -107,4 +107,4 @@ class TestTeardownPRRunState:
         with patch("lifecycle.teardown.log_audit", new_callable=AsyncMock):
             await _run_teardown(sandbox=sandbox, run=run, metadata_store=metadata)
 
-        sandbox.file_system.read.assert_called_once_with("/tmp/run_state.md")
+        sandbox.file_system.read.assert_called_once_with("/tmp/memory/run_state.md")

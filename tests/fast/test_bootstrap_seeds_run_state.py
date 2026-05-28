@@ -16,6 +16,7 @@ def _mock_sandbox() -> MagicMock:
     """Build a mock SandboxClient."""
     sandbox = MagicMock()
     sandbox.repo.bootstrap = AsyncMock()
+    sandbox.file_system.mkdir = AsyncMock()
     sandbox.file_system.write = AsyncMock()
     sandbox.file_system.read = AsyncMock(return_value=None)
     return sandbox

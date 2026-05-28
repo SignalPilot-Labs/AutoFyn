@@ -5,7 +5,7 @@ Responsibilities:
     1. Clone the repo in the sandbox and create the working branch.
     2. Persist the branch name to the runs table.
     3. Build the RunContext, UserInbox, TimeLock, ReportStore, MetadataStore.
-    4. Seed /tmp/rounds.json with the empty schema.
+    4. Seed /tmp/memory/rounds.json with the empty schema.
     5. Build the (mostly static) SDK session options dict. The orchestrator
        system prompt is rebuilt per round; this dict holds everything else.
 
@@ -29,6 +29,7 @@ from db.constants import MODELS_SUPPORTING_MAX_EFFORT, RUN_STATUS_RUNNING
 from utils.constants import (
     BRANCH_SLUG_MAX_LEN,
     DEFAULT_AGENT_ROLE,
+    MEMORY_DIR,
     RUN_STATE_PATH,
     RUN_STATE_TEMPLATE,
     SESSION_PERMISSION_MODE,
@@ -111,8 +112,9 @@ async def bootstrap_run(
     # from the next round. Fresh run: returns 0, we seed rounds.json.
     starting_round = await archiver.restore_all()
     if starting_round == 0:
-        # Seed an empty rounds.json so the first-round orchestrator sees
-        # the canonical schema instead of a missing file.
+        # Seed /tmp/memory/ with empty rounds.json and run_state.md so the
+        # first-round orchestrator sees the canonical schema.
+        await sandbox.file_system.mkdir(MEMORY_DIR)
         await metadata.save(RoundsMetadata.empty())
         await sandbox.file_system.write(RUN_STATE_PATH, RUN_STATE_TEMPLATE, append=False)
     else:

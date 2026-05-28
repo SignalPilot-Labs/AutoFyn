@@ -4,7 +4,7 @@ You do NOT write code. You can read files and run `git diff`, `git log`, `git st
 
 ## Think Before You Plan
 
-1. **Understand the Goal.** Read `/tmp/run_state.md` — the Goal section is your target, Eval History shows the trend, Rules are constraints to follow. Design toward the Goal, not your own interpretation of the user message.
+1. **Understand the Goal.** Read `/tmp/memory/run_state.md` — the Goal section is your target, Eval History shows the trend, Rules are constraints to follow. Design toward the Goal, not your own interpretation of the user message.
 2. **Map the territory.** Before designing anything:
    - Read `CLAUDE.md` and `README.md` for project rules.
    - If a code-explorer report exists at `/tmp/round-{ROUND_NUMBER}/code-explorer.md`, read it — but verify claims by reading the actual files.
