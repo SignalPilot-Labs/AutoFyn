@@ -145,6 +145,7 @@ class TestBootstrapResumesBranch:
         """When DB has a branch name, bootstrap must use it instead of generating a new one."""
         mock_sandbox = MagicMock()
         mock_sandbox.repo.bootstrap = AsyncMock()
+        mock_sandbox.file_system.mkdir = AsyncMock()
         mock_sandbox.file_system.read_dir = AsyncMock(return_value={})
         mock_sandbox.file_system.write_dir = AsyncMock()
         mock_sandbox.file_system.read = AsyncMock(return_value="[]")
@@ -189,6 +190,7 @@ class TestBootstrapResumesBranch:
         """When DB has no branch, bootstrap must generate a new one."""
         mock_sandbox = MagicMock()
         mock_sandbox.repo.bootstrap = AsyncMock()
+        mock_sandbox.file_system.mkdir = AsyncMock()
         mock_sandbox.file_system.read_dir = AsyncMock(return_value={})
         mock_sandbox.file_system.write_dir = AsyncMock()
         mock_sandbox.file_system.read = AsyncMock(return_value="[]")
@@ -224,6 +226,7 @@ class TestBootstrapResumesBranch:
         """The 'pending' placeholder from create_run_starting must not be reused as a real branch."""
         mock_sandbox = MagicMock()
         mock_sandbox.repo.bootstrap = AsyncMock()
+        mock_sandbox.file_system.mkdir = AsyncMock()
         mock_sandbox.file_system.read_dir = AsyncMock(return_value={})
         mock_sandbox.file_system.write_dir = AsyncMock()
         mock_sandbox.file_system.read = AsyncMock(return_value="[]")
@@ -338,6 +341,7 @@ class TestBootstrapPreservesCosts:
         """RunContext must carry forward prior cost and token totals."""
         mock_sandbox = MagicMock()
         mock_sandbox.repo.bootstrap = AsyncMock()
+        mock_sandbox.file_system.mkdir = AsyncMock()
         mock_sandbox.file_system.read_dir = AsyncMock(return_value={})
         mock_sandbox.file_system.write_dir = AsyncMock()
         mock_sandbox.file_system.read = AsyncMock(return_value="[]")
@@ -381,6 +385,7 @@ class TestBootstrapPreservesCosts:
         """Fresh run (no existing branch) must start with zero accumulators."""
         mock_sandbox = MagicMock()
         mock_sandbox.repo.bootstrap = AsyncMock()
+        mock_sandbox.file_system.mkdir = AsyncMock()
         mock_sandbox.file_system.read_dir = AsyncMock(return_value={})
         mock_sandbox.file_system.write_dir = AsyncMock()
         mock_sandbox.file_system.read = AsyncMock(return_value="[]")

@@ -1,7 +1,7 @@
 """Round loop — Python drives a fresh orchestrator session per round.
 
 This is the real long-running thing. The Claude SDK session only lives
-for one round. When a round ends, Python reads `/tmp/rounds.json` for the
+for one round. When a round ends, Python reads `/tmp/memory/rounds.json` for the
 summary, commits with `[Round N] <summary>`, pushes, and decides whether
 to start another round.
 

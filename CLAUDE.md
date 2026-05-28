@@ -8,7 +8,7 @@ Three containers: `autofyn/` is the brain (orchestrator, decisions, DB), `sandbo
 
 Sandboxes can be **local Docker** (default) or **remote** (Docker/Slurm on any SSH-reachable machine). Remote sandboxes are managed by the **connector** (`cli/cli/connector/`), a local process that opens SSH tunnels, proxies traffic, and manages lifecycle. The agent talks to both local and remote sandboxes through the same HTTP API — `autofyn/sandbox_client/backends/` abstracts the difference.
 
-The orchestrator delegates to subagents organized by phase: Explore (code-explorer, debugger), Plan (architect), Build (backend-dev, frontend-dev), Review (code-reviewer, ui-reviewer, security-reviewer). Subagents write their reports to `/tmp/round-N/<agent-name>.md`.
+The orchestrator delegates to subagents organized by phase: Explore (code-explorer, security-explorer), Plan (architect, debugger), Build (backend-dev, frontend-dev), Review (code-reviewer, ui-reviewer, security-reviewer, spec-reviewer). Subagents write reports to `/tmp/round-N/<agent-name>.md` and accumulate per-role rules in `/tmp/memory/<agent-name>.md`.
 
 ## Package Layout
 

@@ -9,13 +9,14 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from lifecycle.bootstrap import bootstrap_run
-from utils.constants import RUN_STATE_PATH, RUN_STATE_TEMPLATE
+from utils.constants import MEMORY_DIR, RUN_STATE_PATH, RUN_STATE_TEMPLATE
 
 
 def _mock_sandbox() -> MagicMock:
     """Build a mock SandboxClient."""
     sandbox = MagicMock()
     sandbox.repo.bootstrap = AsyncMock()
+    sandbox.file_system.mkdir = AsyncMock()
     sandbox.file_system.write = AsyncMock()
     sandbox.file_system.read = AsyncMock(return_value=None)
     return sandbox
@@ -95,3 +96,35 @@ class TestBootstrapSeedsRunState:
         write_calls = sandbox.file_system.write.call_args_list
         run_state_calls = [c for c in write_calls if c.args[0] == RUN_STATE_PATH]
         assert len(run_state_calls) == 0
+        # Memory dir must still be created so the first subagent's read of
+        # /tmp/memory/<agent>.md doesn't hit a missing directory after a
+        # resume whose prior sandbox crashed before writing any memory files.
+        sandbox.file_system.mkdir.assert_awaited_once_with(MEMORY_DIR)
+
+    @pytest.mark.asyncio
+    async def test_fresh_run_creates_memory_dir(self) -> None:
+        sandbox = _mock_sandbox()
+
+        with (
+            patch("lifecycle.bootstrap.db") as mock_db,
+            patch("lifecycle.bootstrap.log_audit", new_callable=AsyncMock),
+            patch("lifecycle.bootstrap.load_run_agent_config", new_callable=AsyncMock),
+        ):
+            mock_db.get_run_branch_name = AsyncMock(return_value=None)
+            mock_db.update_run_branch = AsyncMock()
+            mock_db.get_run_for_resume = AsyncMock(return_value=None)
+
+            await bootstrap_run(
+                sandbox=sandbox,
+                run_id="run-1",
+                custom_prompt="Fix auth",
+                max_budget_usd=10.0,
+                duration_minutes=60,
+                base_branch="main",
+                github_repo="owner/repo",
+                model="claude-sonnet-4-6",
+                effort="high",
+                mcp_servers=None,
+            )
+
+        sandbox.file_system.mkdir.assert_awaited_once_with(MEMORY_DIR)

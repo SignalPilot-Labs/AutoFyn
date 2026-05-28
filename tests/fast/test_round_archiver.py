@@ -74,7 +74,6 @@ class TestArchiveRound:
             "orchestrator.md": "round 1 report",
             "code-reviewer.md": "verdict: APPROVE",
         }
-        fake_sandbox.file_system.files["/tmp/rounds.json"] = '{"rounds": []}'
 
         archiver = RoundArchiver(fake_sandbox, run_id="run-abc")  # type: ignore[arg-type]
         await archiver.archive_round(1)
@@ -85,23 +84,26 @@ class TestArchiveRound:
         assert (host_round / "code-reviewer.md").read_text() == "verdict: APPROVE"
 
     @pytest.mark.asyncio
-    async def test_archive_round_captures_rounds_json_alongside(
+    async def test_archive_round_captures_memory_alongside(
         self, fake_sandbox: _FakeSandbox, archive_root: Path,
     ) -> None:
         fake_sandbox.file_system.dirs["/tmp/round-1"] = {"x.md": "x"}
-        fake_sandbox.file_system.files["/tmp/rounds.json"] = '{"pr_title": "feat"}'
+        fake_sandbox.file_system.dirs["/tmp/memory"] = {
+            "rounds.json": '{"pr_title": "feat"}',
+            "run_state.md": "## Goal",
+        }
 
         archiver = RoundArchiver(fake_sandbox, run_id="run-abc")  # type: ignore[arg-type]
         await archiver.archive_round(1)
 
-        rounds_json = archive_root / "run-abc" / "rounds.json"
-        assert rounds_json.read_text() == '{"pr_title": "feat"}'
+        memory_host = archive_root / "run-abc" / "memory"
+        assert (memory_host / "rounds.json").read_text() == '{"pr_title": "feat"}'
+        assert (memory_host / "run_state.md").read_text() == "## Goal"
 
     @pytest.mark.asyncio
     async def test_archive_round_missing_sandbox_dir_is_noop(
         self, fake_sandbox: _FakeSandbox, archive_root: Path,
     ) -> None:
-        # Sandbox has no /tmp/round-5 — archiver should log and return.
         archiver = RoundArchiver(fake_sandbox, run_id="run-abc")  # type: ignore[arg-type]
         await archiver.archive_round(5)
 
@@ -154,7 +156,9 @@ class TestRestoreAll:
         (run_root / "round-2" / "code-reviewer.md").write_text("R2 review")
         (run_root / "round-3").mkdir(parents=True)
         (run_root / "round-3" / "orchestrator.md").write_text("R3 report")
-        (run_root / "rounds.json").write_text('{"rounds": [1,2,3]}')
+        memory_dir = run_root / "memory"
+        memory_dir.mkdir()
+        (memory_dir / "rounds.json").write_text('{"rounds": [1,2,3]}')
 
         archiver = RoundArchiver(fake_sandbox, run_id="run-abc")  # type: ignore[arg-type]
         highest = await archiver.restore_all()
@@ -166,7 +170,7 @@ class TestRestoreAll:
             "code-reviewer.md": "R2 review",
         }
         assert fake_sandbox.file_system.dirs["/tmp/round-3"] == {"orchestrator.md": "R3 report"}
-        assert fake_sandbox.file_system.files["/tmp/rounds.json"] == '{"rounds": [1,2,3]}'
+        assert fake_sandbox.file_system.dirs["/tmp/memory"] == {"rounds.json": '{"rounds": [1,2,3]}'}
 
     @pytest.mark.asyncio
     async def test_restore_all_ignores_non_round_entries(
@@ -177,19 +181,18 @@ class TestRestoreAll:
         (run_root / "round-1").mkdir(parents=True)
         (run_root / "round-1" / "x.md").write_text("one")
         (run_root / "junk").mkdir()  # not a round dir
-        (run_root / "stray.txt").write_text("nope")  # not rounds.json
-        (run_root / "rounds.json").write_text("{}")
+        (run_root / "stray.txt").write_text("nope")
 
         archiver = RoundArchiver(fake_sandbox, run_id="run-abc")  # type: ignore[arg-type]
         highest = await archiver.restore_all()
 
         assert highest == 1
         assert "/tmp/round-1" in fake_sandbox.file_system.dirs
-        # junk and stray.txt are silently skipped
+        # junk and stray.txt are silently skipped — no memory dir either
         assert len(fake_sandbox.file_system.dirs) == 1
 
     @pytest.mark.asyncio
-    async def test_restore_all_without_rounds_json_still_works(
+    async def test_restore_all_without_memory_dir_still_works(
         self, fake_sandbox: _FakeSandbox, archive_root: Path,
     ) -> None:
         run_root = archive_root / "run-abc"
@@ -200,7 +203,7 @@ class TestRestoreAll:
         highest = await archiver.restore_all()
 
         assert highest == 1
-        assert "/tmp/rounds.json" not in fake_sandbox.file_system.files
+        assert "/tmp/memory" not in fake_sandbox.file_system.dirs
 
 
 # ── Full roundtrip ──────────────────────────────────────────────────
@@ -219,7 +222,10 @@ class TestRoundtrip:
             "orchestrator.md": "report",
         }
         first_sandbox.file_system.dirs["/tmp/round-2"] = {"orchestrator.md": "R2"}
-        first_sandbox.file_system.files["/tmp/rounds.json"] = '{"rounds": [1,2]}'
+        first_sandbox.file_system.dirs["/tmp/memory"] = {
+            "rounds.json": '{"rounds": [1,2]}',
+            "run_state.md": "## Goal",
+        }
 
         archiver = RoundArchiver(first_sandbox, run_id="run-xyz")  # type: ignore[arg-type]
         await archiver.archive_round(1)
@@ -233,4 +239,4 @@ class TestRoundtrip:
         assert highest == 2
         assert second_sandbox.file_system.dirs["/tmp/round-1"] == first_sandbox.file_system.dirs["/tmp/round-1"]
         assert second_sandbox.file_system.dirs["/tmp/round-2"] == first_sandbox.file_system.dirs["/tmp/round-2"]
-        assert second_sandbox.file_system.files["/tmp/rounds.json"] == first_sandbox.file_system.files["/tmp/rounds.json"]
+        assert second_sandbox.file_system.dirs["/tmp/memory"] == first_sandbox.file_system.dirs["/tmp/memory"]

@@ -1,4 +1,4 @@
-"""MetadataStore — read/write `/tmp/rounds.json` via the sandbox.
+"""MetadataStore — read/write `/tmp/memory/rounds.json` via the sandbox.
 
 The RoundEntry and RoundsMetadata dataclasses live in `utils.models`.
 This module is just the I/O layer that loads and persists them.
@@ -16,7 +16,7 @@ log = logging.getLogger("memory.metadata")
 
 
 class MetadataStore:
-    """Read/write `/tmp/rounds.json` via the sandbox file_system handler.
+    """Read/write `/tmp/memory/rounds.json` via the sandbox file_system handler.
 
     Public API:
         load()                                  -> RoundsMetadata
