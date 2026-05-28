@@ -224,7 +224,7 @@ class TestRepoClonedEvent:
                     duration_minutes=30,
                     base_branch="main",
                     github_repo="owner/repo",
-                    model="claude-opus-4-6",
+                    model="claude-opus-4-8",
                     effort="high",
 
                     mcp_servers=None,

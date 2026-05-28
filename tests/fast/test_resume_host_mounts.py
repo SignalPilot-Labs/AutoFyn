@@ -76,7 +76,7 @@ class TestRestartTerminalRunHostMounts:
             "branch_name": "autofyn/test-branch",
             "custom_prompt": "original prompt",
             "github_repo": "org/repo",
-            "model_name": "claude-opus-4-6",
+            "model_name": "claude-opus-4-8",
             "base_branch": "main",
             "duration_minutes": 30.0,
         }
