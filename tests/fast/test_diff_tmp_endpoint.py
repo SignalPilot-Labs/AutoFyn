@@ -41,17 +41,17 @@ class TestBuildTmpDiff:
 
 
 class TestCollectTmpFromSandbox:
-    """Reads /tmp/round-* from a live sandbox client."""
+    """Reads /tmp/round-* and /tmp/memory/ from a live sandbox client."""
 
     @pytest.mark.asyncio
     async def test_filters_non_round_dirs(self) -> None:
         client = MagicMock()
         client.file_system.ls = AsyncMock(return_value=["round-1", "other", "cache"])
-        client.file_system.read_dir = AsyncMock(return_value={"report.md": "hi"})
-        client.file_system.read = AsyncMock(return_value=None)
+        client.file_system.read_dir = AsyncMock(side_effect=[
+            {"report.md": "hi"},  # round-1
+            None,  # memory dir
+        ])
         entries = await _collect_tmp_from_sandbox(client)
-        # Only round-1 was processed.
-        client.file_system.read_dir.assert_awaited_once_with("/tmp/round-1")
         assert entries == [("tmp/round-1/report.md", "hi")]
 
     @pytest.mark.asyncio
@@ -60,11 +60,11 @@ class TestCollectTmpFromSandbox:
         client.file_system.ls = AsyncMock(return_value=[
             "round-..", "round-/etc", "round-abc", "round-", "round-1",
         ])
-        client.file_system.read_dir = AsyncMock(return_value={"x.md": "ok"})
-        client.file_system.read = AsyncMock(return_value=None)
+        client.file_system.read_dir = AsyncMock(side_effect=[
+            {"x.md": "ok"},  # round-1
+            None,  # memory dir
+        ])
         entries = await _collect_tmp_from_sandbox(client)
-        # Only the strictly-valid "round-1" is passed to read_dir.
-        client.file_system.read_dir.assert_awaited_once_with("/tmp/round-1")
         assert entries == [("tmp/round-1/x.md", "ok")]
 
     @pytest.mark.asyncio
@@ -72,10 +72,10 @@ class TestCollectTmpFromSandbox:
         client = MagicMock()
         client.file_system.ls = AsyncMock(return_value=["round-2", "round-1"])
         client.file_system.read_dir = AsyncMock(side_effect=[
-            {"a.md": "one"},   # called for round-1
-            {"b.md": "two"},   # called for round-2
+            {"a.md": "one"},   # round-1
+            {"b.md": "two"},   # round-2
+            None,  # memory dir
         ])
-        client.file_system.read = AsyncMock(return_value=None)
         entries = await _collect_tmp_from_sandbox(client)
         assert entries == [
             ("tmp/round-1/a.md", "one"),
@@ -86,8 +86,11 @@ class TestCollectTmpFromSandbox:
     async def test_empty_round_dir_is_skipped(self) -> None:
         client = MagicMock()
         client.file_system.ls = AsyncMock(return_value=["round-1", "round-2"])
-        client.file_system.read_dir = AsyncMock(side_effect=[None, {"x.md": "data"}])
-        client.file_system.read = AsyncMock(return_value=None)
+        client.file_system.read_dir = AsyncMock(side_effect=[
+            None,  # round-1 empty
+            {"x.md": "data"},  # round-2
+            None,  # memory dir
+        ])
         entries = await _collect_tmp_from_sandbox(client)
         assert entries == [("tmp/round-2/x.md", "data")]
 

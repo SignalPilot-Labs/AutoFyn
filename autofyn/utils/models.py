@@ -128,7 +128,7 @@ class RoundEntry:
 
 @dataclass
 class RoundsMetadata:
-    """Parsed `/tmp/rounds.json`. Mutated in-place by the round loop."""
+    """Parsed `/tmp/memory/rounds.json`. Mutated in-place by the round loop."""
 
     pr_title: str = ""
     rounds: list[RoundEntry] = field(default_factory=list)

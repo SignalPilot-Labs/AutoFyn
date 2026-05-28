@@ -31,7 +31,7 @@ Each round runs Claude in a sandboxed Docker container with fresh context. A per
 - **[MetaMask Extension](https://github.com/MetaMask/metamask-extension)** — 12 vulnerabilities (3 High, 7 Medium, 2 Low), 3 exploit chains. Responsibly disclosed via HackerOne. [CVEs](docs/cves.md#metamask-extension)
 - **[Warp](https://github.com/warpdotdev/Warp)** — 30 vulnerabilities (6 Critical, 7 High, 8 Medium, 9 Low), 3 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#warp)
 - **[Langflow](https://github.com/langflow-ai/langflow)** — 22 vulnerabilities (3 Critical, 13 High, 6 Medium), 4 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#langflow)
-- **[Hermes Agent](https://github.com/NousResearch/hermes-agent)** — 36 vulnerabilities (13 Critical, 22 High, 1 Medium), 18 exploit chains. Responsibly disclosed.
+- **[Hermes Agent](https://github.com/NousResearch/hermes-agent)** — 36 vulnerabilities (13 Critical, 22 High, 1 Medium), 18 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#hermes-agent)
 - **[Agent TARS](https://github.com/bytedance/UI-TARS-desktop)** — 25 vulnerabilities (4 Critical, 18 High, 3 Medium), 20 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#agent-tars)
 - **[RAGFlow](https://github.com/infiniflow/ragflow)** — 17 vulnerabilities (5 Critical, 11 High, 1 Medium), 5 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#ragflow)
 - **[LiteLLM](https://github.com/BerriAI/litellm)** — 14 vulnerabilities (3 Critical, 4 High, 4 Medium, 3 Low), 2 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#litellm)
@@ -76,12 +76,12 @@ autofyn settings set --claude-token YOUR_KEY --git-token YOUR_TOKEN --github-rep
 
 ## How it works
 
-LLM agents that run in a loop hit three failure modes: context grows until the model loses track, mistakes repeat because nothing is learned between iterations, and the agent can't tell whether it's making progress or going in circles. AutoFyn's round loop addresses each one, borrowing from how RL agents learn.
+LLM agents that run in a loop hit three failure modes: context grows until the model loses track, mistakes repeat because nothing is learned between iterations, and the agent can't tell whether it's making progress or going in circles. AutoFyn's round loop addresses each one. The structure resembles RLHF — subagents generate output, reviewers score it, the orchestrator updates behavior for the next round — but in prompt space, not weight space.
 
-- **State, not context.** Each round gets a clean context window. Cross-round knowledge is a structured `run_state.md`. Context never degrades because it never accumulates.
-- **Dense reward signal.** Every round ends with a real eval: run the benchmark, execute the exploit, check the test suite. The score delta is appended to eval history, allowing objective progress monitoring.
-- **Policy updates from failures.** Reviewer findings and repeated mistakes become persistent Rules: `ALWAYS: run migrations before tests (because round 4 broke prod, round 4)`. Injected into every subagent's context next round.
-- **Honest feedback loop.** Reviewers are independent. A round that improves the metric but violates a constraint is rejected. So, the agent corrects course instead of reinforcing bad decisions.
+- **State, not context.** Each round gets a clean context window. Cross-round knowledge lives in `/tmp/memory/` — `run_state.md` (goal, eval history, rules) and per-subagent rule files. Context never degrades because it never accumulates.
+- **Dense reward signal.** Every round ends with a real eval: run the benchmark, execute the exploit, check the test suite. The score delta is appended to eval history so the orchestrator can track progress across rounds.
+- **Policy updates from failures.** Reviewer findings and repeated mistakes become persistent Rules: `ALWAYS: run migrations before tests (because round 4 broke prod, round 4)`. Global rules are injected into every subagent. Per-subagent rules (e.g. `architect.md`, `code-reviewer.md`) let each subagent accumulate domain-specific knowledge across rounds.
+- **Honest feedback loop.** Reviewers are independent. A round that improves the metric but violates a constraint is rejected. The agent corrects course instead of reinforcing bad decisions.
 - **Time-locked episodes.** `end_session` is denied until the budget expires. It iterates toward the target for the full duration.
 
 ## CLI reference

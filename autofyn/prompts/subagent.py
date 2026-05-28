@@ -49,6 +49,17 @@ SUBAGENT_DEFS: tuple[SubagentDef, ...] = (
         model=TIER_SONNET,
         tools=TOOLS_RESEARCH,
     ),
+    SubagentDef(
+        name="security-explorer",
+        phase="explore",
+        description=(
+            "Maps attack surface, finds suspect code, identifies vulnerability"
+            " patterns. Call for security audits instead of code-explorer."
+            " Produces a prioritized list of suspects with exploit hypotheses."
+        ),
+        model=TIER_SONNET,
+        tools=TOOLS_RESEARCH,
+    ),
     # ── Plan phase ──
     SubagentDef(
         name="debugger",
@@ -186,6 +197,7 @@ def build_agent_defs(
     git_rules = load_markdown("query/git-rules")
     dispatch_rules = load_markdown("query/dispatch-rules")
     verification_rules = load_markdown("query/verification-rules")
+    per_role_rules = load_markdown("query/subagent-rules")
     run_state_context = (
         load_markdown("query/prior-round-context")
         if round_number > 1
@@ -205,6 +217,12 @@ def build_agent_defs(
             prompt_parts.append(verification_rules)
         if run_state_context and path not in AGENTS_WITHOUT_RUN_STATE:
             prompt_parts.append(run_state_context)
+        if path not in AGENTS_WITHOUT_RUN_STATE:
+            prompt_parts.append(
+                per_role_rules
+                .replace("{AGENT_NAME}", defn.name)
+                .replace("{ROUND_NUMBER}", str(round_number))
+            )
         result[defn.name] = {
             "description": defn.description,
             "prompt": "\n\n".join(prompt_parts),

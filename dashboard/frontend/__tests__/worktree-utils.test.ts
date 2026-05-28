@@ -23,7 +23,7 @@ describe("norm", () => {
     expect(norm("relative/path.ts")).toBe("relative/path.ts");
   });
   it("strips /tmp/ prefix to tmp/", () => {
-    expect(norm("/tmp/run_state.md")).toBe("tmp/run_state.md");
+    expect(norm("/tmp/memory/run_state.md")).toBe("tmp/memory/run_state.md");
   });
   it("strips /tmp/round-N prefix to tmp/round-N", () => {
     expect(norm("/tmp/round-1/architect.md")).toBe("tmp/round-1/architect.md");
