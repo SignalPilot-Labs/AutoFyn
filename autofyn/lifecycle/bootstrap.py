@@ -111,10 +111,13 @@ async def bootstrap_run(
     # push them back into the new sandbox's /tmp and start counting
     # from the next round. Fresh run: returns 0, we seed rounds.json.
     starting_round = await archiver.restore_all()
+    # Ensure /tmp/memory/ exists on both fresh and resumed runs. A resumed run
+    # whose prior sandbox crashed before writing any memory files would
+    # otherwise land without the dir, and the first subagent's read would fail.
+    await sandbox.file_system.mkdir(MEMORY_DIR)
     if starting_round == 0:
         # Seed /tmp/memory/ with empty rounds.json and run_state.md so the
         # first-round orchestrator sees the canonical schema.
-        await sandbox.file_system.mkdir(MEMORY_DIR)
         await metadata.save(RoundsMetadata.empty())
         await sandbox.file_system.write(RUN_STATE_PATH, RUN_STATE_TEMPLATE, append=False)
     else:

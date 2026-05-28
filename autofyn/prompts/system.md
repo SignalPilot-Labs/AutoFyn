@@ -55,7 +55,7 @@ Before ending, update `/tmp/memory/run_state.md`:
 
 **State** — Append this round's work to Done. Rewrite Broken (with why) and Next.
 
-**Subagent Rules** — Subagents write per-role rules to `/tmp/memory/<agent-name>.md` (e.g. `architect.md`, `backend-dev.md`). Review these during state update — prune stale or incorrect entries.
+**Subagent Rules** — Subagents write per-role rules to `/tmp/memory/<agent-name>.md` (e.g. `architect.md`, `backend-dev.md`). Review these during state update — prune stale or incorrect entries. Cap each file at 30 rules.
 
 # Constraints
 
