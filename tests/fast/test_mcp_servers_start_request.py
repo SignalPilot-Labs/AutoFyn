@@ -81,7 +81,7 @@ class TestBuildBaseSessionOptionsMcpServers:
         run = _make_run_context()
         opts = _build_base_session_options(
             run=run,
-            model="claude-opus-4-6",
+            model="claude-opus-4-8",
             fallback_model=None,
             max_budget_usd=10.0,
             effort="high",
@@ -98,7 +98,7 @@ class TestBuildBaseSessionOptionsMcpServers:
         run = _make_run_context()
         opts = _build_base_session_options(
             run=run,
-            model="claude-opus-4-6",
+            model="claude-opus-4-8",
             fallback_model=None,
             max_budget_usd=10.0,
             effort="high",
@@ -115,7 +115,7 @@ class TestBuildBaseSessionOptionsMcpServers:
         run = _make_run_context()
         opts = _build_base_session_options(
             run=run,
-            model="claude-opus-4-6",
+            model="claude-opus-4-8",
             fallback_model=None,
             max_budget_usd=0.0,
             effort="high",
