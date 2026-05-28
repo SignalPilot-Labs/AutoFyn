@@ -80,7 +80,7 @@ LLM agents that run in a loop hit three failure modes: context grows until the m
 
 - **State, not context.** Each round gets a clean context window. Cross-round knowledge lives in `/tmp/memory/` — `run_state.md` (goal, eval history, rules) and per-subagent rule files. Context never degrades because it never accumulates.
 - **Dense reward signal.** Every round ends with a real eval: run the benchmark, execute the exploit, check the test suite. The score delta is appended to eval history so the orchestrator can track progress across rounds.
-- **Policy updates from failures.** Reviewer findings and repeated mistakes become persistent Rules: `ALWAYS: run migrations before tests (because round 4 broke prod, round 4)`. Global rules are injected into every subagent. Per-role rules (e.g. `architect.md`, `code-reviewer.md`) let each subagent accumulate domain-specific knowledge across rounds.
+- **Policy updates from failures.** Reviewer findings and repeated mistakes become persistent Rules: `ALWAYS: run migrations before tests (because round 4 broke prod, round 4)`. Global rules are injected into every subagent. Per-subagent rules (e.g. `architect.md`, `code-reviewer.md`) let each subagent accumulate domain-specific knowledge across rounds.
 - **Honest feedback loop.** Reviewers are independent. A round that improves the metric but violates a constraint is rejected. The agent corrects course instead of reinforcing bad decisions.
 - **Time-locked episodes.** `end_session` is denied until the budget expires. It iterates toward the target for the full duration.
 
