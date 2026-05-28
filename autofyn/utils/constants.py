@@ -73,8 +73,6 @@ ORCHESTRATOR_REPORT_NAME = "orchestrator.md"
 MEMORY_DIR = "/tmp/memory"
 METADATA_PATH = f"{MEMORY_DIR}/rounds.json"
 RUN_STATE_PATH = f"{MEMORY_DIR}/run_state.md"
-RUN_STATE_REL_PATH = "tmp/memory/run_state.md"
-ROUNDS_JSON_REL_PATH = "tmp/memory/rounds.json"
 RUN_STATE_TEMPLATE = """\
 ## Goal
 
