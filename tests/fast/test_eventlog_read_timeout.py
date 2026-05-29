@@ -7,6 +7,7 @@ asyncio.TimeoutError when timeout expires.
 """
 
 import asyncio
+import json
 
 import pytest
 
@@ -48,7 +49,7 @@ class TestEventLogReadTimeout:
 
         assert len(events) == 1
         assert events[0].event == "test_event"
-        assert events[0].data["value"] == 42
+        assert json.loads(events[0].data_json)["value"] == 42
 
     @pytest.mark.asyncio
     async def test_read_after_waits_and_returns_late_event(self) -> None:
@@ -66,4 +67,4 @@ class TestEventLogReadTimeout:
 
         assert len(events) == 1
         assert events[0].event == "second"
-        assert events[0].data["late"] is True
+        assert json.loads(events[0].data_json)["late"] is True
