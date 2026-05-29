@@ -10,6 +10,26 @@ export async function fetchRuns(repo?: string): Promise<Run[]> {
   return res.json();
 }
 
+export interface ModelInfo {
+  id: string;
+  label: string;
+  short: string;
+  description: string;
+  context: string;
+  tier: string;
+}
+
+export interface ModelsResponse {
+  models: ModelInfo[];
+  default: string;
+}
+
+export async function fetchModels(): Promise<ModelsResponse> {
+  const res = await apiFetch(`/api/models`);
+  if (!res.ok) throw new Error("Failed to fetch models");
+  return res.json();
+}
+
 export async function fetchRepos(): Promise<RepoInfo[]> {
   try {
     const res = await apiFetch(`/api/repos`);
