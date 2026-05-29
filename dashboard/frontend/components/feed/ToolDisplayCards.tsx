@@ -340,3 +340,64 @@ export function TodoDisplay({
   );
 }
 
+/* ── TaskDisplay ──
+ * Renders the SDK's relational task tools (TaskCreate/TaskUpdate/TaskGet/
+ * TaskList) using the same status-row look as TodoDisplay. Each tool reports
+ * a different shape, so normalize to {status, content} rows before rendering.
+ */
+type TaskToolStatus = "pending" | "in_progress" | "completed";
+
+function _normalizeStatus(raw: unknown): TaskToolStatus {
+  return raw === "completed" || raw === "in_progress" ? raw : "pending";
+}
+
+function _taskRows(
+  name: string,
+  input: Record<string, unknown>,
+  output: Record<string, unknown> | null
+): Array<{ status: TaskToolStatus; content: string }> {
+  const lower = name.toLowerCase();
+  if (lower === "tasklist") {
+    const tasks = (output?.tasks as Array<Record<string, unknown>>) || [];
+    return tasks.map((t) => ({
+      status: _normalizeStatus(t.status),
+      content: String(t.subject ?? t.id ?? ""),
+    }));
+  }
+  if (lower === "taskget") {
+    const task = output?.task as Record<string, unknown> | null;
+    if (!task) return [];
+    return [{ status: _normalizeStatus(task.status), content: String(task.subject ?? "") }];
+  }
+  if (lower === "taskupdate") {
+    // Pre event carries {status, taskId}; post carries {statusChange, taskId}.
+    // taskId may live in either, so fall back across both.
+    const taskId = (input.taskId as string) || (output?.taskId as string) || "";
+    const subject = (input.subject as string) || (taskId ? `Task ${taskId}` : "Task");
+    const change = output?.statusChange as { from?: string; to?: string } | undefined;
+    const status = _normalizeStatus(change?.to ?? input.status);
+    const suffix = change?.from && change?.to ? ` (${change.from} → ${change.to})` : "";
+    return [{ status, content: `${subject}${suffix}` }];
+  }
+  // TaskCreate (and any other create-like event): a newly created pending task.
+  const subject =
+    (input.subject as string) ||
+    ((output?.task as Record<string, unknown> | undefined)?.subject as string) ||
+    "Task";
+  return [{ status: "pending", content: String(subject) }];
+}
+
+export function TaskDisplay({
+  name,
+  input,
+  output,
+}: {
+  name: string;
+  input: Record<string, unknown>;
+  output: Record<string, unknown> | null;
+}) {
+  const rows = _taskRows(name, input, output);
+  if (rows.length === 0) return null;
+  return <TodoDisplay todos={rows} />;
+}
+

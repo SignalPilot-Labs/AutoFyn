@@ -75,6 +75,25 @@ describe("buildSummary", () => {
     expect(result).toContain("2○");
   });
 
+  it("task tools map to the task category", () => {
+    expect(getToolCategory("TaskCreate")).toBe("task");
+    expect(getToolCategory("TaskUpdate")).toBe("task");
+    expect(getToolCategory("TaskGet")).toBe("task");
+    expect(getToolCategory("TaskList")).toBe("task");
+  });
+
+  it("task: TaskCreate summary is the subject", () => {
+    expect(summary("TaskCreate", { subject: "Live-verify Finding A", description: "x" })).toBe(
+      "Live-verify Finding A"
+    );
+  });
+
+  it("task: TaskUpdate summary uses taskId and status when no subject", () => {
+    expect(summary("TaskUpdate", { status: "in_progress", taskId: "2" })).toBe(
+      "Task 2 · in_progress"
+    );
+  });
+
   it("skill: returns skill name", () => {
     expect(summary("Skill", { skill: "commit" })).toBe("commit");
   });
