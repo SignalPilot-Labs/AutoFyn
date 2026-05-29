@@ -49,6 +49,12 @@ export function buildSummary(tool: ToolCall, cat: ToolCategory): string {
       const todos = (input.todos as Array<{ status: string }>) || [];
       return `${todos.filter((t) => t.status === "completed").length}✓ ${todos.filter((t) => t.status === "in_progress").length}◉ ${todos.filter((t) => t.status === "pending").length}○`;
     }
+    case "task": {
+      const subject = (input.subject as string) || "";
+      const status = (input.status as string) || "";
+      if (subject) return status ? `${subject} · ${status}` : subject;
+      return input.taskId ? `Task ${input.taskId}${status ? ` · ${status}` : ""}` : "";
+    }
     case "skill":
       return (input.skill as string) || "";
     case "tool_search":
