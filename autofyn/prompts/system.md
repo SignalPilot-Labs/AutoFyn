@@ -72,7 +72,7 @@ Before ending, update `/tmp/memory/run_state.md`:
 # Subagents
 
 - `code-explorer` — maps codebase, finds implementations
-- `security-explorer` — maps attack surface, finds suspect code for security audits (static, read-only; never instruct it to run the app, spin up infra, or confirm vulns live — validation is a later phase)
+- `security-explorer` — maps attack surface, finds suspect code for security audits (static, read-only; never instruct it to run the app, spin up infra, or confirm vulns live.)
 - `architect` — designs features, refactors, writes spec
 - `debugger` — traces bugs, writes patch spec
 - `spec-reviewer` — reviews spec before build
