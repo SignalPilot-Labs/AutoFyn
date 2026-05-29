@@ -1,105 +1,61 @@
-import { describe, it, expect } from "vitest";
-import {
-  DEFAULT_MODEL,
-  MODEL_IDS,
-  MODELS,
-  resolveModelId,
-  parseStoredModel,
-  type ModelId,
-} from "@/lib/constants";
+/**
+ * Tests for the model helpers in lib/models.tsx.
+ *
+ * The model list + metadata now come from /api/models at runtime (single
+ * source of truth = db/constants.py). The frontend hardcodes no model list,
+ * so these tests cover only the pure helpers: looking a model up by id and
+ * resolving the initial selection from a stored choice + backend default.
+ *
+ * Model ids are exact SDK ids — there is no alias/migration layer.
+ */
 
-describe("Model constants", () => {
-  it("DEFAULT_MODEL is claude-opus-4-8", () => {
-    expect(DEFAULT_MODEL).toBe("claude-opus-4-8");
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { findModel, resolveInitialModel, saveStoredModel, LOCALSTORAGE_MODEL_KEY } from "@/lib/models";
+import type { ModelInfo } from "@/lib/api";
+
+const MODELS: ModelInfo[] = [
+  { id: "claude-opus-4-8", label: "Claude Opus 4.8", short: "Opus 4.8", description: "x", context: "1M", tier: "opus" },
+  { id: "claude-sonnet-4-6", label: "Claude Sonnet 4.6", short: "Sonnet 4.6", description: "y", context: "1M", tier: "sonnet" },
+];
+
+describe("findModel", () => {
+  it("returns the matching model by exact id", () => {
+    expect(findModel(MODELS, "claude-sonnet-4-6")?.short).toBe("Sonnet 4.6");
   });
 
-  it("exactly 3 models supported", () => {
-    expect(MODEL_IDS).toHaveLength(3);
+  it("returns null for an unknown id (no alias resolution)", () => {
+    expect(findModel(MODELS, "opus")).toBeNull();
+    expect(findModel(MODELS, "claude-opus-4-6")).toBeNull();
+    expect(findModel(MODELS, "gpt-4")).toBeNull();
   });
 
-  it("MODEL_IDS matches MODELS keys", () => {
-    const keys = Object.keys(MODELS) as ModelId[];
-    expect(new Set(MODEL_IDS)).toEqual(new Set(keys));
-  });
-
-  it("all model IDs are exact SDK IDs (start with claude-)", () => {
-    for (const id of MODEL_IDS) {
-      expect(id).toMatch(/^claude-/);
-    }
-  });
-
-  it("no old aliases in MODEL_IDS", () => {
-    for (const id of MODEL_IDS) {
-      expect(id).not.toBe("opus");
-      expect(id).not.toBe("sonnet");
-      expect(id).not.toBe("opus-4-5");
-    }
-  });
-});
-
-describe("resolveModelId", () => {
-  it("resolves claude-opus-4-8 from DB string", () => {
-    expect(resolveModelId("claude-opus-4-8")).toBe("claude-opus-4-8");
-  });
-
-  it("resolves claude-sonnet-4-6 from DB string", () => {
-    expect(resolveModelId("claude-sonnet-4-6")).toBe("claude-sonnet-4-6");
-  });
-
-  it("resolves claude-opus-4-5 from DB string", () => {
-    expect(resolveModelId("claude-opus-4-5")).toBe("claude-opus-4-5");
-  });
-
-  it("migrates old claude-opus-4-6 DB values to 4-8", () => {
-    expect(resolveModelId("claude-opus-4-6")).toBe("claude-opus-4-8");
-  });
-
-  it("resolves opus substring to claude-opus-4-8", () => {
-    expect(resolveModelId("opus")).toBe("claude-opus-4-8");
-  });
-
-  it("resolves sonnet substring to claude-sonnet-4-6", () => {
-    expect(resolveModelId("sonnet")).toBe("claude-sonnet-4-6");
-  });
-
-  it("returns null for null/undefined", () => {
-    expect(resolveModelId(null)).toBeNull();
-    expect(resolveModelId(undefined)).toBeNull();
-  });
-
-  it("returns null for unknown model", () => {
-    expect(resolveModelId("gpt-4")).toBeNull();
+  it("returns null for null/undefined/empty", () => {
+    expect(findModel(MODELS, null)).toBeNull();
+    expect(findModel(MODELS, undefined)).toBeNull();
+    expect(findModel(MODELS, "")).toBeNull();
   });
 });
 
-describe("parseStoredModel", () => {
-  it("accepts current SDK IDs directly", () => {
-    expect(parseStoredModel("claude-opus-4-8")).toBe("claude-opus-4-8");
-    expect(parseStoredModel("claude-sonnet-4-6")).toBe("claude-sonnet-4-6");
-    expect(parseStoredModel("claude-opus-4-5")).toBe("claude-opus-4-5");
+describe("resolveInitialModel", () => {
+  beforeEach(() => {
+    localStorage.clear();
   });
 
-  it("migrates old claude-opus-4-6 to 4-8", () => {
-    expect(parseStoredModel("claude-opus-4-6")).toBe("claude-opus-4-8");
+  afterEach(() => {
+    localStorage.clear();
   });
 
-  it("migrates old opus alias", () => {
-    expect(parseStoredModel("opus")).toBe("claude-opus-4-8");
+  it("uses the stored model when it is a known id", () => {
+    saveStoredModel("claude-sonnet-4-6");
+    expect(resolveInitialModel(MODELS, "claude-opus-4-8")).toBe("claude-sonnet-4-6");
   });
 
-  it("migrates old sonnet alias", () => {
-    expect(parseStoredModel("sonnet")).toBe("claude-sonnet-4-6");
+  it("falls back to the backend default when nothing is stored", () => {
+    expect(resolveInitialModel(MODELS, "claude-opus-4-8")).toBe("claude-opus-4-8");
   });
 
-  it("migrates old opus-4-5 alias", () => {
-    expect(parseStoredModel("opus-4-5")).toBe("claude-opus-4-5");
-  });
-
-  it("returns null for unknown string", () => {
-    expect(parseStoredModel("gpt-4")).toBeNull();
-  });
-
-  it("returns null for null", () => {
-    expect(parseStoredModel(null)).toBeNull();
+  it("falls back to the backend default when the stored id is no longer valid", () => {
+    localStorage.setItem(LOCALSTORAGE_MODEL_KEY, "claude-opus-4-5");
+    expect(resolveInitialModel(MODELS, "claude-opus-4-8")).toBe("claude-opus-4-8");
   });
 });

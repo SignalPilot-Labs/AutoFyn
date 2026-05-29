@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { MotionProvider } from "@/components/MotionProvider";
+import { ModelsProvider } from "@/lib/models";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -64,7 +65,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body><MotionProvider>{children}</MotionProvider></body>
+      <body><MotionProvider><ModelsProvider>{children}</ModelsProvider></MotionProvider></body>
     </html>
   );
 }

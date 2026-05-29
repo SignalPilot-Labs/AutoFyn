@@ -120,84 +120,9 @@ export const PINNED_BRANCHES: ReadonlyArray<string> = ["main", "staging"];
 export const RUN_ID_DISPLAY_LENGTH = 8;
 export const COPY_FEEDBACK_MS = 1500;
 
-// Model selector — uses exact SDK model IDs, no aliases.
-export type ModelId = "claude-opus-4-8" | "claude-sonnet-4-6" | "claude-opus-4-5";
-
-export const LOCALSTORAGE_MODEL_KEY = "autofyn_model";
-export const DEFAULT_MODEL: ModelId = "claude-opus-4-8";
-
-export interface ModelSpec {
-  /** Full product label shown in the picker. */
-  label: string;
-  /** Short badge label for run cards and stats bar. */
-  badge: string;
-  /** One-line description for the picker. */
-  description: string;
-  /** Context window size blurb. */
-  context: string;
-  /** Tailwind class tokens for the badge (text + bg). */
-  color: string;
-}
-
-export const MODELS: Record<ModelId, ModelSpec> = {
-  "claude-opus-4-8": {
-    label: "Claude Opus 4.8",
-    badge: "Opus",
-    description: "Most capable, best for agents",
-    context: "1M context",
-    color: "text-[#cc88ff] bg-[#cc88ff]/10",
-  },
-  "claude-sonnet-4-6": {
-    label: "Claude Sonnet 4.6",
-    badge: "Sonnet",
-    description: "Fast and capable",
-    context: "1M context",
-    color: "text-[#88ccff] bg-[#88ccff]/10",
-  },
-  "claude-opus-4-5": {
-    label: "Claude Opus 4.5",
-    badge: "Opus 4.5",
-    description: "Legacy Opus model",
-    context: "200K context",
-    color: "text-[#ffaa66] bg-[#ffaa66]/10",
-  },
-};
-
-/** Ordered list for rendering the picker; derived from MODELS to avoid drift. */
-export const MODEL_IDS: ReadonlyArray<ModelId> = ["claude-opus-4-8", "claude-sonnet-4-6", "claude-opus-4-5"];
-
-/** Normalise a raw model_name from the DB to a ModelId. */
-export function resolveModelId(modelName: string | null | undefined): ModelId | null {
-  if (!modelName) return null;
-  const lower = modelName.toLowerCase();
-  if (lower.includes("opus-4-5") || lower.includes("opus-4.5")) return "claude-opus-4-5";
-  if (lower.includes("opus-4-6") || lower.includes("opus-4.6")) return "claude-opus-4-8";
-  if (lower.includes("opus")) return "claude-opus-4-8";
-  if (lower.includes("sonnet")) return "claude-sonnet-4-6";
-  return null;
-}
-
-/** Parse a localStorage string into a valid ModelId, or null if missing/invalid. */
-export function parseStoredModel(raw: string | null): ModelId | null {
-  if (raw === "claude-opus-4-8" || raw === "claude-sonnet-4-6" || raw === "claude-opus-4-5") return raw;
-  // Migrate old aliases
-  if (raw === "opus" || raw === "claude-opus-4-6") return "claude-opus-4-8";
-  if (raw === "sonnet") return "claude-sonnet-4-6";
-  if (raw === "opus-4-5") return "claude-opus-4-5";
-  return null;
-}
-
-/** Read the user's preferred model from localStorage, falling back to DEFAULT_MODEL. */
-export function loadStoredModel(): ModelId {
-  if (typeof window === "undefined") return DEFAULT_MODEL;
-  return parseStoredModel(localStorage.getItem(LOCALSTORAGE_MODEL_KEY)) ?? DEFAULT_MODEL;
-}
-
-/** Persist the user's preferred model to localStorage. */
-export function saveStoredModel(id: ModelId): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(LOCALSTORAGE_MODEL_KEY, id);
-}
+// Model metadata + selection now live in lib/models.tsx, sourced at runtime
+// from the /api/models endpoint (db/constants.py is the single source of
+// truth). Nothing model-related is hardcoded here.
 
 // Run status sets for control bar enabling logic.
 // Must match backend's accepted statuses in resume_run and inject_prompt endpoints.

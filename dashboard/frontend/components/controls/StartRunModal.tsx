@@ -12,8 +12,9 @@ import { HostMountsEditor } from "@/components/controls/HostMountsEditor";
 import { SandboxPicker } from "@/components/controls/SandboxPicker";
 import { McpServersEditor } from "@/components/controls/McpServersEditor";
 import { clsx } from "clsx";
-import { MODELS, loadStoredModel, capitalize, DEFAULT_BASE_BRANCH, DEFAULT_DOCKER_START_CMD, STARTER_PRESETS, STARTER_PRESET_KEYS, EFFORT_LEVELS, DEFAULT_EFFORT } from "@/lib/constants";
-import type { StarterPresetKey, EffortLevel, ModelId } from "@/lib/constants";
+import { capitalize, DEFAULT_BASE_BRANCH, DEFAULT_DOCKER_START_CMD, STARTER_PRESETS, STARTER_PRESET_KEYS, EFFORT_LEVELS, DEFAULT_EFFORT } from "@/lib/constants";
+import type { StarterPresetKey, EffortLevel } from "@/lib/constants";
+import { useModels, findModel, resolveInitialModel } from "@/lib/models";
 import { fetchRepoEnv, saveRepoEnv, fetchRepoMounts, saveRepoMounts, fetchRemoteMounts, saveRemoteMounts, fetchRepoMcpServers, saveRepoMcpServers, fetchRemoteSandboxes, updateRemoteSandbox } from "@/lib/api";
 import type { HostMount, RemoteSandboxConfig } from "@/lib/api";
 
@@ -95,7 +96,7 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, activeRe
   const [duration, setDuration] = useState(0);
   const [baseBranch, setBaseBranch] = useState(DEFAULT_BASE_BRANCH);
   const [selectedQuick, setSelectedQuick] = useState<StarterPresetKey | null>(null);
-  const [model, setModel] = useState<ModelId>(loadStoredModel);
+  const [model, setModel] = useState<string>("");
   const [effort, setEffort] = useState<EffortLevel>(DEFAULT_EFFORT);
   const [envText, setEnvText] = useState("");
   const [envError, setEnvError] = useState<string | null>(null);
@@ -112,6 +113,16 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, activeRe
   const submittingRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const prevOpenRef = useRef(open);
+
+  const { models, defaultModel } = useModels();
+
+  // Seed the model selection once the model list arrives: the user's stored
+  // choice if it's still valid, otherwise the backend default.
+  useEffect(() => {
+    if (!model && models.length > 0) {
+      setModel(resolveInitialModel(models, defaultModel));
+    }
+  }, [model, models, defaultModel]);
 
   const adjustPromptHeight = useCallback((): void => {
     const el = textareaRef.current;
@@ -295,7 +306,7 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, activeRe
     if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); void handleStart(); }
   };
 
-  const modelSummary = `${MODELS[model].label} · ${capitalize(effort)}`;
+  const modelSummary = `${findModel(models, model)?.label ?? "…"} · ${capitalize(effort)}`;
   const budgetSummary = budget > 0 ? `$${budget}` : "Unlimited";
   const envCount = countEnvVars(envText);
   const envSummary = envCount > 0 ? `${envCount} vars` : "No vars";
