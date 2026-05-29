@@ -4,6 +4,7 @@ Verifies: append, overflow, read_after, trim_through, gap detection.
 """
 
 import asyncio
+import json
 
 import pytest
 
@@ -145,7 +146,7 @@ class TestSessionEventLog:
         await task
 
         assert len(events) == 1
-        assert events[0].data["delayed"] is True
+        assert json.loads(events[0].data_json)["delayed"] is True
 
     def test_seq_included_in_append_return(self) -> None:
         """append returns the assigned seq."""

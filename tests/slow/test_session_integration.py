@@ -5,6 +5,7 @@ gate, and that the event log receives the right SSE events through
 the full call chain.
 """
 
+import json
 from typing import cast
 
 import pytest
@@ -39,9 +40,13 @@ def _context() -> HookContext:
 
 
 def _drain_events(session: Session) -> list[dict]:
-    """Read all events from the session's event log as dicts."""
+    """Read all events from the session's event log as dicts.
+
+    Events store their payload as serialized JSON (with seq merged in);
+    decode it back to a dict for assertions.
+    """
     return [
-        {"event": e.event, "data": e.data}
+        {"event": e.event, "data": json.loads(e.data_json)}
         for e in session.event_log._events
     ]
 

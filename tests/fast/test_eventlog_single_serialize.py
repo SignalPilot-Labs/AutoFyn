@@ -31,7 +31,6 @@ class TestEventLogSingleSerialize:
 
         assert ev.seq == seq
         assert json.loads(ev.data_json) == {"value": 42, "name": "x", "seq": seq}
-        assert ev.data == {"value": 42, "name": "x"}
 
     def test_payload_bytes_equals_data_json_length(self) -> None:
         """payload_bytes is the byte length of the single serialization."""

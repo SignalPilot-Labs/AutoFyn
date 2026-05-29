@@ -38,16 +38,15 @@ class SessionEventGap(Exception):
 class SessionEvent:
     """A single sequenced event in the log.
 
-    `data` is the raw event payload (kept for readers/tests). `data_json`
-    is that payload serialized once at append time (with `seq` merged in),
-    so the SSE drain writes it without re-serializing. `payload_bytes` is
-    its byte length — derived from the same serialization, never a second
-    dumps.
+    `data_json` is the event payload serialized once at append time (with
+    `seq` merged in), so the SSE drain writes it without re-serializing.
+    `payload_bytes` is its byte length — derived from the same
+    serialization, never a second dumps. The raw payload is not retained:
+    the only consumer is the wire path, which needs the JSON.
     """
 
     seq: int
     event: str
-    data: dict
     data_json: str
     payload_bytes: int
 
@@ -98,7 +97,6 @@ class SessionEventLog:
             self._events.append(SessionEvent(
                 seq=next_seq,
                 event="session_event_log_overflow",
-                data=overflow_data,
                 data_json=overflow_json,
                 payload_bytes=len(overflow_json),
             ))
@@ -107,7 +105,7 @@ class SessionEventLog:
             raise SessionEventLogOverflow(self._total_bytes, self._max_bytes)
         self._seq = next_seq
         self._events.append(SessionEvent(
-            seq=next_seq, event=event, data=data, data_json=data_json, payload_bytes=payload_bytes,
+            seq=next_seq, event=event, data_json=data_json, payload_bytes=payload_bytes,
         ))
         self._total_bytes += payload_bytes
         self._notify.set()
