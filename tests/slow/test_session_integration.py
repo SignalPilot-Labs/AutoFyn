@@ -28,6 +28,7 @@ BASE_OPTS = {
     "cwd": "/tmp",
     "add_dirs": [],
     "setting_sources": {},
+    "disallowed_tools": ["AskUserQuestion"],
     "max_budget_usd": 0,
     "initial_prompt": "test",
 }

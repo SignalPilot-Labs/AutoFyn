@@ -2,6 +2,7 @@
 
 from db.constants import LEGACY_OPUS, SUPPORTED_OPUS, SUPPORTED_SONNET
 from lifecycle.bootstrap import _build_base_session_options
+from utils.constants import DISALLOWED_SESSION_TOOLS
 from utils.models import RunContext
 
 
@@ -78,3 +79,18 @@ class TestEffortDowngrade:
                 mcp_servers=None,
             )
             assert opts["effort"] == "medium"
+
+    def test_askuserquestion_is_disallowed(self) -> None:
+        """AskUserQuestion must be banned so the autonomous loop never blocks
+        on a human response that never arrives."""
+        opts = _build_base_session_options(
+            run=self._make_run(),
+            model=SUPPORTED_OPUS,
+            fallback_model=None,
+            max_budget_usd=0,
+            effort="high",
+            run_start_time=0.0,
+            mcp_servers=None,
+        )
+        assert "AskUserQuestion" in opts["disallowed_tools"]
+        assert opts["disallowed_tools"] == DISALLOWED_SESSION_TOOLS
