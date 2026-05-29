@@ -345,46 +345,83 @@ export function TodoDisplay({
  * TaskList) using the same status-row look as TodoDisplay. Each tool reports
  * a different shape, so normalize to {status, content} rows before rendering.
  */
-type TaskToolStatus = "pending" | "in_progress" | "completed";
 
-function _normalizeStatus(raw: unknown): TaskToolStatus {
-  return raw === "completed" || raw === "in_progress" ? raw : "pending";
+// The three statuses TodoDisplay can render. The SDK also allows "deleted",
+// which is not a renderable row state — deleted tasks are dropped below.
+const TASK_STATUS_PENDING = "pending";
+const TASK_STATUS_IN_PROGRESS = "in_progress";
+const TASK_STATUS_COMPLETED = "completed";
+const TASK_STATUS_DELETED = "deleted";
+
+// SDK task tool names (lowercased) dispatched on in _taskRows.
+const TASK_TOOL_LIST = "tasklist";
+const TASK_TOOL_GET = "taskget";
+const TASK_TOOL_UPDATE = "taskupdate";
+
+// Fallback content when a task carries no subject or id.
+const TASK_FALLBACK_LABEL = "Task";
+
+type TaskToolStatus =
+  | typeof TASK_STATUS_PENDING
+  | typeof TASK_STATUS_IN_PROGRESS
+  | typeof TASK_STATUS_COMPLETED;
+
+type TaskRow = { status: TaskToolStatus; content: string };
+
+// Map a raw SDK status to a renderable row status. "deleted" returns null so
+// the caller can drop the row; any unrecognized value falls back to pending.
+function _normalizeStatus(raw: unknown): TaskToolStatus | null {
+  if (raw === TASK_STATUS_COMPLETED || raw === TASK_STATUS_IN_PROGRESS) return raw;
+  if (raw === TASK_STATUS_DELETED) return null;
+  return TASK_STATUS_PENDING;
 }
 
-function _taskRows(
+export function taskRows(
   name: string,
   input: Record<string, unknown>,
   output: Record<string, unknown> | null
-): Array<{ status: TaskToolStatus; content: string }> {
+): TaskRow[] {
   const lower = name.toLowerCase();
-  if (lower === "tasklist") {
+
+  if (lower === TASK_TOOL_LIST) {
     const tasks = (output?.tasks as Array<Record<string, unknown>>) || [];
-    return tasks.map((t) => ({
-      status: _normalizeStatus(t.status),
-      content: String(t.subject ?? t.id ?? ""),
-    }));
+    return tasks.flatMap((t) => {
+      const status = _normalizeStatus(t.status);
+      if (status === null) return [];
+      return [{ status, content: String(t.subject ?? t.id ?? "") }];
+    });
   }
-  if (lower === "taskget") {
+
+  if (lower === TASK_TOOL_GET) {
     const task = output?.task as Record<string, unknown> | null;
     if (!task) return [];
-    return [{ status: _normalizeStatus(task.status), content: String(task.subject ?? "") }];
+    const status = _normalizeStatus(task.status);
+    if (status === null) return [];
+    return [{ status, content: String(task.subject ?? "") }];
   }
-  if (lower === "taskupdate") {
+
+  if (lower === TASK_TOOL_UPDATE) {
     // Pre event carries {status, taskId}; post carries {statusChange, taskId}.
     // taskId may live in either, so fall back across both.
     const taskId = (input.taskId as string) || (output?.taskId as string) || "";
-    const subject = (input.subject as string) || (taskId ? `Task ${taskId}` : "Task");
+    const subject =
+      (input.subject as string) || (taskId ? `${TASK_FALLBACK_LABEL} ${taskId}` : TASK_FALLBACK_LABEL);
     const change = output?.statusChange as { from?: string; to?: string } | undefined;
+    // The event carries the new status (statusChange.to or input.status) but
+    // not the prior state; when neither is present the status is unknown and
+    // _normalizeStatus falls back to pending.
     const status = _normalizeStatus(change?.to ?? input.status);
+    if (status === null) return [];
     const suffix = change?.from && change?.to ? ` (${change.from} → ${change.to})` : "";
     return [{ status, content: `${subject}${suffix}` }];
   }
+
   // TaskCreate (and any other create-like event): a newly created pending task.
   const subject =
     (input.subject as string) ||
     ((output?.task as Record<string, unknown> | undefined)?.subject as string) ||
-    "Task";
-  return [{ status: "pending", content: String(subject) }];
+    TASK_FALLBACK_LABEL;
+  return [{ status: TASK_STATUS_PENDING, content: String(subject) }];
 }
 
 export function TaskDisplay({
@@ -396,8 +433,7 @@ export function TaskDisplay({
   input: Record<string, unknown>;
   output: Record<string, unknown> | null;
 }) {
-  const rows = _taskRows(name, input, output);
+  const rows = taskRows(name, input, output).filter((r) => r.content);
   if (rows.length === 0) return null;
   return <TodoDisplay todos={rows} />;
 }
-
