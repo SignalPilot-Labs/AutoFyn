@@ -12,14 +12,33 @@ interface ModelBadgeProps {
 }
 
 /**
+ * Display-only fallback for an unrecognized model_name (e.g. a legacy value
+ * from an old run like "claude-opus-4-6" or "opus"). We don't know the exact
+ * version, so we show only the family we can read off the string — never a
+ * fabricated version and never the default. Returns null if no family is
+ * recognizable. This is presentation over historical data, not the selection
+ * or validation path, which stay strict on exact ids.
+ */
+function legacyFamilyLabel(modelName: string): string | null {
+  const lower = modelName.toLowerCase();
+  if (lower.includes("opus")) return "Opus";
+  if (lower.includes("sonnet")) return "Sonnet";
+  return null;
+}
+
+/**
  * Badge showing a model's short name. Metadata comes from the /api/models
- * source of truth via useModels(). Returns null if the model is unknown (or
- * not loaded yet) so callers don't need to null-check twice.
+ * source of truth via useModels(). For a known model it shows the short name
+ * ("Opus 4.8"); for an unrecognized model_name it falls back to the parsed
+ * family ("Opus"/"Sonnet"). Returns null when there is no model_name or no
+ * recognizable family.
  */
 export function ModelBadge({ modelName, showIcon = false, className }: ModelBadgeProps): React.ReactElement | null {
   const { models } = useModels();
+  if (!modelName) return null;
   const model = findModel(models, modelName);
-  if (!model) return null;
+  const label = model ? model.short : legacyFamilyLabel(modelName);
+  if (!label) return null;
   return (
     <span
       className={clsx(
@@ -27,7 +46,7 @@ export function ModelBadge({ modelName, showIcon = false, className }: ModelBadg
         showIcon ? "gap-1 px-1.5 py-0" : "px-1 py-0",
         className,
       )}
-      aria-label={`Model: ${model.short}`}
+      aria-label={`Model: ${label}`}
     >
       {showIcon && (
         <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden="true">
@@ -35,7 +54,7 @@ export function ModelBadge({ modelName, showIcon = false, className }: ModelBadg
           <path d="M2.5 4h3M4 2.5v3" />
         </svg>
       )}
-      {model.short}
+      {label}
     </span>
   );
 }
