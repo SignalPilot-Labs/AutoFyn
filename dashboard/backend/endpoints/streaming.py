@@ -31,6 +31,9 @@ router = APIRouter(prefix="/api")
 
 _RUN_ENDED_STATUSES = TERMINAL_RUN_STATUSES
 
+# Constant keepalive frame — serialized once, not per poll tick.
+_PING_FRAME = f"event: ping\ndata: {json.dumps({'ts': 'keepalive'})}\n\n"
+
 # Sortable event tuple: (timestamp, type_priority, sse_string)
 _SortableEvent = tuple[datetime, int, str]
 
@@ -89,18 +92,32 @@ async def _fetch_new_audit_events(
 
 
 async def _check_run_ended(s: AsyncSession, run_id: str) -> dict | None:
-    """Return a cost payload dict if the run has ended, else None."""
-    run = (await s.execute(select(Run).where(Run.id == run_id))).scalar_one_or_none()
-    if run is None or run.status not in _RUN_ENDED_STATUSES:
+    """Return a cost payload dict if the run has ended, else None.
+
+    Selects only the columns the payload needs — not the full Run row —
+    since this runs on every idle poll tick per connected client.
+    """
+    row = (await s.execute(
+        select(
+            Run.status,
+            Run.total_cost_usd,
+            Run.total_input_tokens,
+            Run.total_output_tokens,
+            Run.cache_creation_input_tokens,
+            Run.cache_read_input_tokens,
+            Run.context_tokens,
+        ).where(Run.id == run_id)
+    )).one_or_none()
+    if row is None or row.status not in _RUN_ENDED_STATUSES:
         return None
     return {
-        "status": run.status,
-        "total_cost_usd": run.total_cost_usd,
-        "total_input_tokens": run.total_input_tokens,
-        "total_output_tokens": run.total_output_tokens,
-        "cache_creation_input_tokens": run.cache_creation_input_tokens,
-        "cache_read_input_tokens": run.cache_read_input_tokens,
-        "context_tokens": run.context_tokens,
+        "status": row.status,
+        "total_cost_usd": row.total_cost_usd,
+        "total_input_tokens": row.total_input_tokens,
+        "total_output_tokens": row.total_output_tokens,
+        "cache_creation_input_tokens": row.cache_creation_input_tokens,
+        "cache_read_input_tokens": row.cache_read_input_tokens,
+        "context_tokens": row.context_tokens,
     }
 
 
@@ -151,7 +168,7 @@ async def stream_events(
                 yield f"event: run_ended\ndata: {json.dumps(result.ended_payload)}\n\n"
                 return
             if not result.events:
-                yield f"event: ping\ndata: {json.dumps({'ts': 'keepalive'})}\n\n"
+                yield _PING_FRAME
             await asyncio.sleep(SSE_POLL_INTERVAL_SEC)
 
     return StreamingResponse(

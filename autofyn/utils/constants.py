@@ -61,6 +61,10 @@ TIER_OPUS: str = "opus"
 TIER_SONNET: str = "sonnet"
 DEFAULT_AGENT_ROLE = "worker"
 SESSION_PERMISSION_MODE = "bypassPermissions"
+# Tools the autonomous agent must never call. AskUserQuestion blocks the
+# agent loop waiting for a human response that never arrives in a headless
+# run — banned for orchestrator and subagents alike.
+DISALLOWED_SESSION_TOOLS: list[str] = ["AskUserQuestion"]
 
 # ── Logging ──
 PROMPT_SUMMARY_LIMIT = 200  # Custom prompt preview in API responses and audit

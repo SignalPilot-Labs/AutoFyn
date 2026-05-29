@@ -106,7 +106,12 @@ WORKDIR /opt/autofyn
 
 EXPOSE 8080
 
-HEALTHCHECK --interval=10s --timeout=3s \
+# Liveness probe. The sandbox is single-process aiohttp; under heavy
+# agent load the event loop can briefly miss a short deadline while it
+# stays alive and serving. start-period covers boot, and the longer
+# timeout + retries mean only a genuinely wedged server (≈50s
+# unresponsive) flips to unhealthy — a busy-but-fine one stays healthy.
+HEALTHCHECK --interval=10s --timeout=10s --start-period=30s --retries=5 \
     CMD curl -f http://localhost:8080/health || exit 1
 
 ENTRYPOINT ["entrypoint.sh"]
