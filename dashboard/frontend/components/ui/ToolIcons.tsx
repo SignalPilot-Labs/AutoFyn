@@ -344,6 +344,7 @@ export function getToolIcon(category: ToolCategory, color?: string) {
     case "web_search": return <WebSearchIcon color={color} />;
     case "web_fetch": return <WebFetchIcon color={color} />;
     case "todo": return <TodoIcon color={color} />;
+    case "task": return <TodoIcon color={color} />;
     case "tool_search": return <ToolSearchIcon color={color} />;
     case "skill": return <SkillIcon color={color} />;
     case "playwright_navigate": return <PlaywrightNavigateIcon color={color} />;

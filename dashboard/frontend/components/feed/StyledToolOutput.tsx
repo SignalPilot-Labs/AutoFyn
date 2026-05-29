@@ -9,6 +9,7 @@ import {
   GrepResults,
   GlobResults,
   TodoDisplay,
+  TaskDisplay,
 } from "@/components/feed/ToolDisplayCards";
 
 export function StyledToolOutput({ tool }: { tool: ToolCall }) {
@@ -104,6 +105,16 @@ export function StyledToolOutput({ tool }: { tool: ToolCall }) {
     return (
       <TodoDisplay
         todos={input.todos as Array<{ status: string; content: string }>}
+      />
+    );
+  }
+
+  if (cat === "task") {
+    return (
+      <TaskDisplay
+        name={tool.tool_name}
+        input={input}
+        output={tool.output_data || null}
       />
     );
   }
