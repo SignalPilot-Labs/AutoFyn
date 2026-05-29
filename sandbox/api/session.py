@@ -81,8 +81,7 @@ async def handle_events(request: web.Request) -> web.StreamResponse:
                 break
 
             for event in events:
-                data = json.dumps({**event.data, "seq": event.seq})
-                payload = f"id: {event.seq}\nevent: {event.event}\ndata: {data}\n\n"
+                payload = f"id: {event.seq}\nevent: {event.event}\ndata: {event.data_json}\n\n"
                 await response.write(payload.encode("utf-8"))
                 after_seq = event.seq
 

@@ -36,11 +36,19 @@ class SessionEventGap(Exception):
 
 @dataclass(frozen=True)
 class SessionEvent:
-    """A single sequenced event in the log."""
+    """A single sequenced event in the log.
+
+    `data` is the raw event payload (kept for readers/tests). `data_json`
+    is that payload serialized once at append time (with `seq` merged in),
+    so the SSE drain writes it without re-serializing. `payload_bytes` is
+    its byte length — derived from the same serialization, never a second
+    dumps.
+    """
 
     seq: int
     event: str
     data: dict
+    data_json: str
     payload_bytes: int
 
 
@@ -72,30 +80,38 @@ class SessionEventLog:
         return self._seq
 
     def append(self, event: str, data: dict) -> int:
-        """Append an event. Returns the assigned seq. Fails loudly if log is full."""
+        """Append an event. Returns the assigned seq. Fails loudly if log is full.
+
+        Serializes `data` (with `seq` merged in) exactly once here; the SSE
+        drain reuses the stored JSON. `payload_bytes` is the byte length of
+        that single serialization — no second dumps anywhere on the path.
+        """
         if self._failed:
             raise SessionEventLogOverflow(self._total_bytes, self._max_bytes)
-        payload_bytes = len(json.dumps(data))
+        next_seq = self._seq + 1
+        data_json = json.dumps({**data, "seq": next_seq})
+        payload_bytes = len(data_json)
         if self._total_bytes + payload_bytes > self._max_bytes:
-            self._seq += 1
+            self._seq = next_seq
             overflow_data = {"total_bytes": self._total_bytes, "max_bytes": self._max_bytes}
-            overflow_bytes = len(json.dumps(overflow_data))
+            overflow_json = json.dumps({**overflow_data, "seq": next_seq})
             self._events.append(SessionEvent(
-                seq=self._seq,
+                seq=next_seq,
                 event="session_event_log_overflow",
                 data=overflow_data,
-                payload_bytes=overflow_bytes,
+                data_json=overflow_json,
+                payload_bytes=len(overflow_json),
             ))
             self._failed = True
             self._notify.set()
             raise SessionEventLogOverflow(self._total_bytes, self._max_bytes)
-        self._seq += 1
+        self._seq = next_seq
         self._events.append(SessionEvent(
-            seq=self._seq, event=event, data=data, payload_bytes=payload_bytes,
+            seq=next_seq, event=event, data=data, data_json=data_json, payload_bytes=payload_bytes,
         ))
         self._total_bytes += payload_bytes
         self._notify.set()
-        return self._seq
+        return next_seq
 
     async def read_after(self, after_seq: int, timeout: float) -> list[SessionEvent]:
         """Return events with seq > after_seq. Waits if none available.
