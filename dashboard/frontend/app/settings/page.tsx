@@ -7,8 +7,7 @@ import Link from "next/link";
 import { fetchSettings, fetchSettingsStatus, updateSettings, fetchPoolTokens, addPoolToken, removePoolToken } from "@/lib/settings-api";
 import { fetchRepos } from "@/lib/api";
 import type { Settings, SettingsStatus, RepoInfo, PoolToken } from "@/lib/types";
-import { loadStoredModel, saveStoredModel } from "@/lib/constants";
-import type { ModelId } from "@/lib/constants";
+import { useModels, saveStoredModel, resolveInitialModel } from "@/lib/models";
 import { Button } from "@/components/ui/Button";
 import { ModelSelector } from "@/components/ui/ModelSelector";
 import { TokenPoolSection } from "@/components/settings/TokenPoolSection";
@@ -41,10 +40,17 @@ const FIELDS: CredentialFieldConfig[] = [
 ];
 
 function DefaultModelSetting(): React.ReactElement {
-  const [selectedModel, setSelectedModel] = useState<ModelId>(loadStoredModel);
+  const { models, defaultModel } = useModels();
+  const [selectedModel, setSelectedModel] = useState<string>("");
   const [modelSaveError, setModelSaveError] = useState<string | null>(null);
 
-  const handleSelect = async (id: ModelId): Promise<void> => {
+  useEffect(() => {
+    if (!selectedModel && models.length > 0) {
+      setSelectedModel(resolveInitialModel(models, defaultModel));
+    }
+  }, [selectedModel, models, defaultModel]);
+
+  const handleSelect = async (id: string): Promise<void> => {
     const previousModel = selectedModel;
     setSelectedModel(id);
     setModelSaveError(null);

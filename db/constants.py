@@ -80,11 +80,40 @@ VALID_MODELS: tuple[str, ...] = (SUPPORTED_OPUS, SUPPORTED_SONNET, LEGACY_OPUS)
 DEFAULT_MODEL: str = SUPPORTED_OPUS
 VALID_MODELS_PATTERN: str = f"^({'|'.join(VALID_MODELS)})$"
 
-# Structured metadata for /api/models endpoint.
+# Structured metadata for the /api/models endpoint — the single source of
+# truth the dashboard fetches at runtime. The frontend defines no model list
+# of its own; everything textual lives here.
+#   id          — exact SDK model ID
+#   label       — full product name, shown in the picker
+#   short       — compact name with version, shown on badges/run cards
+#   description — one-line picker blurb
+#   context     — context-window blurb
+#   tier        — opus | sonnet | legacy (drives subagent tier resolution)
 SUPPORTED_MODELS: list[dict[str, str]] = [
-    {"id": SUPPORTED_OPUS, "label": "Claude Opus 4.8", "badge": "Opus", "tier": "opus"},
-    {"id": SUPPORTED_SONNET, "label": "Claude Sonnet 4.6", "badge": "Sonnet", "tier": "sonnet"},
-    {"id": LEGACY_OPUS, "label": "Claude Opus 4.5", "badge": "Opus 4.5", "tier": "legacy"},
+    {
+        "id": SUPPORTED_OPUS,
+        "label": "Claude Opus 4.8",
+        "short": "Opus 4.8",
+        "description": "Most capable, best for agents",
+        "context": "1M context",
+        "tier": "opus",
+    },
+    {
+        "id": SUPPORTED_SONNET,
+        "label": "Claude Sonnet 4.6",
+        "short": "Sonnet 4.6",
+        "description": "Fast and capable",
+        "context": "1M context",
+        "tier": "sonnet",
+    },
+    {
+        "id": LEGACY_OPUS,
+        "label": "Claude Opus 4.5",
+        "short": "Opus 4.5",
+        "description": "Legacy Opus model",
+        "context": "200K context",
+        "tier": "legacy",
+    },
 ]
 
 # ── Effort ──
