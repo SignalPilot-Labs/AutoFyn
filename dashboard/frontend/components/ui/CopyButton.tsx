@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { clsx } from "clsx";
 import { COPY_FEEDBACK_MS } from "@/lib/constants";
+import { copyText } from "@/lib/clipboard";
 
 interface CopyButtonProps {
   /** Text written to the clipboard on click. */
@@ -16,14 +17,23 @@ interface CopyButtonProps {
  * Icon button that copies `value` to the clipboard and shows a checkmark for
  * COPY_FEEDBACK_MS before reverting to the copy icon. One place for the copy
  * pattern so cards don't re-implement the state/handler/icon-swap each time.
+ * Uses copyText so it works on insecure LAN origins too.
  */
 export function CopyButton({ value, label, className }: CopyButtonProps): React.ReactElement {
   const [copied, setCopied] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Feed cards unmount as the list scrolls — clear any pending revert timer.
+  useEffect(() => () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+  }, []);
 
   const handleCopy = useCallback(() => {
-    void navigator.clipboard.writeText(value).then(() => {
+    void copyText(value).then((ok) => {
+      if (!ok) return;
       setCopied(true);
-      setTimeout(() => setCopied(false), COPY_FEEDBACK_MS);
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => setCopied(false), COPY_FEEDBACK_MS);
     });
   }, [value]);
 
