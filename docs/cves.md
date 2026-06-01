@@ -93,3 +93,10 @@ Full audit report: [docs/audit_reports/litellm.md](audit_reports/litellm.md)
 | [GHSA-wfhp-645c-8ph7](https://github.com/bytedance/UI-TARS-desktop/security/advisories/GHSA-wfhp-645c-8ph7) | Submitted |
 | [GHSA-ff43-8xx3-cjrq](https://github.com/bytedance/UI-TARS-desktop/security/advisories/GHSA-ff43-8xx3-cjrq) | Submitted |
 | [GHSA-6344-8v38-w3p6](https://github.com/bytedance/UI-TARS-desktop/security/advisories/GHSA-6344-8v38-w3p6) | Submitted |
+
+## [Twenty](https://github.com/twentyhq/twenty)
+
+| Advisory | Status |
+|----------|--------|
+| [GHSA-7v62-329q-wcxg](https://github.com/twentyhq/twenty/security/advisories/GHSA-7v62-329q-wcxg) | Submitted |
+| [GHSA-f4r7-47fh-cgh8](https://github.com/twentyhq/twenty/security/advisories/GHSA-f4r7-47fh-cgh8) | Submitted |
