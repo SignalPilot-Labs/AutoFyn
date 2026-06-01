@@ -9,6 +9,7 @@ while loop continues, keeping the SSE connection alive during idle periods.
 """
 
 import asyncio
+import json
 from unittest.mock import MagicMock
 
 import pytest
@@ -54,7 +55,7 @@ class TestSSETimeoutHandling:
             event = MagicMock()
             event.seq = 1
             event.event = "session_end"
-            event.data = {"reason": "done"}
+            event.data_json = json.dumps({"reason": "done", "seq": 1})
             return [event]
 
         event_log.read_after = _read_after_side_effect
@@ -87,7 +88,7 @@ class TestSSETimeoutHandling:
             event = MagicMock()
             event.seq = 1
             event.event = "session_end"
-            event.data = {}
+            event.data_json = json.dumps({"seq": 1})
             return [event]
 
         event_log.read_after = _read_after_side_effect

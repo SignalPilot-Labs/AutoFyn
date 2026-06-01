@@ -18,7 +18,7 @@ _REPO_ROOT = str(pathlib.Path(__file__).parent.parent.parent)
 _SANDBOX_DIR = _REPO_ROOT + "/sandbox"
 
 _STUB_HEADER = textwrap.dedent("""
-    import sys, asyncio
+    import sys, asyncio, json
     from unittest.mock import AsyncMock, MagicMock
 
     # Stub the Claude SDK with real exception classes so except clauses work
@@ -80,8 +80,8 @@ await s._check_mcp_status(client)
 events = _drain_events(s)
 assert len(events) == 1
 assert events[0].event == "mcp_warning"
-assert "bad-server" in events[0].data["message"]
-assert "ENOENT" in events[0].data["message"]
+assert "bad-server" in json.loads(events[0].data_json)["message"]
+assert "ENOENT" in json.loads(events[0].data_json)["message"]
 """)
 
     def test_connected_server_no_warning(self) -> None:
@@ -109,8 +109,8 @@ client.get_mcp_status = AsyncMock(return_value={
 await s._check_mcp_status(client)
 events = _drain_events(s)
 assert len(events) == 2
-assert "a" in events[0].data["message"]
-assert "c" in events[1].data["message"]
+assert "a" in json.loads(events[0].data_json)["message"]
+assert "c" in json.loads(events[1].data_json)["message"]
 """)
 
     def test_cli_connection_error_swallowed(self) -> None:
@@ -156,5 +156,5 @@ client.get_mcp_status = AsyncMock(return_value={
 await s._check_mcp_status(client)
 events = _drain_events(s)
 assert len(events) == 1
-assert "connection failed" in events[0].data["message"]
+assert "connection failed" in json.loads(events[0].data_json)["message"]
 """)

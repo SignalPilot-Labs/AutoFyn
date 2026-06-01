@@ -12,11 +12,14 @@ responses instead of 500s with tracebacks.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 from aiohttp import web
 from aiohttp.test_utils import TestClient, TestServer
 
 import sandbox.server as sandbox_server
+import api.file_system as file_system
 from api.file_system import register as register_file_system
 from constants import API_INVALID_JSON_MSG, API_MISSING_FIELD_MSG
 
@@ -24,6 +27,21 @@ HTTP_200 = 200
 HTTP_400 = 400
 WRITE_URL = "/file_system/write"
 EXISTS_URL = "/file_system/exists"
+
+
+def _allow_tmp_path(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> str:
+    """Allow the resolved tmp_path through the FS allowlist for one test.
+
+    pytest's tmp_path lives outside FS_ALLOWED_PREFIXES, and on macOS it
+    resolves under /private/tmp (a symlink target of /tmp), so even paths
+    under /tmp fail the prefix check. Patch the resolved prefix in so the
+    test exercises the endpoint regardless of platform.
+    """
+    resolved = str(tmp_path.resolve())
+    monkeypatch.setattr(
+        file_system, "FS_ALLOWED_PREFIXES", (*file_system.FS_ALLOWED_PREFIXES, resolved)
+    )
+    return resolved
 
 
 def _build_app() -> web.Application:
@@ -106,24 +124,24 @@ class TestSandboxApiRequestErrors:
             assert "traceback" not in data
 
     @pytest.mark.asyncio
-    async def test_exists_with_valid_path_returns_200(self, tmp_path) -> None:
+    async def test_exists_with_valid_path_returns_200(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Valid /file_system/exists request must return HTTP 200."""
+        allowed = _allow_tmp_path(monkeypatch, tmp_path)
         app = _build_app()
         async with TestClient(TestServer(app)) as client:
-            resp = await client.post(
-                EXISTS_URL,
-                json={"path": str(tmp_path)},
-            )
+            resp = await client.post(EXISTS_URL, json={"path": allowed})
             assert resp.status == HTTP_200
 
     @pytest.mark.asyncio
-    async def test_exists_response_has_exists_key(self, tmp_path) -> None:
+    async def test_exists_response_has_exists_key(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Valid /file_system/exists response must contain 'exists' key."""
+        allowed = _allow_tmp_path(monkeypatch, tmp_path)
         app = _build_app()
         async with TestClient(TestServer(app)) as client:
-            resp = await client.post(
-                EXISTS_URL,
-                json={"path": str(tmp_path)},
-            )
+            resp = await client.post(EXISTS_URL, json={"path": allowed})
             data = await resp.json()
             assert "exists" in data

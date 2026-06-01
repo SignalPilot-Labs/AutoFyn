@@ -1,58 +1,52 @@
-"""Verify Python and TypeScript model ID lists stay in sync.
+"""Verify the /api/models payload contract the frontend depends on.
 
-Python source of truth: db.constants.VALID_MODELS
-TypeScript mirror: dashboard/frontend/lib/constants.ts MODEL_IDS array
-
-A companion TypeScript test (models.test.ts) validates the frontend
-constants internally. This test ensures the two languages agree.
+The dashboard fetches its model list from /api/models at runtime, so
+db.constants.SUPPORTED_MODELS is the single source of truth — there is no
+TypeScript model list to keep in sync. This test guards the payload shape the
+frontend's ModelInfo interface (dashboard/frontend/lib/api.ts) consumes:
+every model carries the same fields, the ids match VALID_MODELS, and the
+default is a real model.
 """
 
 import re
 from pathlib import Path
 
-from db.constants import VALID_MODELS, DEFAULT_MODEL
+from db.constants import SUPPORTED_MODELS, VALID_MODELS, DEFAULT_MODEL
 
-TS_CONSTANTS_PATH = Path("dashboard/frontend/lib/constants.ts")
+# Fields the frontend ModelInfo interface reads off each model.
+_REQUIRED_MODEL_FIELDS = {"id", "label", "short", "description", "context", "tier"}
+
+TS_API_PATH = Path("dashboard/frontend/lib/api.ts")
 
 
-class TestModelSync:
-    """Python VALID_MODELS must match TypeScript MODEL_IDS."""
+class TestModelPayloadContract:
+    """SUPPORTED_MODELS must satisfy the frontend's ModelInfo contract."""
 
-    def _extract_ts_model_ids(self) -> list[str]:
-        """Parse MODEL_IDS array from the TypeScript constants file."""
-        content = TS_CONSTANTS_PATH.read_text(encoding="utf-8")
-        match = re.search(
-            r'export const MODEL_IDS.*?=\s*\[(.*?)\]',
-            content,
-            re.DOTALL,
-        )
-        assert match, "MODEL_IDS not found in constants.ts"
-        raw = match.group(1)
-        return re.findall(r'"([^"]+)"', raw)
+    def test_every_model_has_required_fields(self) -> None:
+        """Each model dict must carry exactly the fields the frontend reads."""
+        for model in SUPPORTED_MODELS:
+            assert set(model.keys()) == _REQUIRED_MODEL_FIELDS, (
+                f"Model {model.get('id')!r} fields {set(model.keys())} "
+                f"!= required {_REQUIRED_MODEL_FIELDS}"
+            )
 
-    def _extract_ts_default(self) -> str:
-        """Parse DEFAULT_MODEL from the TypeScript constants file."""
-        content = TS_CONSTANTS_PATH.read_text(encoding="utf-8")
-        match = re.search(
-            r'export const DEFAULT_MODEL.*?=\s*"([^"]+)"',
-            content,
-        )
-        assert match, "DEFAULT_MODEL not found in constants.ts"
-        return match.group(1)
+    def test_model_ids_match_valid_models(self) -> None:
+        """The ids in SUPPORTED_MODELS must equal VALID_MODELS exactly."""
+        payload_ids = {m["id"] for m in SUPPORTED_MODELS}
+        assert payload_ids == set(VALID_MODELS)
 
-    def test_model_ids_match(self) -> None:
-        """TypeScript MODEL_IDS must contain exactly the same IDs as Python VALID_MODELS."""
-        ts_ids = set(self._extract_ts_model_ids())
-        py_ids = set(VALID_MODELS)
-        assert ts_ids == py_ids, (
-            f"Model ID mismatch:\n"
-            f"  Python only: {py_ids - ts_ids}\n"
-            f"  TypeScript only: {ts_ids - py_ids}"
-        )
+    def test_default_is_a_known_model(self) -> None:
+        """DEFAULT_MODEL must be one of the served models."""
+        assert DEFAULT_MODEL in {m["id"] for m in SUPPORTED_MODELS}
 
-    def test_default_model_matches(self) -> None:
-        """TypeScript DEFAULT_MODEL must match Python DEFAULT_MODEL."""
-        ts_default = self._extract_ts_default()
-        assert ts_default == DEFAULT_MODEL, (
-            f"DEFAULT_MODEL mismatch: Python={DEFAULT_MODEL}, TypeScript={ts_default}"
+    def test_ts_modelinfo_fields_match_payload(self) -> None:
+        """The TypeScript ModelInfo interface must declare exactly the fields
+        the backend sends — otherwise the frontend silently drops or expects
+        fields that don't exist."""
+        content = TS_API_PATH.read_text(encoding="utf-8")
+        match = re.search(r"export interface ModelInfo\s*\{(.*?)\}", content, re.DOTALL)
+        assert match, "ModelInfo interface not found in api.ts"
+        ts_fields = set(re.findall(r"(\w+)\s*:", match.group(1)))
+        assert ts_fields == _REQUIRED_MODEL_FIELDS, (
+            f"ModelInfo fields {ts_fields} != backend payload {_REQUIRED_MODEL_FIELDS}"
         )

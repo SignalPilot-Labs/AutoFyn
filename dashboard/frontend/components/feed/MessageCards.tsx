@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { clsx } from "clsx";
 import { MarkdownContent } from "@/components/ui/MarkdownContent";
+import { CopyButton } from "@/components/ui/CopyButton";
 import { fmtTime } from "@/components/feed/eventCardHelpers";
 
 /* ── Base Message Card ── */
@@ -246,6 +247,7 @@ export function UserPromptCard({ prompt, ts, pending, failed }: { prompt: string
             {failed && !pending && (
               <span className="text-[#ff4444] text-caption">not delivered</span>
             )}
+            <CopyButton value={prompt} label="Copy prompt" className="-my-1" />
             {fmtTime(ts)}
           </span>
         </div>

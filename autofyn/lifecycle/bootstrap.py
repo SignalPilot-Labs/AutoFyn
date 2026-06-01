@@ -29,6 +29,7 @@ from db.constants import MODELS_SUPPORTING_MAX_EFFORT, RUN_STATUS_RUNNING
 from utils.constants import (
     BRANCH_SLUG_MAX_LEN,
     DEFAULT_AGENT_ROLE,
+    DISALLOWED_SESSION_TOOLS,
     MEMORY_DIR,
     RUN_STATE_PATH,
     RUN_STATE_TEMPLATE,
@@ -208,6 +209,7 @@ def _build_base_session_options(
         "effort": resolved_effort,
         "include_partial_messages": True,
         "permission_mode": SESSION_PERMISSION_MODE,
+        "disallowed_tools": DISALLOWED_SESSION_TOOLS,
         "cwd": WORK_DIR,
         "add_dirs": ["/opt/autofyn/.claude/skills"],
         "setting_sources": ["project"],

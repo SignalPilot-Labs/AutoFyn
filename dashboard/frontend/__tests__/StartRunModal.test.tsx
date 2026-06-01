@@ -11,6 +11,24 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { StartRunModal } from "@/components/controls/StartRunModal";
 import { STARTER_PRESETS, STARTER_PRESET_KEYS } from "@/lib/constants";
 
+// The modal reads its model list from useModels() (sourced at runtime from
+// /api/models). Provide a fixed list so renders are deterministic without a
+// live ModelsProvider fetch; keep the real helpers (findModel, etc.).
+vi.mock("@/lib/models", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/models")>();
+  return {
+    ...actual,
+    useModels: () => ({
+      models: [
+        { id: "claude-opus-4-8", label: "Claude Opus 4.8", short: "Opus 4.8", description: "Most capable", context: "1M context", tier: "opus" },
+        { id: "claude-sonnet-4-6", label: "Claude Sonnet 4.6", short: "Sonnet 4.6", description: "Fast", context: "1M context", tier: "sonnet" },
+      ],
+      defaultModel: "claude-opus-4-8",
+      loading: false,
+    }),
+  };
+});
+
 function renderModal(overrides = {}) {
   const defaults = {
     open: true,

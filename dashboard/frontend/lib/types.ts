@@ -195,6 +195,7 @@ export type ToolCategory =
   | "web_search"
   | "web_fetch"
   | "todo"
+  | "task"
   | "tool_search"
   | "skill"
   | "playwright_navigate"
@@ -220,6 +221,10 @@ export function getToolCategory(toolName: string): ToolCategory {
   if (name === "websearch") return "web_search";
   if (name === "webfetch") return "web_fetch";
   if (name === "todowrite") return "todo";
+  // SDK task tools — relational successor to TodoWrite, rendered like todos.
+  if (name === "taskcreate" || name === "taskupdate" || name === "taskget" || name === "tasklist") {
+    return "task";
+  }
   if (name === "toolsearch") return "tool_search";
   if (name === "skill") return "skill";
   // MCP Playwright tools
@@ -253,6 +258,7 @@ export const TOOL_COLORS: Record<ToolCategory, ToolMeta> = {
   web_search:            { label: "WebSearch",     border: "border-l-[#44aaff]",  bg: "bg-[#44aaff]/[0.03]",  text: "text-[#44aaff]",  iconColor: "#44aaff" },
   web_fetch:             { label: "WebFetch",      border: "border-l-[#44ccdd]",  bg: "bg-[#44ccdd]/[0.03]",  text: "text-[#44ccdd]",  iconColor: "#44ccdd" },
   todo:                  { label: "Todo",          border: "border-l-[#aabb44]",  bg: "bg-[#aabb44]/[0.03]",  text: "text-[#aabb44]",  iconColor: "#aabb44" },
+  task:                  { label: "Task",          border: "border-l-[#aabb44]",  bg: "bg-[#aabb44]/[0.03]",  text: "text-[#aabb44]",  iconColor: "#aabb44" },
   tool_search:           { label: "ToolSearch",    border: "border-l-[#aa88ff]",  bg: "bg-[#aa88ff]/[0.03]",  text: "text-[#aa88ff]",  iconColor: "#aa88ff" },
   skill:                 { label: "Skill",         border: "border-l-[#ff66cc]",  bg: "bg-[#ff66cc]/[0.03]",  text: "text-[#ff66cc]",  iconColor: "#ff66cc" },
   playwright_navigate:   { label: "Navigate",      border: "border-l-[#66bbff]",  bg: "bg-[#66bbff]/[0.03]",  text: "text-[#66bbff]",  iconColor: "#66bbff" },

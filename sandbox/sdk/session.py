@@ -125,6 +125,7 @@ class Session:
             system_prompt=opts["system_prompt"],
             permission_mode="bypassPermissions",
             can_use_tool=self._permission_callback(gate),
+            disallowed_tools=opts["disallowed_tools"],
             cwd=opts["cwd"],
             add_dirs=opts["add_dirs"],
             setting_sources=opts["setting_sources"],

@@ -4,7 +4,7 @@
 
 **Run Claude in self-improving loops to optimize measurable goals.**
 
-built the [#1 Spider 2.0 DBT agent](https://github.com/SignalPilot-Labs/SignalPilot) · found 183 vulnerabilities across popular OSS · improved Caveman compression from 44% to 54%
+built the [#1 Spider 2.0 DBT agent](https://github.com/SignalPilot-Labs/SignalPilot) · found 189 vulnerabilities across popular OSS · improved Caveman compression from 44% to 54%
 
 <img src="assets/ui.png" width="800" alt="AutoFyn Monitor" />
 
@@ -31,11 +31,12 @@ Each round runs Claude in a sandboxed Docker container with fresh context. A per
 - **[MetaMask Extension](https://github.com/MetaMask/metamask-extension)** — 12 vulnerabilities (3 High, 7 Medium, 2 Low), 3 exploit chains. Responsibly disclosed via HackerOne. [CVEs](docs/cves.md#metamask-extension)
 - **[Warp](https://github.com/warpdotdev/Warp)** — 30 vulnerabilities (6 Critical, 7 High, 8 Medium, 9 Low), 3 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#warp)
 - **[Langflow](https://github.com/langflow-ai/langflow)** — 22 vulnerabilities (3 Critical, 13 High, 6 Medium), 4 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#langflow)
-- **[Hermes Agent](https://github.com/NousResearch/hermes-agent)** — 36 vulnerabilities (13 Critical, 22 High, 1 Medium), 18 exploit chains. Responsibly disclosed.
+- **[Hermes Agent](https://github.com/NousResearch/hermes-agent)** — 36 vulnerabilities (13 Critical, 22 High, 1 Medium), 18 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#hermes-agent)
 - **[Agent TARS](https://github.com/bytedance/UI-TARS-desktop)** — 25 vulnerabilities (4 Critical, 18 High, 3 Medium), 20 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#agent-tars)
 - **[RAGFlow](https://github.com/infiniflow/ragflow)** — 17 vulnerabilities (5 Critical, 11 High, 1 Medium), 5 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#ragflow)
 - **[LiteLLM](https://github.com/BerriAI/litellm)** — 14 vulnerabilities (3 Critical, 4 High, 4 Medium, 3 Low), 2 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#litellm)
 - **[Open WebUI](https://github.com/open-webui/open-webui)** — 12 vulnerabilities (4 Critical, 5 High, 3 Medium), 4 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#open-webui)
+- **[uv](https://github.com/astral-sh/uv)** — 6 vulnerabilities (3 High, 2 Medium, 1 Low). Responsibly disclosed via email to Astral.
 
 ### Software engineering
 
@@ -57,6 +58,7 @@ autofyn start --allow-docker
 ```
 
 Two release channels:
+
 - `autofyn update --branch production` — **stable** (recommended)
 - `autofyn update --branch main` — **nightly** (latest features)
 
