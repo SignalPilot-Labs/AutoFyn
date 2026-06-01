@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { clsx } from "clsx";
 import { MarkdownContent } from "@/components/ui/MarkdownContent";
@@ -55,10 +56,10 @@ function MessageCard({
   );
 }
 
+// Use the brand mark (public/logo.svg) so the AutoFyn avatar matches the
+// header, landing page, onboarding, and settings — they all render /logo.svg.
 const ICON_AUTOFYN = (
-  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#00ff88" strokeWidth="1.5" aria-hidden="true">
-    <path d="M6 1l1 3h3l-2.5 2 1 3L6 7.5 3.5 9l1-3L2 4h3L6 1z" />
-  </svg>
+  <Image src="/logo.svg" alt="AutoFyn" width={14} height={14} aria-hidden="true" />
 );
 
 const ICON_PLANNER = (

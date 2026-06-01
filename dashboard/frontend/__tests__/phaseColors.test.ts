@@ -8,9 +8,11 @@ import {
 } from "@/lib/phaseColors";
 
 describe("resolvePhase", () => {
-  it("maps code-explorer to the explore phase", () => {
+  it("maps code-explorer and security-explorer to the explore phase", () => {
     expect(resolvePhase("code-explorer").phase).toBe("explore");
     expect(resolvePhase("code-explorer").meta).toBe(PHASE_META.explore);
+    expect(resolvePhase("security-explorer").phase).toBe("explore");
+    expect(resolvePhase("security-explorer").meta).toBe(PHASE_META.explore);
   });
 
   it("maps architect and debugger to the plan phase", () => {
@@ -63,9 +65,10 @@ describe("SUBAGENT_PHASE_MAP coverage", () => {
   // If a new subagent is added there without a corresponding map entry,
   // this test won't catch it automatically — but it at least locks the
   // existing set so a silent removal gets flagged.
-  it("includes all nine expected subagents", () => {
+  it("includes all ten expected subagents", () => {
     const expected = [
       "code-explorer",
+      "security-explorer",
       "debugger",
       "architect",
       "spec-reviewer",
