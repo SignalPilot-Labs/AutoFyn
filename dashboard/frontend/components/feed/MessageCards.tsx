@@ -247,12 +247,14 @@ export function UserPromptCard({ prompt, ts, pending, failed }: { prompt: string
             {failed && !pending && (
               <span className="text-[#ff4444] text-caption">not delivered</span>
             )}
-            <CopyButton value={prompt} label="Copy prompt" className="-my-1" />
             {fmtTime(ts)}
           </span>
         </div>
         <div className="max-h-[300px] overflow-y-auto text-body text-[#cce8ff] whitespace-pre-wrap break-words leading-relaxed">
           {prompt}
+        </div>
+        <div className="flex justify-end mt-1 -mb-1">
+          <CopyButton value={prompt} label="Copy prompt" />
         </div>
       </div>
     </motion.div>
