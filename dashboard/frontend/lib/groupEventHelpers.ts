@@ -303,6 +303,19 @@ export function milestoneFromAudit(event: FeedEvent): GroupedEvent | null {
         details: d,
         ts,
       };
+    case "stuck_recovery": {
+      const stuck = (d.stuck as Array<{ agent_type?: string; idle_seconds?: number }>) || [];
+      const names = stuck.map((s) => s.agent_type || "subagent").join(", ") || "subagent";
+      const maxIdle = stuck.reduce((m, s) => Math.max(m, s.idle_seconds || 0), 0);
+      const idleText = maxIdle ? ` (idle ${maxIdle}s)` : "";
+      return {
+        id: `ctrl-${ts}-stuck-recovery`,
+        type: "control",
+        text: `Stuck recovery: interrupted ${names}${idleText}`,
+        details: d,
+        ts,
+      };
+    }
     case "permission_denied":
       return {
         id: `ms-${ts}-Permission Denied`,

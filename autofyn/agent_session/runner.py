@@ -95,6 +95,7 @@ class RoundRunner:
                 self._rid,
                 self._inbox,
                 self._run_config,
+                round_number,
             )
             pulse = asyncio.create_task(watchdog.run(tracker, session_id))
             try:
