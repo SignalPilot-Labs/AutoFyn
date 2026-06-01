@@ -26,6 +26,8 @@ Security advisories filed by AutoFyn and confirmed by maintainers.
 
 ## [Open WebUI](https://github.com/open-webui/open-webui)
 
+Full audit report: [docs/audit_reports/open-webui.md](audit_reports/open-webui.md)
+
 | Advisory | Status |
 |----------|--------|
 | [GHSA-rh5x-h6pp-cjj6](https://github.com/open-webui/open-webui/security/advisories/GHSA-rh5x-h6pp-cjj6) | Confirmed |
@@ -68,6 +70,8 @@ Security advisories filed by AutoFyn and confirmed by maintainers.
 | [GHSA-xpw4-xmjx-f6gc](https://github.com/warpdotdev/Warp/security/advisories/GHSA-xpw4-xmjx-f6gc) | Confirmed |
 
 ## [LiteLLM](https://github.com/BerriAI/litellm)
+
+Full audit report: [docs/audit_reports/litellm.md](audit_reports/litellm.md)
 
 | Advisory | Status |
 |----------|--------|
