@@ -74,6 +74,9 @@ ROUND_DIR_PREFIX = "/tmp/round-"
 # Used to reject anything that merely starts with "round-" (e.g. "round-..").
 ROUND_DIR_NAME_RE = r"^round-\d+$"
 ORCHESTRATOR_REPORT_NAME = "orchestrator.md"
+# Written into a round's folder when the stuck watchdog force-interrupts a
+# subagent, so the next round's orchestrator can read what happened and adapt.
+STUCK_RECOVERY_REPORT_NAME = "stuck-recovery.md"
 MEMORY_DIR = "/tmp/memory"
 METADATA_PATH = f"{MEMORY_DIR}/rounds.json"
 RUN_STATE_PATH = f"{MEMORY_DIR}/run_state.md"
