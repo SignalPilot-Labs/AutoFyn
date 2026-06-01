@@ -9,6 +9,7 @@ rounds summary, prior-round file index, user messages).
 from claude_agent_sdk.types import SystemPromptPreset
 
 from prompts.loader import load_markdown, render_environment, render_time_status
+from utils.constants import ROUND_DIR_PREFIX, STUCK_RECOVERY_REPORT_NAME
 from utils.models import RoundContext, UserAction
 
 
@@ -75,9 +76,22 @@ def _user_activity_block(activity: list[UserAction]) -> str:
     return "\n".join(lines)
 
 
-def build_initial_prompt(round_number: int, task: str, is_grace_round: bool) -> str:
+def build_initial_prompt(
+    round_number: int,
+    task: str,
+    is_grace_round: bool,
+    prior_round_had_stuck_recovery: bool,
+) -> str:
     """Short per-round kickoff message paired with the round system prompt."""
     prompt = f"Round {round_number} is starting.\n\nTask:\n{task.strip()}"
+    if prior_round_had_stuck_recovery:
+        prior = round_number - 1
+        prompt += (
+            f"\n\nNote: last round a subagent was force-interrupted for being stuck, "
+            f"which ended the round early. Read `{ROUND_DIR_PREFIX}{prior}/"
+            f"{STUCK_RECOVERY_REPORT_NAME}` and adapt your approach before re-dispatching "
+            f"that agent type."
+        )
     if is_grace_round:
         prompt += "\n\nTime lock has expired. This is your final round. Wrap up, ship it, call end_session."
     return prompt
