@@ -4,7 +4,7 @@
 
 **Run Claude in self-improving loops to optimize measurable goals.**
 
-built the [#1 Spider 2.0 DBT agent](https://github.com/SignalPilot-Labs/SignalPilot) · found 191 vulnerabilities across popular OSS · improved Caveman compression from 44% to 54%
+built the [#1 Spider 2.0 DBT agent](https://github.com/SignalPilot-Labs/SignalPilot) · found 195 vulnerabilities across popular OSS · improved Caveman compression from 44% to 54%
 
 <img src="assets/ui.png" width="800" alt="AutoFyn Monitor" />
 
@@ -38,6 +38,7 @@ Each round runs Claude in a sandboxed Docker container with fresh context. A per
 - **[Open WebUI](https://github.com/open-webui/open-webui)** — 12 vulnerabilities (4 Critical, 5 High, 3 Medium), 4 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#open-webui) · [Report](docs/audit_reports/open-webui.md)
 - **[uv](https://github.com/astral-sh/uv)** — 6 vulnerabilities (3 High, 2 Medium, 1 Low). Responsibly disclosed via email to Astral.
 - **[Twenty](https://github.com/twentyhq/twenty)** — 2 vulnerabilities (1 High, 1 Low), 1 exploit chain. Responsibly disclosed. [CVEs](docs/cves.md#twenty)
+- **[Supermemory](https://github.com/supermemoryai/supermemory)** — 4 vulnerabilities (1 High, 3 Medium), 4 exploit chains. Responsibly disclosed via email to Supermemory.
 
 ### Software engineering
 
