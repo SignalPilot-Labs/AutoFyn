@@ -100,6 +100,10 @@ GIT_CREDENTIAL_HELPER: str = (
 GIT_CLONE_DEPTH: int = 50
 CLONE_TMP_DIR: str = "/tmp/repo-clone"
 
+# PR bodies are passed to `gh` via --body-file (not --body): a large body as a
+# single argv element trips the kernel's 128KB per-arg limit (E2BIG) at exec.
+PR_BODY_FILE: str = "/tmp/pr-body.md"
+
 # ── Stderr truncation limits ──
 STDERR_DISPLAY_LIMIT: int = 2000
 STDERR_SHORT_LIMIT: int = 500

@@ -18,6 +18,7 @@ from constants import (
     CMD_TIMEOUT,
     GH_NO_DIFF_MARKER,
     GIT_CLONE_DEPTH,
+    PR_BODY_FILE,
     REPO_BRANCH_NAME_MAX_LEN,
     REPO_BRANCH_NAME_PATTERN,
     REPO_WORK_DIR,
@@ -386,9 +387,15 @@ class RepoService:
         )
         existing = find.stdout.strip() if find.exit_code == 0 else ""
 
+        # Pass the body via --body-file: a large body as a single argv element
+        # trips the kernel's 128KB per-arg limit (E2BIG) at exec time.
+        with open(PR_BODY_FILE, "w") as f:
+            f.write(description)
+
         if existing:
             edit = await gh(
-                ["pr", "edit", existing, "--title", title, "--body", description],
+                ["pr", "edit", existing, "--title", title,
+                 "--body-file", PR_BODY_FILE],
                 CMD_TIMEOUT,
                 cwd=REPO_WORK_DIR,
             )
@@ -404,7 +411,7 @@ class RepoService:
                 "--base", base,
                 "--head", s.working_branch,
                 "--title", title,
-                "--body", description,
+                "--body-file", PR_BODY_FILE,
             ],
             CMD_TIMEOUT,
             cwd=REPO_WORK_DIR,
