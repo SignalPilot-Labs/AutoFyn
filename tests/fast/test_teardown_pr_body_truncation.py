@@ -66,6 +66,34 @@ class TestTeardownPRBodyTruncation:
         assert "keep-me-summary" in result
         assert "keep-me-footer" in result
 
+    def test_body_plus_footer_alone_over_limit_is_hard_capped(self) -> None:
+        """When summaries+footer alone exceed the cap, hard-truncate to the limit.
+
+        No room is left for the run-state section, so it (and the marker) are
+        dropped entirely and the surviving body+footer is clipped to the cap.
+        """
+        body = "B" * PR_BODY_MAX_CHARS
+        section = "\n\n<details>\nstate\n</details>"
+        footer = "F" * 1000
+        result = _fit_pr_body(body, section, footer)
+        assert len(result) <= PR_BODY_MAX_CHARS
+        assert PR_BODY_TRUNCATION_MARKER not in result
+        assert "state" not in result
+
+    def test_truncation_budget_is_char_based(self) -> None:
+        """Multi-byte run-state is bounded by char count (documents the contract).
+
+        _fit_pr_body budgets on str length (code points), not UTF-8 bytes, so a
+        multi-byte body is capped at PR_BODY_MAX_CHARS chars even though its byte
+        length is larger. Encoded size stays within the kernel arg limit headroom.
+        """
+        body = "- **Round 1:** s"
+        section = "\n\n<details>\n" + ("é" * (PR_BODY_MAX_CHARS * 2)) + "\n</details>"
+        footer = "\n\n---\nf"
+        result = _fit_pr_body(body, section, footer)
+        assert len(result) <= PR_BODY_MAX_CHARS
+        assert PR_BODY_TRUNCATION_MARKER in result
+
     @pytest.mark.asyncio
     async def test_teardown_passes_bounded_description(self) -> None:
         run = _make_run()
