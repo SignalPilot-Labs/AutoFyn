@@ -80,6 +80,14 @@ STUCK_RECOVERY_REPORT_NAME = "stuck-recovery.md"
 MEMORY_DIR = "/tmp/memory"
 METADATA_PATH = f"{MEMORY_DIR}/rounds.json"
 RUN_STATE_PATH = f"{MEMORY_DIR}/run_state.md"
+
+# GitHub caps PR bodies at 65536 chars; stay well under so the run-state
+# <details> block (which grows unbounded across rounds) never trips it.
+PR_BODY_MAX_CHARS = 60000
+PR_BODY_TRUNCATION_MARKER = (
+    "\n\n... [run state truncated to fit GitHub's PR body limit — "
+    "see run artifacts for the full state] ...\n\n"
+)
 RUN_STATE_TEMPLATE = """\
 ## Goal
 
