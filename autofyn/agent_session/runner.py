@@ -96,12 +96,7 @@ class RoundRunner:
             options["initial_prompt"] = initial_prompt
             session_id = await self._sandbox.session.start(options)
             dispatcher.set_sandbox_session_id(session_id)
-            log.info(
-                "[%s] Round %d started (session %s)",
-                self._rid,
-                round_number,
-                session_id,
-            )
+            log.info("[%s] Round %d started (session %s)", self._rid, round_number, session_id)
             control = UserControl(self._sandbox, session_id, self._inbox)
             watchdog = PulseWatchdog(
                 self._sandbox,
@@ -125,7 +120,22 @@ class RoundRunner:
                     await pulse
                 except asyncio.CancelledError:
                     pass
-        except asyncio.CancelledError:
+        except asyncio.CancelledError as exc:
+            return await self._handle_run_exception(exc, session_id, round_number)
+        except Exception as exc:
+            return await self._handle_run_exception(exc, session_id, round_number)
+        finally:
+            if session_id:
+                await self._safe_stop(session_id)
+
+    async def _handle_run_exception(
+        self,
+        exc: BaseException,
+        session_id: str | None,
+        round_number: int,
+    ) -> RoundResult:
+        """Map a fatal/cancelled round exception to a RoundResult + audit log."""
+        if isinstance(exc, asyncio.CancelledError):
             await log_audit(
                 self._run.run_id,
                 "killed",
@@ -134,30 +144,26 @@ class RoundRunner:
                 },
             )
             return RoundResult(status="stopped", session_id=session_id)
-        except Exception as exc:
-            log.error(
-                "[%s] Round %d fatal error: %s",
-                self._rid,
-                round_number,
-                exc,
-                exc_info=True,
-            )
-            await log_audit(
-                self._run.run_id,
-                "fatal_error",
-                {
-                    "round_number": round_number,
-                    "error": str(exc),
-                },
-            )
-            return RoundResult(
-                status="error",
-                session_id=session_id,
-                error=str(exc),
-            )
-        finally:
-            if session_id:
-                await self._safe_stop(session_id)
+        log.error(
+            "[%s] Round %d fatal error: %s",
+            self._rid,
+            round_number,
+            exc,
+            exc_info=True,
+        )
+        await log_audit(
+            self._run.run_id,
+            "fatal_error",
+            {
+                "round_number": round_number,
+                "error": str(exc),
+            },
+        )
+        return RoundResult(
+            status="error",
+            session_id=session_id,
+            error=str(exc),
+        )
 
     # ── Core drive loop ────────────────────────────────────────────────
 
