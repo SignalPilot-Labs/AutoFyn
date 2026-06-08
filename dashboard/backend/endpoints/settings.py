@@ -3,12 +3,13 @@
 import json
 import logging
 
+from cryptography.fernet import InvalidToken
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, func
 
 from backend import auth, crypto
 from backend.constants import (
-    ENV_VARS_MASK_CHAR,
+    DECRYPT_ERROR_INDICATOR,
     MASK_PREFIX_DEFAULT,
     MASTER_KEY_PATH,
     SECRET_KEYS,
@@ -28,6 +29,8 @@ from backend.models import (
     UpdateSettingsRequest,
 )
 from backend.utils import (
+    CredentialDecryptionError,
+    _decrypt_json,
     read_token_pool,
     add_token_to_pool,
     ensure_repo_in_list,
@@ -103,9 +106,9 @@ async def get_settings() -> dict:
             if setting.encrypted:
                 try:
                     settings[setting.key] = _decrypt_setting(setting)
-                except Exception as e:
+                except InvalidToken as e:
                     log.error("Failed to decrypt setting '%s': %s", setting.key, e, exc_info=True)
-                    settings[setting.key] = ENV_VARS_MASK_CHAR
+                    settings[setting.key] = DECRYPT_ERROR_INDICATOR
             else:
                 settings[setting.key] = setting.value
         return settings
@@ -135,13 +138,11 @@ async def get_repo_env(repo: str) -> dict:
         if not setting:
             return {"repo": repo, "env_vars": {}}
         try:
-            env_dict: dict[str, str] = json.loads(
-                crypto.decrypt(setting.value, MASTER_KEY_PATH),
-            )
-            return {"repo": repo, "env_vars": env_dict}
-        except Exception as e:
+            env_dict: dict[str, str] = _decrypt_json(setting, _env_vars_key(repo))
+        except CredentialDecryptionError as e:
             log.error("Failed to decrypt env vars for %s: %s", repo, e, exc_info=True)
-            raise HTTPException(status_code=500, detail="Failed to decrypt env vars")
+            raise HTTPException(status_code=500, detail="Failed to decrypt env vars") from e
+        return {"repo": repo, "env_vars": env_dict}
 
 
 @router.put("/repos/{repo:path}/env")
@@ -206,13 +207,11 @@ async def get_repo_mcp_servers(repo: str) -> dict:
         if not setting:
             return {"repo": repo, "servers": {}}
         try:
-            servers: dict[str, dict] = json.loads(
-                crypto.decrypt(setting.value, MASTER_KEY_PATH),
-            )
-            return {"repo": repo, "servers": servers}
-        except Exception as e:
+            servers: dict[str, dict] = _decrypt_json(setting, _mcp_servers_key(repo))
+        except CredentialDecryptionError as e:
             log.error("Failed to decrypt MCP servers for %s: %s", repo, e, exc_info=True)
-            raise HTTPException(status_code=500, detail="Failed to decrypt MCP servers")
+            raise HTTPException(status_code=500, detail="Failed to decrypt MCP servers") from e
+        return {"repo": repo, "servers": servers}
 
 
 @router.put("/repos/{repo:path}/mcp-servers")
