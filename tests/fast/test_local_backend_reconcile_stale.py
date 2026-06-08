@@ -27,6 +27,7 @@ def _container_with_status(status: str) -> MagicMock:
     """Build a mock container reporting the given status."""
     container = MagicMock()
     container.status = status
+    container.id = "stale-id"
     container.remove = MagicMock()
     return container
 
@@ -89,6 +90,31 @@ class TestReconcileStaleContainer:
             await backend._reconcile_stale_container("autofyn-sandbox-key")
 
         live.remove.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_restarting_container_is_not_removed(self) -> None:
+        """A restarting container is treated as live and never removed."""
+        backend = _make_backend()
+        live = _container_with_status("restarting")
+        backend._docker.containers.get = MagicMock(return_value=live)
+
+        with pytest.raises(SandboxStartError):
+            await backend._reconcile_stale_container("autofyn-sandbox-key")
+
+        live.remove.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_unknown_status_fails_loud(self) -> None:
+        """An unrecognized status is not on the removable allowlist, so it
+        fails loud rather than being force-removed."""
+        backend = _make_backend()
+        unknown = _container_with_status("removing")
+        backend._docker.containers.get = MagicMock(return_value=unknown)
+
+        with pytest.raises(SandboxStartError):
+            await backend._reconcile_stale_container("autofyn-sandbox-key")
+
+        unknown.remove.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_create_reconciles_before_run(self) -> None:

@@ -23,7 +23,7 @@ from sandbox_client.client import SandboxClient
 from sandbox_client.models import SandboxInstance, SandboxStartError
 from utils.constants import (
     AGENT_CONTAINER_NAME,
-    DOCKER_LIVE_CONTAINER_STATUSES,
+    DOCKER_REMOVABLE_CONTAINER_STATUSES,
     DOCKER_SOCKET_PATH,
     ENV_KEY_ALLOW_DOCKER,
     ENV_KEY_IMAGE_TAG,
@@ -172,15 +172,17 @@ class DockerLocalBackend(SandboxBackend):
         return handle, []
 
     async def _reconcile_stale_container(self, container_name: str) -> None:
-        """Remove a stale (non-running) container holding the target name.
+        """Reclaim the target name if a stale leftover container holds it.
 
-        A container with our name that is not in a live state (running,
-        restarting, paused) is a leftover from an unclean shutdown — Docker
-        crash, host reboot, OOM kill — and its name must be reclaimed before
-        `docker run` or the start fails with a name conflict.
+        A container with our name in a removable state (exited/created/dead)
+        is a leftover from an unclean shutdown — Docker crash, host reboot,
+        OOM kill — and must be removed before `docker run` or the start fails
+        with a name conflict.
 
-        Fails loud if a *live* container already holds the name: that is
-        ambiguous and must never be auto-destroyed (it may be active work).
+        Any other status (running/restarting/paused, or an unrecognized value)
+        is treated as live and fails loud: we never auto-destroy what might be
+        active work. The status is read from a point-in-time snapshot, so this
+        is a best-effort guard, not a lock — adequate given UUID-scoped names.
         """
         try:
             container: Container = await asyncio.to_thread(
@@ -190,19 +192,15 @@ class DockerLocalBackend(SandboxBackend):
             return
 
         status = container.status
-        if status in DOCKER_LIVE_CONTAINER_STATUSES:
+        if status not in DOCKER_REMOVABLE_CONTAINER_STATUSES:
             raise SandboxStartError(
                 f"Container {container_name} already exists and is {status}; "
                 "refusing to remove a live container",
                 [],
             )
 
-        await asyncio.to_thread(container.remove, force=True)
-        log.info(
-            "Removed stale container %s (%s) before start",
-            container_name,
-            status,
-        )
+        log.info("Removing stale container %s (%s) before start", container_name, status)
+        await self._remove_container(container.id or "", container_name)
 
     async def _wait_for_ready(
         self,
