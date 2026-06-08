@@ -23,6 +23,7 @@ from sandbox_client.client import SandboxClient
 from sandbox_client.models import SandboxInstance, SandboxStartError
 from utils.constants import (
     AGENT_CONTAINER_NAME,
+    DOCKER_REMOVABLE_CONTAINER_STATUSES,
     DOCKER_SOCKET_PATH,
     ENV_KEY_ALLOW_DOCKER,
     ENV_KEY_IMAGE_TAG,
@@ -123,6 +124,8 @@ class DockerLocalBackend(SandboxBackend):
         container_name = f"autofyn-sandbox-{run_key}"
         env = self._build_env(run_key, host_mounts)
 
+        await self._reconcile_stale_container(container_name)
+
         proc = await asyncio.create_subprocess_shell(
             start_cmd,
             stdout=asyncio.subprocess.PIPE,
@@ -167,6 +170,37 @@ class DockerLocalBackend(SandboxBackend):
             sandbox_id=None,
         )
         return handle, []
+
+    async def _reconcile_stale_container(self, container_name: str) -> None:
+        """Reclaim the target name if a stale leftover container holds it.
+
+        A container with our name in a removable state (exited/created/dead)
+        is a leftover from an unclean shutdown — Docker crash, host reboot,
+        OOM kill — and must be removed before `docker run` or the start fails
+        with a name conflict.
+
+        Any other status (running/restarting/paused, or an unrecognized value)
+        is treated as live and fails loud: we never auto-destroy what might be
+        active work. The status is read from a point-in-time snapshot, so this
+        is a best-effort guard, not a lock — adequate given UUID-scoped names.
+        """
+        try:
+            container: Container = await asyncio.to_thread(
+                self._docker.containers.get, container_name
+            )
+        except docker.errors.NotFound:
+            return
+
+        status = container.status
+        if status not in DOCKER_REMOVABLE_CONTAINER_STATUSES:
+            raise SandboxStartError(
+                f"Container {container_name} already exists and is {status}; "
+                "refusing to remove a live container",
+                [],
+            )
+
+        log.info("Removing stale container %s (%s) before start", container_name, status)
+        await self._remove_container(container.id or "", container_name)
 
     async def _wait_for_ready(
         self,
