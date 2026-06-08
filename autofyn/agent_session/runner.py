@@ -240,7 +240,7 @@ class RoundRunner:
             )
             if terminal is not None:
                 return terminal
-            await self._manage_idle_after_sse(state, dispatcher)
+            self._manage_idle_after_sse(state, dispatcher)
 
         if state.idle_task is not None and state.idle_task is fired_idle and fired_idle in done:
             terminal, state.nudge_count, state.idle_task = await self._handle_idle_timeout(
@@ -251,7 +251,7 @@ class RoundRunner:
 
         return None
 
-    async def _manage_idle_after_sse(
+    def _manage_idle_after_sse(
         self,
         state: _DriveState,
         dispatcher: StreamDispatcher,
