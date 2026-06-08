@@ -100,3 +100,11 @@ Full audit report: [docs/audit_reports/litellm.md](audit_reports/litellm.md)
 |----------|--------|
 | [GHSA-7v62-329q-wcxg](https://github.com/twentyhq/twenty/security/advisories/GHSA-7v62-329q-wcxg) | Submitted |
 | [GHSA-f4r7-47fh-cgh8](https://github.com/twentyhq/twenty/security/advisories/GHSA-f4r7-47fh-cgh8) | Submitted |
+
+## [Phantom Connect SDK](https://github.com/phantom/phantom-connect-sdk)
+
+| Advisory | Status |
+|----------|--------|
+| [GHSA-xxcm-wq3v-9xjm](https://github.com/phantom/phantom-connect-sdk/security/advisories/GHSA-xxcm-wq3v-9xjm) | Submitted |
+| [GHSA-ggx9-f2cc-f3p9](https://github.com/phantom/phantom-connect-sdk/security/advisories/GHSA-ggx9-f2cc-f3p9) | Submitted |
+| [GHSA-6ffm-hx3f-pqwc](https://github.com/phantom/phantom-connect-sdk/security/advisories/GHSA-6ffm-hx3f-pqwc) | Submitted |
