@@ -23,6 +23,7 @@ from sandbox_client.client import SandboxClient
 from sandbox_client.models import SandboxInstance, SandboxStartError
 from utils.constants import (
     AGENT_CONTAINER_NAME,
+    DOCKER_LIVE_CONTAINER_STATUSES,
     DOCKER_SOCKET_PATH,
     ENV_KEY_ALLOW_DOCKER,
     ENV_KEY_IMAGE_TAG,
@@ -123,6 +124,8 @@ class DockerLocalBackend(SandboxBackend):
         container_name = f"autofyn-sandbox-{run_key}"
         env = self._build_env(run_key, host_mounts)
 
+        await self._reconcile_stale_container(container_name)
+
         proc = await asyncio.create_subprocess_shell(
             start_cmd,
             stdout=asyncio.subprocess.PIPE,
@@ -167,6 +170,39 @@ class DockerLocalBackend(SandboxBackend):
             sandbox_id=None,
         )
         return handle, []
+
+    async def _reconcile_stale_container(self, container_name: str) -> None:
+        """Remove a stale (non-running) container holding the target name.
+
+        A container with our name that is not in a live state (running,
+        restarting, paused) is a leftover from an unclean shutdown — Docker
+        crash, host reboot, OOM kill — and its name must be reclaimed before
+        `docker run` or the start fails with a name conflict.
+
+        Fails loud if a *live* container already holds the name: that is
+        ambiguous and must never be auto-destroyed (it may be active work).
+        """
+        try:
+            container: Container = await asyncio.to_thread(
+                self._docker.containers.get, container_name
+            )
+        except docker.errors.NotFound:
+            return
+
+        status = container.status
+        if status in DOCKER_LIVE_CONTAINER_STATUSES:
+            raise SandboxStartError(
+                f"Container {container_name} already exists and is {status}; "
+                "refusing to remove a live container",
+                [],
+            )
+
+        await asyncio.to_thread(container.remove, force=True)
+        log.info(
+            "Removed stale container %s (%s) before start",
+            container_name,
+            status,
+        )
 
     async def _wait_for_ready(
         self,
