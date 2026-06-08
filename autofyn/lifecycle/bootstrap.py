@@ -30,10 +30,14 @@ from utils.constants import (
     BRANCH_SLUG_MAX_LEN,
     DEFAULT_AGENT_ROLE,
     DISALLOWED_SESSION_TOOLS,
+    EFFORT_HIGH,
+    EFFORT_MAX,
     MEMORY_DIR,
     RUN_STATE_PATH,
     RUN_STATE_TEMPLATE,
+    SESSION_ADD_DIRS,
     SESSION_PERMISSION_MODE,
+    SESSION_SETTING_SOURCES,
     WORK_DIR,
 )
 from utils.models import (
@@ -251,8 +255,8 @@ def _build_base_session_options(
     the round loop before starting each session.
     """
     resolved_effort = effort
-    if effort == "max" and model not in MODELS_SUPPORTING_MAX_EFFORT:
-        resolved_effort = "high"
+    if effort == EFFORT_MAX and model not in MODELS_SUPPORTING_MAX_EFFORT:
+        resolved_effort = EFFORT_HIGH
     return {
         "model": model,
         "fallback_model": fallback_model if fallback_model != model else None,
@@ -261,8 +265,8 @@ def _build_base_session_options(
         "permission_mode": SESSION_PERMISSION_MODE,
         "disallowed_tools": DISALLOWED_SESSION_TOOLS,
         "cwd": WORK_DIR,
-        "add_dirs": ["/opt/autofyn/.claude/skills"],
-        "setting_sources": ["project"],
+        "add_dirs": SESSION_ADD_DIRS,
+        "setting_sources": SESSION_SETTING_SOURCES,
         "max_budget_usd": max_budget_usd if max_budget_usd > 0 else None,
         "resume": None,
         "run_id": run.run_id,
