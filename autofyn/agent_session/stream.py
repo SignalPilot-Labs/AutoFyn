@@ -10,6 +10,7 @@ audit event records to the DB (previously done by sandbox POSTs).
 """
 
 import logging
+from collections.abc import Awaitable, Callable
 
 from agent_session.tracker import SubagentTracker
 from utils import db
@@ -25,6 +26,8 @@ from utils.constants import (
 from utils.models import RunContext, StreamSignal
 
 log = logging.getLogger("session.stream")
+
+EventHandler = Callable[[dict], Awaitable[StreamSignal]]
 
 
 class StreamDispatcher:
@@ -56,6 +59,23 @@ class StreamDispatcher:
         self._latest_context_tokens: int = 0
         self._tools_in_flight: int = 0
         self._sandbox_session_id: str | None = None
+        self._dispatch_table: dict[str, EventHandler] = {
+            "assistant_message": self._on_assistant_message,
+            "tool_use": self._on_tool_use,
+            "tool_done": self._on_tool_done,
+            "subagent_start": self._on_subagent_start,
+            "subagent_stop": self._on_subagent_stop,
+            "audit": self._on_audit,
+            "rate_limit": self._on_rate_limit,
+            "result": self._on_result,
+            "end_round": self._on_end_round,
+            "end_session": self._on_end_session,
+            "end_session_denied": self._on_end_session_denied,
+            "session_end": self._on_session_end,
+            "session_event_log_overflow": self._on_session_event_log_overflow,
+            "session_error": self._on_session_error,
+            "mcp_warning": self._on_mcp_warning,
+        }
 
     def set_sandbox_session_id(self, session_id: str) -> None:
         """Set the sandbox session ID for idempotency key construction."""
@@ -73,106 +93,111 @@ class StreamDispatcher:
         """Handle one SSE event. Mutates RoundState, returns a signal."""
         kind = event.get("event", "")
         data = event.get("data", {})
-
-        if kind == "assistant_message":
-            await self._handle_assistant_message(data)
+        handler = self._dispatch_table.get(kind)
+        if handler is None:
             return StreamSignal(kind="continue")
+        return await handler(data)
 
-        if kind == "tool_use":
-            await self._handle_tool_use(data)
-            return StreamSignal(kind="continue")
+    # ── Dispatch wrappers (simple handlers: call _handle_*, return fixed signal) ──
 
-        if kind == "tool_done":
-            await self._handle_tool_done(data)
-            return StreamSignal(kind="continue")
-
-        if kind == "subagent_start":
-            self._handle_subagent_start(data)
-            return StreamSignal(kind="continue")
-
-        if kind == "subagent_stop":
-            self._handle_subagent_stop(data)
-            return StreamSignal(kind="subagent_boundary")
-
-        if kind == "audit":
-            await self._handle_audit(data)
-            return StreamSignal(kind="continue")
-
-        if kind == "rate_limit":
-            # The SDK emits `rate_limit` events for THREE statuses:
-
-            status = data.get("status")
-            if status == "rejected":
-                log.warning(
-                    "[%s] rate limit rejected — SDK will retry (resets_at=%s, utilization=%s)",
-                    self._rid,
-                    data.get("resets_at"),
-                    data.get("utilization"),
-                )
-                return StreamSignal(kind="rate_limit_info", rate_limit_data=data)
-            if status == "allowed_warning":
-                log.info(
-                    "[%s] rate limit warning (resets_at=%s, utilization=%s)",
-                    self._rid,
-                    data.get("resets_at"),
-                    data.get("utilization"),
-                )
-            return StreamSignal(kind="continue")
-
-        if kind == "result":
-            await self._handle_result(data)
-            return StreamSignal(kind="round_complete")
-
-        if kind == "end_round":
-            round_summary = data.get("round_summary") or ""
-            session_summary = data.get("session_summary") or ""
-            log.info("[%s] end_round: %s", self._rid, round_summary[:80])
-            return StreamSignal(
-                kind="round_complete",
-                round_summary=round_summary,
-                session_summary=session_summary,
-            )
-
-        if kind == "end_session":
-            log.info("[%s] end_session received", self._rid)
-            return StreamSignal(
-                kind="run_ended",
-                round_summary=data.get("round_summary"),
-                session_summary=data.get("session_summary"),
-            )
-
-        if kind == "end_session_denied":
-            log.info(
-                "[%s] end_session denied: %sm remaining",
-                self._rid,
-                data.get("remaining_minutes", "?"),
-            )
-            return StreamSignal(kind="continue")
-
-        if kind == "session_end":
-            return StreamSignal(kind="round_complete")
-
-        if kind == "session_event_log_overflow":
-            total = data.get("total_bytes", 0)
-            limit = data.get("max_bytes", 0)
-            error_msg = f"Sandbox event log overflow: {total}/{limit} bytes"
-            log.error("[%s] %s", self._rid, error_msg)
-            return StreamSignal(kind="session_error", error=error_msg)
-
-        if kind == "session_error":
-            error_msg = data.get("error", "unknown")
-            log.error("[%s] session error: %s", self._rid, error_msg)
-            return StreamSignal(kind="session_error", error=error_msg)
-
-        if kind == "mcp_warning":
-            msg = data.get("message", "")
-            log.warning("[%s] MCP warning: %s", self._rid, msg)
-            await log_audit(self._run.run_id, "mcp_warning", {"message": msg})
-            return StreamSignal(kind="continue")
-
+    async def _on_assistant_message(self, data: dict) -> StreamSignal:
+        await self._handle_assistant_message(data)
         return StreamSignal(kind="continue")
 
-    # ── Handlers ───────────────────────────────────────────────────────
+    async def _on_tool_use(self, data: dict) -> StreamSignal:
+        await self._handle_tool_use(data)
+        return StreamSignal(kind="continue")
+
+    async def _on_tool_done(self, data: dict) -> StreamSignal:
+        await self._handle_tool_done(data)
+        return StreamSignal(kind="continue")
+
+    async def _on_subagent_start(self, data: dict) -> StreamSignal:
+        self._handle_subagent_start(data)
+        return StreamSignal(kind="continue")
+
+    async def _on_subagent_stop(self, data: dict) -> StreamSignal:
+        self._handle_subagent_stop(data)
+        return StreamSignal(kind="subagent_boundary")
+
+    async def _on_audit(self, data: dict) -> StreamSignal:
+        await self._handle_audit(data)
+        return StreamSignal(kind="continue")
+
+    async def _on_result(self, data: dict) -> StreamSignal:
+        await self._handle_result(data)
+        return StreamSignal(kind="round_complete")
+
+    # ── Dispatch handlers (complex: build signal from data) ──
+
+    async def _on_rate_limit(self, data: dict) -> StreamSignal:
+        """The SDK emits `rate_limit` events for THREE statuses."""
+        status = data.get("status")
+        if status == "rejected":
+            log.warning(
+                "[%s] rate limit rejected — SDK will retry (resets_at=%s, utilization=%s)",
+                self._rid,
+                data.get("resets_at"),
+                data.get("utilization"),
+            )
+            return StreamSignal(kind="rate_limit_info", rate_limit_data=data)
+        if status == "allowed_warning":
+            log.info(
+                "[%s] rate limit warning (resets_at=%s, utilization=%s)",
+                self._rid,
+                data.get("resets_at"),
+                data.get("utilization"),
+            )
+        return StreamSignal(kind="continue")
+
+    async def _on_end_round(self, data: dict) -> StreamSignal:
+        round_summary = data.get("round_summary") or ""
+        session_summary = data.get("session_summary") or ""
+        log.info("[%s] end_round: %s", self._rid, round_summary[:80])
+        return StreamSignal(
+            kind="round_complete",
+            round_summary=round_summary,
+            session_summary=session_summary,
+        )
+
+    async def _on_end_session(self, data: dict) -> StreamSignal:
+        log.info("[%s] end_session received", self._rid)
+        return StreamSignal(
+            kind="run_ended",
+            round_summary=data.get("round_summary"),
+            session_summary=data.get("session_summary"),
+        )
+
+    async def _on_end_session_denied(self, data: dict) -> StreamSignal:
+        log.info(
+            "[%s] end_session denied: %sm remaining",
+            self._rid,
+            data.get("remaining_minutes", "?"),
+        )
+        return StreamSignal(kind="continue")
+
+    async def _on_session_end(self, data: dict) -> StreamSignal:
+        return StreamSignal(kind="round_complete")
+
+    async def _on_session_event_log_overflow(self, data: dict) -> StreamSignal:
+        total = data.get("total_bytes", 0)
+        limit = data.get("max_bytes", 0)
+        error_msg = f"Sandbox event log overflow: {total}/{limit} bytes"
+        log.error("[%s] %s", self._rid, error_msg)
+        return StreamSignal(kind="session_error", error=error_msg)
+
+    async def _on_session_error(self, data: dict) -> StreamSignal:
+        error_msg = data.get("error", "unknown")
+        log.error("[%s] session error: %s", self._rid, error_msg)
+        return StreamSignal(kind="session_error", error=error_msg)
+
+    async def _on_mcp_warning(self, data: dict) -> StreamSignal:
+        msg = data.get("message", "")
+        log.warning("[%s] MCP warning: %s", self._rid, msg)
+        await log_audit(self._run.run_id, "mcp_warning", {"message": msg})
+        return StreamSignal(kind="continue")
+
+    # ── Core handlers (called by _on_* dispatch wrappers above) ────────
 
     async def _handle_assistant_message(self, data: dict) -> None:
         """Log text/thinking blocks and accumulate token usage."""

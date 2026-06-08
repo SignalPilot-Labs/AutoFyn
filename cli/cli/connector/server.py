@@ -442,15 +442,21 @@ class ConnectorServer:
 
         if state.work_dir and state.sandbox_type == "slurm":
             overlay_path = f"{state.work_dir}/autofyn/runs/{run_key}"
-            rm_cmd = f"rm -rf {_quote_slurm_path(overlay_path)}"
-            try:
-                proc = await run_ssh_command(state.ssh_target, rm_cmd, {})
-                await asyncio.wait_for(proc.communicate(), timeout=SSH_CONNECT_TIMEOUT_SEC)
-                log.info("Cleaned up overlay %s on %s", overlay_path, state.ssh_target)
-            except Exception as exc:
-                log.warning("Overlay cleanup failed for %s: %s", run_key, exc)
+            await self._remove_overlay_via_ssh(state.ssh_target, overlay_path, run_key)
 
         log.info("Destroyed sandbox %s", run_key)
+
+    async def _remove_overlay_via_ssh(
+        self, ssh_target: str, overlay_path: str, run_key: str,
+    ) -> None:
+        """Remove a Slurm overlay dir on the remote via SSH. Logs and swallows failures."""
+        rm_cmd = f"rm -rf {_quote_slurm_path(overlay_path)}"
+        try:
+            proc = await run_ssh_command(ssh_target, rm_cmd, {})
+            await asyncio.wait_for(proc.communicate(), timeout=SSH_CONNECT_TIMEOUT_SEC)
+            log.info("Cleaned up overlay %s on %s", overlay_path, ssh_target)
+        except Exception as exc:
+            log.warning("Overlay cleanup failed for %s: %s", run_key, exc)
 
     async def _sweep_orphan_dirs(self) -> None:
         """Remove overlay dirs for runs this connector started but _destroy missed.
@@ -471,13 +477,7 @@ class ConnectorServer:
             orphaned[run_key] = (ssh_target, overlay_path)
 
         for run_key, (ssh_target, overlay_path) in orphaned.items():
-            rm_cmd = f"rm -rf {_quote_slurm_path(overlay_path)}"
-            try:
-                proc = await run_ssh_command(ssh_target, rm_cmd, {})
-                await asyncio.wait_for(proc.communicate(), timeout=SSH_CONNECT_TIMEOUT_SEC)
-                log.info("Swept orphan overlay %s on %s", overlay_path, ssh_target)
-            except Exception as exc:
-                log.warning("Orphan sweep failed for %s: %s", run_key, exc)
+            await self._remove_overlay_via_ssh(ssh_target, overlay_path, run_key)
 
     async def _drain_logs(
         self,

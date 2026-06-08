@@ -5,20 +5,18 @@ from __future__ import annotations
 import getpass
 import os
 import re
+import secrets
 import signal
 import socket
 import subprocess
 import sys
 import time
+from pathlib import Path
 
 import typer
 
-from pathlib import Path
-import secrets
-
-
 from cli.client import get_client
-
+from cli.connector.constants import CONNECTOR_DEFAULT_PORT
 from cli.constants import (
     AUTOFYN_HOME,
     BRANCH_TO_IMAGE_TAG,
@@ -445,7 +443,7 @@ def _start_connector() -> None:
         connector_secret = secrets.token_hex(32)
         os.environ["CONNECTOR_SECRET"] = connector_secret
 
-    connector_port = os.environ.get("CONNECTOR_PORT", "9400")
+    connector_port = os.environ.get("CONNECTOR_PORT", str(CONNECTOR_DEFAULT_PORT))
     pid_file = _connector_pid_file()
     log_file = Path(AUTOFYN_HOME) / ".connector.log"
 
@@ -487,7 +485,7 @@ def _start_connector() -> None:
 
 def _stop_connector() -> None:
     """Stop the connector — kill process and free port."""
-    connector_port = os.environ.get("CONNECTOR_PORT", "9400")
+    connector_port = os.environ.get("CONNECTOR_PORT", str(CONNECTOR_DEFAULT_PORT))
 
     pid_file = _connector_pid_file()
     if pid_file.exists():

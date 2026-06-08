@@ -111,6 +111,65 @@ def _collect_tmp_from_archive(run_id: str) -> list[tuple[str, str]]:
     return entries
 
 
+async def _diff_via_github(run_id: str, repo: str, branch: str, base: str, token: str) -> dict:
+    """Return a unified diff via the GitHub API, with LRU caching for completed runs."""
+    if run_id in _github_diff_cache:
+        _github_diff_cache.move_to_end(run_id)
+        return {"diff": _github_diff_cache[run_id]}
+    result = await fetch_github_diff(repo, branch, base, token)
+    if "error" in result:
+        raise HTTPException(status_code=result.get("status", 502), detail=result["error"])
+    _github_diff_cache[run_id] = result["diff"]
+    if len(_github_diff_cache) > GITHUB_DIFF_CACHE_MAX:
+        _github_diff_cache.popitem(last=False)
+    return result
+
+
+async def _diff_via_sandbox(server: "AgentServer", run_id: str) -> dict:
+    """Return a unified diff from the live sandbox for an active run."""
+    client = server.pool().get_client(run_id)
+    if not client:
+        raise HTTPException(status_code=409, detail="No active sandbox for run")
+    try:
+        return await client.repo.diff()
+    except Exception as exc:
+        log.warning("Sandbox diff failed for %s: %s", run_id, exc, exc_info=True)
+        raise HTTPException(status_code=502, detail=f"Sandbox unreachable: {exc}")
+
+
+async def _stats_via_sandbox(server: "AgentServer", run_id: str) -> dict:
+    """Return per-file diff stats from the live sandbox for an active run."""
+    client = server.pool().get_client(run_id)
+    if not client:
+        raise HTTPException(status_code=409, detail="No active sandbox for run")
+    try:
+        files = await client.repo.diff_stats()
+    except Exception as exc:
+        log.warning("Sandbox diff_stats failed for %s: %s", run_id, exc, exc_info=True)
+        raise HTTPException(status_code=502, detail=f"Sandbox unreachable: {exc}")
+    return {"files": files}
+
+
+async def _list_github_branches(repo: str, token: str) -> list[str]:
+    """Proxy a branch listing request to the GitHub API."""
+    if "/" not in repo:
+        raise HTTPException(status_code=400, detail="repo must be owner/name")
+    url = f"{GITHUB_API_BASE_URL}/repos/{repo}/branches"
+    headers = {
+        "Authorization": f"token {token}",
+        "Accept": "application/vnd.github+json",
+    }
+    async with httpx.AsyncClient(timeout=GITHUB_API_TIMEOUT_SEC) as client:
+        resp = await client.get(url, headers=headers, params={"per_page": GITHUB_BRANCHES_PER_PAGE})
+    if resp.status_code >= 400:
+        raise HTTPException(
+            status_code=resp.status_code,
+            detail=f"GitHub API error: {resp.text[:GITHUB_ERROR_PREVIEW_LEN]}",
+        )
+    data = resp.json()
+    return [b["name"] for b in data]
+
+
 def register_diff_routes(app: FastAPI, server: "AgentServer") -> None:
     """Register diff route handlers."""
 
@@ -139,26 +198,8 @@ def register_diff_routes(app: FastAPI, server: "AgentServer") -> None:
         with a real remote branch and return an unrelated diff.
         """
         if source == "github":
-            if run_id in _github_diff_cache:
-                _github_diff_cache.move_to_end(run_id)
-                return {"diff": _github_diff_cache[run_id]}
-            result = await fetch_github_diff(repo, branch, base, token)
-            if "error" in result:
-                raise HTTPException(status_code=result.get("status", 502), detail=result["error"])
-            _github_diff_cache[run_id] = result["diff"]
-            if len(_github_diff_cache) > GITHUB_DIFF_CACHE_MAX:
-                _github_diff_cache.popitem(last=False)
-            return result
-
-        # Sandbox path — active runs only.
-        client = server.pool().get_client(run_id)
-        if not client:
-            raise HTTPException(status_code=409, detail="No active sandbox for run")
-        try:
-            return await client.repo.diff()
-        except Exception as exc:
-            log.warning("Sandbox diff failed for %s: %s", run_id, exc, exc_info=True)
-            raise HTTPException(status_code=502, detail=f"Sandbox unreachable: {exc}")
+            return await _diff_via_github(run_id, repo, branch, base, token)
+        return await _diff_via_sandbox(server, run_id)
 
     @app.get("/diff/repo/stats")
     async def diff_repo_stats(run_id: str) -> dict:
@@ -168,15 +209,7 @@ def register_diff_routes(app: FastAPI, server: "AgentServer") -> None:
         live runs — completed-run stats live in the dashboard DB (written
         at teardown) and the dashboard short-circuits before calling this.
         """
-        client = server.pool().get_client(run_id)
-        if not client:
-            raise HTTPException(status_code=409, detail="No active sandbox for run")
-        try:
-            files = await client.repo.diff_stats()
-        except Exception as exc:
-            log.warning("Sandbox diff_stats failed for %s: %s", run_id, exc, exc_info=True)
-            raise HTTPException(status_code=502, detail=f"Sandbox unreachable: {exc}")
-        return {"files": files}
+        return await _stats_via_sandbox(server, run_id)
 
     @app.get("/diff/tmp")
     async def diff_tmp(run_id: str) -> dict:
@@ -206,19 +239,4 @@ def register_diff_routes(app: FastAPI, server: "AgentServer") -> None:
         just proxy to the GitHub API. No sandbox needed because this runs
         before any run has started.
         """
-        if "/" not in repo:
-            raise HTTPException(status_code=400, detail="repo must be owner/name")
-        url = f"{GITHUB_API_BASE_URL}/repos/{repo}/branches"
-        headers = {
-            "Authorization": f"token {token}",
-            "Accept": "application/vnd.github+json",
-        }
-        async with httpx.AsyncClient(timeout=GITHUB_API_TIMEOUT_SEC) as client:
-            resp = await client.get(url, headers=headers, params={"per_page": GITHUB_BRANCHES_PER_PAGE})
-        if resp.status_code >= 400:
-            raise HTTPException(
-                status_code=resp.status_code,
-                detail=f"GitHub API error: {resp.text[:GITHUB_ERROR_PREVIEW_LEN]}",
-            )
-        data = resp.json()
-        return [b["name"] for b in data]
+        return await _list_github_branches(repo, token)
