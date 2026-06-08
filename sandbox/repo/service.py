@@ -341,38 +341,28 @@ class RepoService:
             )
         return int(count_str)
 
-    async def _branch_diff(self) -> list[dict]:
-        """File-level diff stats between working branch and base SHA."""
-        s = self.state
+    async def _diff_stats(self, base_sha: str, end_ref: str | None) -> list[dict]:
+        """File-level diff stats from base_sha, optionally to end_ref (else working tree)."""
+        refs = [base_sha] if end_ref is None else [base_sha, end_ref]
         numstat = await git(
-            ["diff", "--numstat", s.base_sha, s.working_branch],
-            CMD_TIMEOUT,
-            cwd=REPO_WORK_DIR,
+            ["diff", "--numstat"] + refs, CMD_TIMEOUT, cwd=REPO_WORK_DIR,
         )
         if numstat.exit_code != 0 or not numstat.stdout.strip():
             return []
         name_status = await git(
-            ["diff", "--name-status", s.base_sha, s.working_branch],
-            CMD_TIMEOUT,
-            cwd=REPO_WORK_DIR,
+            ["diff", "--name-status"] + refs, CMD_TIMEOUT, cwd=REPO_WORK_DIR,
         )
         if name_status.exit_code != 0:
             return []
         return parse_numstat(numstat.stdout, parse_name_status(name_status.stdout))
 
+    async def _branch_diff(self) -> list[dict]:
+        """File-level diff stats between working branch and base SHA."""
+        return await self._diff_stats(self.state.base_sha, self.state.working_branch)
+
     async def _worktree_diff(self, base_sha: str) -> list[dict]:
         """File-level diff stats including uncommitted working tree changes."""
-        numstat = await git(
-            ["diff", "--numstat", base_sha], CMD_TIMEOUT, cwd=REPO_WORK_DIR,
-        )
-        if numstat.exit_code != 0 or not numstat.stdout.strip():
-            return []
-        name_status = await git(
-            ["diff", "--name-status", base_sha], CMD_TIMEOUT, cwd=REPO_WORK_DIR,
-        )
-        if name_status.exit_code != 0:
-            return []
-        return parse_numstat(numstat.stdout, parse_name_status(name_status.stdout))
+        return await self._diff_stats(base_sha, None)
 
     async def _create_or_update_pr(
         self, title: str, description: str, base: str,
