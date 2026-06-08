@@ -27,15 +27,14 @@ from utils.constants import (
     DOCKER_SOCKET_PATH,
     ENV_KEY_ALLOW_DOCKER,
     ENV_KEY_IMAGE_TAG,
+    LOCAL_BACKEND_LOG_RING_BUFFER_SIZE,
+    LOCAL_BACKEND_STARTUP_TIMEOUT_SEC,
     SANDBOX_POOL_HEALTH_POLL_SEC,
     SANDBOX_POOL_IMAGE_BASE,
     SANDBOX_POOL_NETWORK,
 )
 
 log = logging.getLogger("sandbox_client.docker_local")
-
-_RING_BUFFER_SIZE: int = 100
-_STARTUP_TIMEOUT_SEC: int = 120
 
 DEFAULT_DOCKER_START_CMD: str = (
     "docker run --rm=false"
@@ -133,7 +132,7 @@ class DockerLocalBackend(SandboxBackend):
             env=env,
         )
 
-        ready_data = await self._wait_for_ready(proc, run_key, _STARTUP_TIMEOUT_SEC)
+        ready_data = await self._wait_for_ready(proc, run_key, LOCAL_BACKEND_STARTUP_TIMEOUT_SEC)
         ready_port: int = ready_data["port"]
 
         try:
@@ -249,7 +248,7 @@ class DockerLocalBackend(SandboxBackend):
         proc: asyncio.subprocess.Process,
     ) -> None:
         """Start async task draining remaining stdout into ring buffer."""
-        ring: collections.deque[str] = collections.deque(maxlen=_RING_BUFFER_SIZE)
+        ring: collections.deque[str] = collections.deque(maxlen=LOCAL_BACKEND_LOG_RING_BUFFER_SIZE)
         self._log_buffers[run_key] = ring
 
         async def _drain() -> None:

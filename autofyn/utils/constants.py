@@ -221,6 +221,8 @@ SANDBOX_POOL_IMAGE_BASE: str = "ghcr.io/signalpilot-labs/autofyn-sandbox"
 ENV_KEY_IMAGE_TAG: str = "AF_IMAGE_TAG"
 SANDBOX_POOL_NETWORK = "autofyn_default"  # compose default network
 SANDBOX_POOL_HEALTH_POLL_SEC = 2
+LOCAL_BACKEND_LOG_RING_BUFFER_SIZE: int = 100  # ring buffer for stdout log drain
+LOCAL_BACKEND_STARTUP_TIMEOUT_SEC: int = 120  # AF_READY wait timeout
 
 # Docker container statuses safe to auto-remove during start reconcile: a
 # container in one of these states is a stale leftover from an unclean
