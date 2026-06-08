@@ -42,7 +42,7 @@ from utils.models import (
     RunContext,
     get_fallback_model,
 )
-from utils.run_config import load_run_agent_config
+from utils.run_config import RunAgentConfig, load_run_agent_config
 
 log = logging.getLogger("lifecycle.bootstrap")
 
@@ -69,60 +69,20 @@ async def bootstrap_run(
 
     fallback_model = get_fallback_model(model)
 
-    # Resume: reuse existing branch if the DB already has one for this run.
-    # Pre-bootstrap runs have branch_name=NULL; fresh runs need a new name.
-    existing_branch = await db.get_run_branch_name(run_id)
-    branch_name = existing_branch or _make_branch_name(custom_prompt)
-    log.info("Run %s bootstrapping %s on branch %s", run_id, github_repo, branch_name)
-    await sandbox.repo.bootstrap(
-        repo=github_repo,
-        base_branch=base_branch,
-        working_branch=branch_name,
+    branch_name, is_resume, run_config = await _resolve_branch_and_clone(
+        sandbox, run_id, custom_prompt, github_repo, base_branch
     )
-    await log_audit(run_id, "repo_cloned", {"repo": github_repo, "branch": branch_name})
-    run_config = await load_run_agent_config(sandbox)
-    if existing_branch:
-        await db.update_run_status(run_id, RUN_STATUS_RUNNING)
-    else:
-        await db.update_run_branch(run_id, branch_name)
 
-    # On resume, seed cost/token accumulators from the DB so teardown
-    # doesn't overwrite the previous run's totals with zeros.
-    prior = await db.get_run_for_resume(run_id) if existing_branch else None
-    run = RunContext(
-        run_id=run_id,
-        agent_role=DEFAULT_AGENT_ROLE,
-        branch_name=branch_name,
-        base_branch=base_branch,
-        duration_minutes=duration_minutes,
-        github_repo=github_repo,
-        total_cost=float(prior["total_cost_usd"] or 0) if prior else 0.0,
-        total_input_tokens=int(prior["total_input_tokens"] or 0) if prior else 0,
-        total_output_tokens=int(prior["total_output_tokens"] or 0) if prior else 0,
-        cache_creation_input_tokens=int(prior["cache_creation_input_tokens"] or 0) if prior else 0,
-        cache_read_input_tokens=int(prior["cache_read_input_tokens"] or 0) if prior else 0,
+    run = await _build_run_context(
+        run_id, branch_name, base_branch, duration_minutes, github_repo, is_resume
     )
+
     inbox = UserInbox()
     time_lock = TimeLock(duration_minutes)
     reports = ReportStore(sandbox)
     metadata = MetadataStore(sandbox)
-    archiver = RoundArchiver(sandbox, run_id)
 
-    # Resume: if the agent volume already has rounds for this run_id,
-    # push them back into the new sandbox's /tmp and start counting
-    # from the next round. Fresh run: returns 0, we seed rounds.json.
-    starting_round = await archiver.restore_all()
-    # Ensure /tmp/memory/ exists on both fresh and resumed runs. A resumed run
-    # whose prior sandbox crashed before writing any memory files would
-    # otherwise land without the dir, and the first subagent's read would fail.
-    await sandbox.file_system.mkdir(MEMORY_DIR)
-    if starting_round == 0:
-        # Seed /tmp/memory/ with empty rounds.json and run_state.md so the
-        # first-round orchestrator sees the canonical schema.
-        await metadata.save(RoundsMetadata.empty())
-        await sandbox.file_system.write(RUN_STATE_PATH, RUN_STATE_TEMPLATE, append=False)
-    else:
-        log.info("Resumed run %s at round %d", run_id, starting_round + 1)
+    archiver, starting_round = await _prepare_memory(sandbox, run_id, metadata)
 
     run_start_time = time.time()
     base_session_options = _build_base_session_options(
@@ -161,7 +121,97 @@ async def bootstrap_run(
     )
 
 
-# ── Branch naming ────────────────────────────────────────────────────
+# ── Bootstrap helpers ────────────────────────────────────────────────
+
+
+async def _resolve_branch_and_clone(
+    sandbox: SandboxClient,
+    run_id: str,
+    custom_prompt: str,
+    github_repo: str,
+    base_branch: str,
+) -> tuple[str, bool, RunAgentConfig]:
+    """Resolve the working branch, clone the repo, persist branch/status to DB.
+
+    Returns (branch_name, is_resume, run_config).
+    """
+    # Resume: reuse existing branch if the DB already has one for this run.
+    # Pre-bootstrap runs have branch_name=NULL; fresh runs need a new name.
+    existing_branch = await db.get_run_branch_name(run_id)
+    branch_name = existing_branch or _make_branch_name(custom_prompt)
+    log.info("Run %s bootstrapping %s on branch %s", run_id, github_repo, branch_name)
+    await sandbox.repo.bootstrap(
+        repo=github_repo,
+        base_branch=base_branch,
+        working_branch=branch_name,
+    )
+    await log_audit(run_id, "repo_cloned", {"repo": github_repo, "branch": branch_name})
+    run_config = await load_run_agent_config(sandbox)
+    is_resume = bool(existing_branch)
+    if is_resume:
+        await db.update_run_status(run_id, RUN_STATUS_RUNNING)
+    else:
+        await db.update_run_branch(run_id, branch_name)
+    return branch_name, is_resume, run_config
+
+
+async def _build_run_context(
+    run_id: str,
+    branch_name: str,
+    base_branch: str,
+    duration_minutes: float,
+    github_repo: str,
+    is_resume: bool,
+) -> RunContext:
+    """Build the RunContext, seeding cost/token totals from the DB on resume."""
+    # On resume, seed cost/token accumulators from the DB so teardown
+    # doesn't overwrite the previous run's totals with zeros.
+    prior = await db.get_run_for_resume(run_id) if is_resume else None
+    return RunContext(
+        run_id=run_id,
+        agent_role=DEFAULT_AGENT_ROLE,
+        branch_name=branch_name,
+        base_branch=base_branch,
+        duration_minutes=duration_minutes,
+        github_repo=github_repo,
+        total_cost=float(prior["total_cost_usd"] or 0) if prior else 0.0,
+        total_input_tokens=int(prior["total_input_tokens"] or 0) if prior else 0,
+        total_output_tokens=int(prior["total_output_tokens"] or 0) if prior else 0,
+        cache_creation_input_tokens=int(prior["cache_creation_input_tokens"] or 0) if prior else 0,
+        cache_read_input_tokens=int(prior["cache_read_input_tokens"] or 0) if prior else 0,
+    )
+
+
+async def _prepare_memory(
+    sandbox: SandboxClient,
+    run_id: str,
+    metadata: MetadataStore,
+) -> tuple[RoundArchiver, int]:
+    """Create the archiver, restore prior rounds, and seed memory for fresh runs.
+
+    Returns (archiver, starting_round).
+    """
+    archiver = RoundArchiver(sandbox, run_id)
+
+    # Resume: if the agent volume already has rounds for this run_id,
+    # push them back into the new sandbox's /tmp and start counting
+    # from the next round. Fresh run: returns 0, we seed rounds.json.
+    starting_round = await archiver.restore_all()
+    # Ensure /tmp/memory/ exists on both fresh and resumed runs. A resumed run
+    # whose prior sandbox crashed before writing any memory files would
+    # otherwise land without the dir, and the first subagent's read would fail.
+    await sandbox.file_system.mkdir(MEMORY_DIR)
+    if starting_round == 0:
+        # Seed /tmp/memory/ with empty rounds.json and run_state.md so the
+        # first-round orchestrator sees the canonical schema.
+        await metadata.save(RoundsMetadata.empty())
+        await sandbox.file_system.write(RUN_STATE_PATH, RUN_STATE_TEMPLATE, append=False)
+    else:
+        log.info("Resumed run %s at round %d", run_id, starting_round + 1)
+    return archiver, starting_round
+
+
+# ── Branch naming ────────────────────────────────────────────────
 
 
 def _make_branch_name(custom_prompt: str) -> str:
