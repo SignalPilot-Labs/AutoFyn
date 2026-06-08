@@ -42,6 +42,27 @@ if not _AGENT_INTERNAL_SECRET:
 log = logging.getLogger("backend.utils")
 
 
+def _decrypt_json(setting: Setting, error_label: str) -> Any:
+    """Decrypt an encrypted setting value and parse it as JSON.
+
+    Raises CredentialDecryptionError on either decrypt failure (InvalidToken)
+    or JSON parse failure (JSONDecodeError/TypeError), with error_label
+    identifying the offending setting in the message.
+    """
+    try:
+        plain = crypto.decrypt(setting.value, MASTER_KEY_PATH)
+    except InvalidToken as e:
+        raise CredentialDecryptionError(
+            f"Stored credential '{error_label}' exists but cannot be decrypted — master key may have changed"
+        ) from e
+    try:
+        return json.loads(plain)
+    except (json.JSONDecodeError, TypeError) as e:
+        raise CredentialDecryptionError(
+            f"Stored credential '{error_label}' exists but cannot be parsed — data may be corrupted"
+        ) from e
+
+
 # ---------------------------------------------------------------------------
 # Session helper
 # ---------------------------------------------------------------------------
@@ -182,18 +203,7 @@ async def read_credentials(repo: str | None, sandbox_id: str | None) -> dict:
             env_key = f"env_vars:{repo}"
             env_setting = await s.get(Setting, env_key)
             if env_setting:
-                try:
-                    plain = crypto.decrypt(env_setting.value, MASTER_KEY_PATH)
-                except InvalidToken as e:
-                    raise CredentialDecryptionError(
-                        f"Stored credential '{env_key}' exists but cannot be decrypted — master key may have changed"
-                    ) from e
-                try:
-                    creds["env"] = json.loads(plain)
-                except (json.JSONDecodeError, TypeError) as e:
-                    raise CredentialDecryptionError(
-                        f"Stored credential '{env_key}' exists but cannot be parsed — data may be corrupted"
-                    ) from e
+                creds["env"] = _decrypt_json(env_setting, env_key)
 
             mounts_key = (
                 f"{REMOTE_MOUNTS_KEY_PREFIX}{repo}:{sandbox_id}"
@@ -212,18 +222,7 @@ async def read_credentials(repo: str | None, sandbox_id: str | None) -> dict:
             mcp_key = f"mcp_servers:{repo}"
             mcp_setting = await s.get(Setting, mcp_key)
             if mcp_setting:
-                try:
-                    plain = crypto.decrypt(mcp_setting.value, MASTER_KEY_PATH)
-                except InvalidToken as e:
-                    raise CredentialDecryptionError(
-                        f"Stored credential '{mcp_key}' exists but cannot be decrypted — master key may have changed"
-                    ) from e
-                try:
-                    creds["mcp_servers"] = json.loads(plain)
-                except (json.JSONDecodeError, TypeError) as e:
-                    raise CredentialDecryptionError(
-                        f"Stored credential '{mcp_key}' exists but cannot be parsed — data may be corrupted"
-                    ) from e
+                creds["mcp_servers"] = _decrypt_json(mcp_setting, mcp_key)
 
     return creds
 
@@ -264,18 +263,7 @@ async def read_token_pool(s: AsyncSession, for_update: bool) -> list[str]:
     else:
         pool = await s.get(Setting, "claude_tokens")
     if pool:
-        try:
-            decrypted = crypto.decrypt(pool.value, MASTER_KEY_PATH)
-        except InvalidToken as e:
-            raise CredentialDecryptionError(
-                "Token pool exists but cannot be decrypted — master key may have changed"
-            ) from e
-        try:
-            return json.loads(decrypted)
-        except (json.JSONDecodeError, TypeError) as e:
-            raise CredentialDecryptionError(
-                "Token pool decrypted but contains invalid JSON — data may be corrupted"
-            ) from e
+        return _decrypt_json(pool, "Token pool")
     return []
 
 

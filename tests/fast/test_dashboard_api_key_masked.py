@@ -12,6 +12,7 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from cryptography.fernet import InvalidToken
 
 SENTINEL_API_KEY = "SENTINEL_API_KEY_LONG_123456789XYZ"
 SENTINEL_OLD_PLAIN = "OLDPLAINTEXTSENTINEL"
@@ -37,6 +38,7 @@ def _setup_modules() -> None:
 _setup_modules()
 
 import backend.endpoints.settings as settings_mod  # noqa: E402
+from backend.constants import DECRYPT_ERROR_INDICATOR  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -158,12 +160,16 @@ class TestDashboardApiKeyMasked:
         assert result["dashboard_api_key"] == SENTINEL_OLD_PLAIN
 
     @pytest.mark.asyncio
-    async def test_get_settings_encrypted_but_undecryptable_returns_stars(self) -> None:
-        """When encrypted=True but Fernet key is wrong, falls back to '****'."""
+    async def test_get_settings_encrypted_but_undecryptable_returns_indicator(self) -> None:
+        """When encrypted=True but Fernet key is wrong (InvalidToken), returns DECRYPT_ERROR_INDICATOR.
+
+        The indicator is visually distinct from '****' so callers can tell broken
+        from valid-but-masked (T7 Fail-Fast fix).
+        """
         setting = _make_setting("dashboard_api_key", "CORRUPT_TOKEN", encrypted=True)
 
         def fake_decrypt_fail(ciphertext: str, key_path: str) -> str:
-            raise ValueError("Invalid Fernet token")
+            raise InvalidToken()
 
         with (
             patch.object(settings_mod, "session", _make_session([setting])),
@@ -172,4 +178,4 @@ class TestDashboardApiKeyMasked:
         ):
             result = await settings_mod.get_settings()
 
-        assert result.get("dashboard_api_key") == "****"
+        assert result.get("dashboard_api_key") == DECRYPT_ERROR_INDICATOR

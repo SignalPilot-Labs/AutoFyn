@@ -128,3 +128,36 @@ GIT_REMOTE_WRITE_RE: re.Pattern[str] = re.compile(
 # ── API error messages ──
 API_INVALID_JSON_MSG: str = "Invalid JSON in request body"
 API_MISSING_FIELD_MSG: str = "Missing required field: {field}"
+
+# ── Session Gate (MCP lifecycle tools) ──
+SESSION_GATE_SERVER_NAME: str = "session_gate"
+
+GATE_TOOL_END_ROUND: str = "end_round"
+GATE_TOOL_END_SESSION: str = "end_session"
+
+GATE_EVENT_END_ROUND: str = "end_round"
+GATE_EVENT_END_SESSION: str = "end_session"
+GATE_EVENT_AUDIT: str = "audit"
+GATE_EVENT_END_SESSION_DENIED: str = "end_session_denied"
+GATE_AUDIT_END_SESSION_DENIED: str = "end_session_denied"
+
+GATE_END_ROUND_DESC: str = (
+    "End THIS round so the Python loop can commit and start the"
+    " next round. Use when the plan → build → review cycle is"
+    " done for this round but the overall task is not yet"
+    " complete. Does NOT end the whole run — use `end_session`"
+    " for that."
+)
+GATE_END_SESSION_DESC: str = (
+    "End the ENTIRE run. Call only when there is nothing more"
+    " to build, fix, or verify across any future round. Denied"
+    " while the time lock has time remaining."
+)
+
+GATE_ROUND_ENDED_TEXT: str = "Round ended."
+GATE_SESSION_ENDED_TEXT: str = "Session ended."
+GATE_SESSION_LOCKED_TEXT: str = (
+    "SESSION LOCKED — {remaining}m remaining. "
+    "Keep working and start another round. Call `end_round` if "
+    "this round's cycle is complete."
+)

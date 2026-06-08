@@ -20,6 +20,7 @@ pulse task that pushes a synthetic stop event.
 import asyncio
 import logging
 from collections.abc import AsyncGenerator
+from dataclasses import dataclass
 
 from prompts.loader import render_idle_nudge
 from sandbox_client.client import SandboxClient
@@ -41,6 +42,19 @@ from utils.models import RoundResult, RunContext
 from utils.run_config import RunAgentConfig
 
 log = logging.getLogger("session.runner")
+
+
+@dataclass
+class _DriveState:
+    """Mutable per-iteration state carrier for _drive_stream."""
+
+    sse_task: asyncio.Task
+    op_task: asyncio.Task
+    idle_task: asyncio.Task[None] | None
+    stream_iter: AsyncGenerator[dict, None]
+    nudge_count: int
+    idle_since: float
+    is_rate_limited: bool
 
 
 class RoundRunner:
@@ -82,12 +96,7 @@ class RoundRunner:
             options["initial_prompt"] = initial_prompt
             session_id = await self._sandbox.session.start(options)
             dispatcher.set_sandbox_session_id(session_id)
-            log.info(
-                "[%s] Round %d started (session %s)",
-                self._rid,
-                round_number,
-                session_id,
-            )
+            log.info("[%s] Round %d started (session %s)", self._rid, round_number, session_id)
             control = UserControl(self._sandbox, session_id, self._inbox)
             watchdog = PulseWatchdog(
                 self._sandbox,
@@ -111,7 +120,22 @@ class RoundRunner:
                     await pulse
                 except asyncio.CancelledError:
                     pass
-        except asyncio.CancelledError:
+        except asyncio.CancelledError as exc:
+            return await self._handle_run_exception(exc, session_id, round_number)
+        except Exception as exc:
+            return await self._handle_run_exception(exc, session_id, round_number)
+        finally:
+            if session_id:
+                await self._safe_stop(session_id)
+
+    async def _handle_run_exception(
+        self,
+        exc: BaseException,
+        session_id: str | None,
+        round_number: int,
+    ) -> RoundResult:
+        """Map a fatal/cancelled round exception to a RoundResult + audit log."""
+        if isinstance(exc, asyncio.CancelledError):
             await log_audit(
                 self._run.run_id,
                 "killed",
@@ -120,30 +144,26 @@ class RoundRunner:
                 },
             )
             return RoundResult(status="stopped", session_id=session_id)
-        except Exception as exc:
-            log.error(
-                "[%s] Round %d fatal error: %s",
-                self._rid,
-                round_number,
-                exc,
-                exc_info=True,
-            )
-            await log_audit(
-                self._run.run_id,
-                "fatal_error",
-                {
-                    "round_number": round_number,
-                    "error": str(exc),
-                },
-            )
-            return RoundResult(
-                status="error",
-                session_id=session_id,
-                error=str(exc),
-            )
-        finally:
-            if session_id:
-                await self._safe_stop(session_id)
+        log.error(
+            "[%s] Round %d fatal error: %s",
+            self._rid,
+            round_number,
+            exc,
+            exc_info=True,
+        )
+        await log_audit(
+            self._run.run_id,
+            "fatal_error",
+            {
+                "round_number": round_number,
+                "error": str(exc),
+            },
+        )
+        return RoundResult(
+            status="error",
+            session_id=session_id,
+            error=str(exc),
+        )
 
     # ── Core drive loop ────────────────────────────────────────────────
 
@@ -155,92 +175,128 @@ class RoundRunner:
         round_number: int,
     ) -> RoundResult:
         """Race SSE stream vs user inbox vs idle timeout until the round ends."""
+        state = self._init_drive_state(session_id)
+        try:
+            while True:
+                terminal = await self._drive_iteration(
+                    state, dispatcher, control, session_id, round_number
+                )
+                if terminal is not None:
+                    return terminal
+        finally:
+            await self._teardown_stream(state)
+
+    def _init_drive_state(self, session_id: str) -> _DriveState:
+        """Open the SSE stream and create initial tasks. Returns populated _DriveState."""
         stream_iter: AsyncGenerator[dict, None] = self._sandbox.session.stream_events(
             session_id,
             after_seq=0,
         )
-
         sse_task = asyncio.create_task(_next_event(stream_iter))
         op_task = asyncio.create_task(self._inbox.next_event())
         idle_task: asyncio.Task[None] | None = asyncio.create_task(
             asyncio.sleep(self._run_config.session_idle_timeout_sec),
         )
-        nudge_count = 0
-        idle_since: float = asyncio.get_event_loop().time()
-        is_rate_limited = False
+        return _DriveState(
+            sse_task=sse_task,
+            op_task=op_task,
+            idle_task=idle_task,
+            stream_iter=stream_iter,
+            nudge_count=0,
+            idle_since=asyncio.get_event_loop().time(),
+            is_rate_limited=False,
+        )
 
+    async def _drive_iteration(
+        self,
+        state: _DriveState,
+        dispatcher: StreamDispatcher,
+        control: UserControl,
+        session_id: str,
+        round_number: int,
+    ) -> RoundResult | None:
+        """Run one pass of the drive loop. Mutates state. Returns terminal or None."""
+        wait_set: set[asyncio.Task] = {state.sse_task, state.op_task}
+        if state.idle_task is not None:
+            wait_set.add(state.idle_task)
+
+        done, _ = await asyncio.wait(
+            wait_set,
+            return_when=asyncio.FIRST_COMPLETED,
+        )
+
+        if state.op_task in done:
+            state.op_task, terminal = await self._handle_user_event(
+                state.op_task, control, session_id
+            )
+            if terminal is not None:
+                return terminal
+
+        fired_idle = state.idle_task
+
+        if state.sse_task in done:
+            state.sse_task, terminal, state.is_rate_limited = await self._handle_sse_event(
+                state.sse_task,
+                state.stream_iter,
+                dispatcher,
+                control,
+                session_id,
+                round_number,
+                state.is_rate_limited,
+            )
+            if terminal is not None:
+                return terminal
+            self._manage_idle_after_sse(state, dispatcher)
+
+        if state.idle_task is not None and state.idle_task is fired_idle and fired_idle in done:
+            terminal, state.nudge_count, state.idle_task = await self._handle_idle_timeout(
+                round_number, state.nudge_count, state.idle_since, session_id
+            )
+            if terminal is not None:
+                return terminal
+
+        return None
+
+    def _manage_idle_after_sse(
+        self,
+        state: _DriveState,
+        dispatcher: StreamDispatcher,
+    ) -> None:
+        """Cancel old idle timer and reset it based on current activity state."""
+        if state.idle_task is not None:
+            state.idle_task.cancel()
+        if (
+            dispatcher.has_tools_in_flight()
+            or dispatcher.has_active_subagents()
+            or state.is_rate_limited
+        ):
+            state.idle_task = None
+        else:
+            state.idle_task = asyncio.create_task(
+                asyncio.sleep(self._run_config.session_idle_timeout_sec),
+            )
+        state.nudge_count = 0
+        state.idle_since = asyncio.get_event_loop().time()
+
+    async def _teardown_stream(self, state: _DriveState) -> None:
+        """Cancel all outstanding tasks and close the SSE stream generator."""
+        state.sse_task.cancel()
+        state.op_task.cancel()
+        if state.idle_task is not None:
+            state.idle_task.cancel()
+        # Wait for sse_task cancellation to complete before closing the
+        # generator — aclose() on a running async generator raises
+        # "asynchronous generator is already running".
         try:
-            while True:
-                wait_set: set[asyncio.Task] = {sse_task, op_task}
-                if idle_task is not None:
-                    wait_set.add(idle_task)
-
-                done, _ = await asyncio.wait(
-                    wait_set,
-                    return_when=asyncio.FIRST_COMPLETED,
-                )
-
-                if op_task in done:
-                    op_task, terminal = await self._handle_user_event(
-                        op_task, control, session_id
-                    )
-                    if terminal is not None:
-                        return terminal
-
-                fired_idle = idle_task
-
-                if sse_task in done:
-                    sse_task, terminal, is_rate_limited = await self._handle_sse_event(
-                        sse_task,
-                        stream_iter,
-                        dispatcher,
-                        control,
-                        session_id,
-                        round_number,
-                        is_rate_limited,
-                    )
-                    if terminal is not None:
-                        return terminal
-                    # Manage idle timer after SSE activity.
-                    if idle_task is not None:
-                        idle_task.cancel()
-                    if (
-                        dispatcher.has_tools_in_flight()
-                        or dispatcher.has_active_subagents()
-                        or is_rate_limited
-                    ):
-                        idle_task = None
-                    else:
-                        idle_task = asyncio.create_task(
-                            asyncio.sleep(self._run_config.session_idle_timeout_sec),
-                        )
-                    nudge_count = 0
-                    idle_since = asyncio.get_event_loop().time()
-
-                if idle_task is not None and idle_task is fired_idle and fired_idle in done:
-                    terminal, nudge_count, idle_task = await self._handle_idle_timeout(
-                        round_number, nudge_count, idle_since, session_id
-                    )
-                    if terminal is not None:
-                        return terminal
-        finally:
-            sse_task.cancel()
-            op_task.cancel()
-            if idle_task is not None:
-                idle_task.cancel()
-            # Wait for sse_task cancellation to complete before closing the
-            # generator — aclose() on a running async generator raises
-            # "asynchronous generator is already running".
-            try:
-                await sse_task
-            except (asyncio.CancelledError, Exception):
-                pass
-            try:
-                await stream_iter.aclose()
-            except RuntimeError:
-                # Generator may still be unwinding from cancellation;
-                # the GC will finalize it.
-                pass
+            await state.sse_task
+        except (asyncio.CancelledError, Exception):
+            pass
+        try:
+            await state.stream_iter.aclose()
+        except RuntimeError:
+            # Generator may still be unwinding from cancellation;
+            # the GC will finalize it.
+            pass
 
     async def _handle_user_event(
         self,

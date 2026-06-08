@@ -32,7 +32,7 @@ class TestTokenPoolJsonError:
 
         with patch("backend.utils.crypto") as mock_crypto:
             mock_crypto.decrypt.return_value = "not valid json {{{{"
-            with pytest.raises(CredentialDecryptionError, match="invalid JSON"):
+            with pytest.raises(CredentialDecryptionError, match="cannot be parsed"):
                 await read_token_pool(mock_session, for_update=False)
 
     @pytest.mark.asyncio

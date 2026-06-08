@@ -65,6 +65,13 @@ SESSION_PERMISSION_MODE = "bypassPermissions"
 # agent loop waiting for a human response that never arrives in a headless
 # run — banned for orchestrator and subagents alike.
 DISALLOWED_SESSION_TOOLS: list[str] = ["AskUserQuestion"]
+# Effort level strings used in session options.
+EFFORT_MAX: str = "max"
+EFFORT_HIGH: str = "high"
+# Extra directories to make available inside the sandbox session.
+SESSION_ADD_DIRS: list[str] = ["/opt/autofyn/.claude/skills"]
+# Setting sources passed to the sandbox session start request.
+SESSION_SETTING_SOURCES: list[str] = ["project"]
 
 # ── Logging ──
 PROMPT_SUMMARY_LIMIT = 200  # Custom prompt preview in API responses and audit
@@ -221,6 +228,8 @@ SANDBOX_POOL_IMAGE_BASE: str = "ghcr.io/signalpilot-labs/autofyn-sandbox"
 ENV_KEY_IMAGE_TAG: str = "AF_IMAGE_TAG"
 SANDBOX_POOL_NETWORK = "autofyn_default"  # compose default network
 SANDBOX_POOL_HEALTH_POLL_SEC = 2
+LOCAL_BACKEND_LOG_RING_BUFFER_SIZE: int = 100  # ring buffer for stdout log drain
+LOCAL_BACKEND_STARTUP_TIMEOUT_SEC: int = 120  # AF_READY wait timeout
 
 # Docker container statuses safe to auto-remove during start reconcile: a
 # container in one of these states is a stale leftover from an unclean

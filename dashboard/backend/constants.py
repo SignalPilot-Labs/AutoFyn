@@ -41,6 +41,10 @@ SECRET_KEYS = frozenset({"git_token", "dashboard_api_key"})
 # Mask value used in GET /settings for encrypted env var values
 ENV_VARS_MASK_CHAR = "****"
 
+# Shown in GET /settings when an encrypted setting cannot be decrypted —
+# MUST be visually distinct from ENV_VARS_MASK_CHAR (a valid masked secret).
+DECRYPT_ERROR_INDICATOR = "!! decryption failed"
+
 # Default values
 DEFAULT_BASE_BRANCH = "main"
 DEFAULT_STOP_REASON = "User requested stop"
