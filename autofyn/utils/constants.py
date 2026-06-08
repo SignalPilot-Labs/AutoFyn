@@ -222,6 +222,14 @@ ENV_KEY_IMAGE_TAG: str = "AF_IMAGE_TAG"
 SANDBOX_POOL_NETWORK = "autofyn_default"  # compose default network
 SANDBOX_POOL_HEALTH_POLL_SEC = 2
 
+# Docker container statuses safe to auto-remove during start reconcile: a
+# container in one of these states is a stale leftover from an unclean
+# shutdown. Any other status (running/restarting/paused, or an unrecognized
+# value) is treated as live and fails loud — we never auto-destroy active work.
+DOCKER_REMOVABLE_CONTAINER_STATUSES: frozenset[str] = frozenset(
+    {"exited", "created", "dead"}
+)
+
 # ── Connector (remote sandbox) ──
 ENV_KEY_CONNECTOR_URL: str = "CONNECTOR_URL"
 ENV_KEY_CONNECTOR_SECRET: str = "CONNECTOR_SECRET"
