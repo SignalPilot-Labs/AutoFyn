@@ -332,9 +332,9 @@ export default function SettingsPage() {
 
             <RemoteSandboxes />
 
-            <SubagentSection activeRepo={activeRepo} />
-
             <DefaultModelSetting />
+
+            <SubagentSection activeRepo={activeRepo} />
 
             <div className="flex items-center justify-between pt-2">
               <div>
