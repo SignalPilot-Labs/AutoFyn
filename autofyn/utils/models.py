@@ -27,12 +27,14 @@ def get_fallback_model(model: str) -> str | None:
 
 
 if TYPE_CHECKING:
+    from config.constants import SubagentSpec
     from memory.archiver import RoundArchiver
     from memory.metadata import MetadataStore
     from memory.report import ReportStore
     from user.inbox import UserInbox
     from agent_session.time_lock import TimeLock
     from utils.run_config import RunAgentConfig
+    from utils.run_subagents import SubagentConfig
 
 
 # ── Sandbox repo phase results ──────────────────────────────────────
@@ -183,6 +185,8 @@ class RoundContext:
     user_env_keys: list[str]
     base_branch: str
     disabled_subagents: list[str]
+    subagent_specs: tuple[SubagentSpec, ...]
+    repo_prompt_bodies: dict[str, str]
 
 
 # ── Bootstrap ───────────────────────────────────────────────────────
@@ -207,6 +211,7 @@ class BootstrapResult:
     # >0 when resuming — the round loop starts counting from the next.
     starting_round: int
     run_config: RunAgentConfig
+    subagent_config: SubagentConfig
 
 
 # ── User events ─────────────────────────────────────────────────

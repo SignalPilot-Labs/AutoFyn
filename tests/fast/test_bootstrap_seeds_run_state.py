@@ -34,6 +34,7 @@ class TestBootstrapSeedsRunState:
             patch("lifecycle.bootstrap.log_audit", new_callable=AsyncMock),
             patch("lifecycle.bootstrap.load_run_agent_config", new_callable=AsyncMock),
         ):
+            mock_db.cache_repo_subagents = AsyncMock()
             mock_db.get_run_branch_name = AsyncMock(return_value=None)
             mock_db.update_run_branch = AsyncMock()
             mock_db.get_run_for_resume = AsyncMock(return_value=None)
@@ -66,6 +67,7 @@ class TestBootstrapSeedsRunState:
             patch("lifecycle.bootstrap.log_audit", new_callable=AsyncMock),
             patch("lifecycle.bootstrap.load_run_agent_config", new_callable=AsyncMock),
         ):
+            mock_db.cache_repo_subagents = AsyncMock()
             mock_db.get_run_branch_name = AsyncMock(return_value="autofyn/existing")
             mock_db.update_run_status = AsyncMock()
             mock_db.get_run_for_resume = AsyncMock(return_value={
@@ -110,6 +112,7 @@ class TestBootstrapSeedsRunState:
             patch("lifecycle.bootstrap.log_audit", new_callable=AsyncMock),
             patch("lifecycle.bootstrap.load_run_agent_config", new_callable=AsyncMock),
         ):
+            mock_db.cache_repo_subagents = AsyncMock()
             mock_db.get_run_branch_name = AsyncMock(return_value=None)
             mock_db.update_run_branch = AsyncMock()
             mock_db.get_run_for_resume = AsyncMock(return_value=None)

@@ -21,6 +21,8 @@ from lifecycle.round_loop import run_rounds
 from user.inbox import UserInbox
 from utils.models import RoundResult, RoundStatus, RunContext, BootstrapResult, RoundsMetadata
 from utils.run_config import RunAgentConfig
+from utils.run_subagents import SubagentConfig
+from config.loader import merge_subagents
 from db.constants import RUN_STATUS_COMPLETED
 
 
@@ -86,6 +88,7 @@ def _make_bootstrap(run: RunContext, run_config: RunAgentConfig) -> BootstrapRes
         run_start_time=0.0,
         starting_round=0,
         run_config=run_config,
+        subagent_config=SubagentConfig(specs=merge_subagents(None), bodies={}),
     )
 
 

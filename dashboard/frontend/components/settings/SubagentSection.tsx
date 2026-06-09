@@ -1,8 +1,8 @@
 /**Settings section for enabling/disabling shipped subagents per repo.
 
-Lists the roster grouped by phase with a checkbox per agent. Checked =
+Lists the subagents grouped by phase with a checkbox per agent. Checked =
 enabled. Toggling saves the disabled list for the active repo. The agent
-keeps the full roster when nothing is configured, so an empty disabled list
+keeps all subagents when nothing is configured, so an empty disabled list
 means "all enabled". At least one agent must stay enabled — the backend
 rejects disabling every agent.*/
 
@@ -159,6 +159,14 @@ export function SubagentSection({ activeRepo }: SubagentSectionProps) {
                           <span className="text-content font-mono text-accent-hover">
                             {agent.name}
                           </span>
+                          {agent.source === "repo" && (
+                            <span
+                              className="ml-1.5 align-middle text-content uppercase tracking-wide px-1 py-0.5 rounded"
+                              style={{ color: meta.color, backgroundColor: hexToRgba(meta.color, 0.12) }}
+                            >
+                              repo
+                            </span>
+                          )}
                           <span
                             className={`block text-content text-text-secondary ${isExpanded ? "" : "line-clamp-2"}`}
                           >

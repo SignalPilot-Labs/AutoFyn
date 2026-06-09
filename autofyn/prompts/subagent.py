@@ -1,15 +1,16 @@
-"""Subagent registry consumer — loads the roster and builds SDK agent defs.
+"""Subagent registry consumer — builds SDK agent defs from the merged list.
 
-The shipped roster lives in `config/subagents.json` (one source of truth,
-read by both the agent and the dashboard). `build_agent_defs()` loads each
-agent's markdown system prompt, drops any disabled by the user, and returns
-the plain dict the sandbox session endpoint expects under `options.agents`.
+The subagent list is the shipped `config/subagents.json` merged with the
+target repo's `.autofyn/subagents.json` overlay (built at bootstrap by
+`utils.run_subagents`). `build_agent_defs()` loads each agent's system
+prompt — locally for shipped agents, from the prefetched repo bodies for
+repo agents — drops any the user disabled, and returns the plain dict the
+sandbox session endpoint expects under `options.agents`.
 
 The orchestrator calls these subagents by name via the SDK's Agent tool.
 """
 
 from config.constants import SubagentSpec
-from config.loader import load_subagents
 from prompts.loader import load_markdown, render_environment
 from db.constants import SUPPORTED_SONNET
 from utils.constants import TIER_OPUS
@@ -31,19 +32,23 @@ def _resolve_subagent_model(tier: str, user_model: str) -> str:
     return SUPPORTED_SONNET
 
 
-def enabled_subagents(disabled_subagents: list[str] | None) -> tuple[SubagentSpec, ...]:
-    """Return the roster minus the user-disabled agents.
+def enabled_subagents(
+    subagent_specs: tuple[SubagentSpec, ...],
+    disabled_subagents: list[str] | None,
+) -> tuple[SubagentSpec, ...]:
+    """Return the merged subagent specs minus the user-disabled agents.
 
-    Fail-safe: if the disable list would empty the roster, it is ignored and
-    the full roster is returned — a run with zero subagents is a dead run.
-    Unknown names in the disable list are simply not matched.
+    The specs are already merged (shipped + repo overlay) upstream, so the
+    disable filter applies to both shipped and repo agents. Fail-safe: if the
+    disable list would empty the specs, it is ignored and the full set is
+    returned — a run with zero subagents is a dead run. Unknown names in the
+    disable list are simply not matched.
     """
-    roster = load_subagents()
     if not disabled_subagents:
-        return roster
+        return subagent_specs
     disabled = set(disabled_subagents)
-    kept = tuple(spec for spec in roster if spec.name not in disabled)
-    return kept if kept else roster
+    kept = tuple(spec for spec in subagent_specs if spec.name not in disabled)
+    return kept if kept else subagent_specs
 
 
 def build_agent_defs(
@@ -54,16 +59,18 @@ def build_agent_defs(
     tool_call_timeout_sec: int,
     base_branch: str,
     disabled_subagents: list[str] | None,
+    subagent_specs: tuple[SubagentSpec, ...],
+    repo_prompt_bodies: dict[str, str],
 ) -> dict[str, dict]:
     """Build subagent definitions for a single round.
 
-    Loads the roster from `config/subagents.json`, drops any agent the user
-    disabled, then for each remaining agent loads its markdown prompt and
+    Takes the merged subagent list (shipped + repo overlay), drops any agent
+    the user disabled, then for each remaining agent resolves its prompt body —
+    locally for shipped agents, from `repo_prompt_bodies` for repo agents — and
     appends the shared fragments. Placeholders (`{ROUND_NUMBER}`,
-    `{PRIOR_ROUND_NUMBER}`) are substituted with live values. Verification
-    and run-state fragments are appended per the agent's `needs_*` flags.
-    Subagents never receive `query/time-status` — only the orchestrator acts
-    on time.
+    `{PRIOR_ROUND_NUMBER}`) are substituted with live values. Verification and
+    run-state fragments are appended per the agent's `needs_*` flags. Subagents
+    never receive `query/time-status` — only the orchestrator acts on time.
     """
     prior_round_number = max(round_number - 1, 0)
     env_block = render_environment(
@@ -78,15 +85,12 @@ def build_agent_defs(
     verification_rules = load_markdown("query/verification-rules")
     per_role_rules = load_markdown("query/subagent-rules")
     run_state_context = (
-        load_markdown("query/prior-round-context")
-        if round_number > 1
-        else None
+        load_markdown("query/prior-round-context") if round_number > 1 else None
     )
     result: dict[str, dict] = {}
-    for spec in enabled_subagents(disabled_subagents):
-        markdown_key = spec.prompt_file.removesuffix(".md")
+    for spec in enabled_subagents(subagent_specs, disabled_subagents):
         agent_body = _substitute(
-            load_markdown(markdown_key),
+            _resolve_body(spec, repo_prompt_bodies),
             round_number,
             prior_round_number,
             base_branch,
@@ -109,6 +113,19 @@ def build_agent_defs(
             "tools": list(spec.tools),
         }
     return result
+
+
+def _resolve_body(spec: SubagentSpec, repo_prompt_bodies: dict[str, str]) -> str:
+    """Return the raw prompt body for an agent.
+
+    A repo agent's body was prefetched from the repo at bootstrap and lives in
+    `repo_prompt_bodies`; a shipped agent loads its markdown from the local
+    install dir.
+    """
+    repo_body = repo_prompt_bodies.get(spec.name)
+    if repo_body is not None:
+        return repo_body
+    return load_markdown(spec.prompt_file.removesuffix(".md"))
 
 
 def _substitute(text: str, round_number: int, prior_round_number: int, base_branch: str) -> str:

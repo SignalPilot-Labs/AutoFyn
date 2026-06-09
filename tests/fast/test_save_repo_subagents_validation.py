@@ -2,7 +2,7 @@
 
 The endpoint must reject (1) unknown agent names and (2) the all-disabled
 case — a run needs at least one subagent. A valid partial list is persisted;
-an empty list deletes the setting (full roster re-enabled).
+an empty list deletes the setting (all subagents re-enabled).
 """
 
 from __future__ import annotations
@@ -86,7 +86,14 @@ class TestSaveRepoSubagentsValidation:
         body = SaveDisabledSubagentsRequest(disabled=[])
         ctx, session_mock = _make_session_ctx()
         existing = MagicMock()
-        session_mock.get = AsyncMock(return_value=existing)
+        # The disabled-setting row exists; no repo-subagents cache row (the
+        # merged-subagents read must see None for the cache key, not `existing`).
+        existing_disabled = existing
+        session_mock.get = AsyncMock(
+            side_effect=lambda _model, key: existing_disabled
+            if key.startswith("disabled_subagents:")
+            else None
+        )
         with patch.object(settings_mod, "session", ctx):
             result = await settings_mod.save_repo_subagents("org/repo", body)
         assert result["disabled_count"] == 0

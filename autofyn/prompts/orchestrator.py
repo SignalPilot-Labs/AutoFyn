@@ -8,7 +8,7 @@ rounds summary, prior-round file index, user messages).
 
 from claude_agent_sdk.types import SystemPromptPreset
 
-from config.constants import SUBAGENT_PHASE_LABELS, SUBAGENT_PHASE_ORDER
+from config.constants import SUBAGENT_PHASE_LABELS, SUBAGENT_PHASE_ORDER, SubagentSpec
 from prompts.loader import load_markdown, render_environment, render_time_status
 from prompts.subagent import enabled_subagents
 from utils.constants import ROUND_DIR_PREFIX, STUCK_RECOVERY_REPORT_NAME
@@ -58,17 +58,24 @@ def _apply_placeholders(template: str, context: RoundContext) -> str:
     return (
         template
         .replace("{ROUND_NUMBER}", str(context.round_number))
-        .replace("{AVAILABLE_SUBAGENTS}", _render_subagent_list(context.disabled_subagents))
+        .replace(
+            "{AVAILABLE_SUBAGENTS}",
+            _render_subagent_list(context.subagent_specs, context.disabled_subagents),
+        )
     )
 
 
-def _render_subagent_list(disabled_subagents: list[str]) -> str:
+def _render_subagent_list(
+    subagent_specs: tuple[SubagentSpec, ...],
+    disabled_subagents: list[str],
+) -> str:
     """Render the enabled subagents grouped by phase, as markdown bullets.
 
-    Disabled agents are omitted entirely so the orchestrator never sees a
-    name it cannot dispatch. Phases with no enabled agent are skipped.
+    Works over the merged subagent specs (shipped + repo overlay). Disabled
+    agents are omitted entirely so the orchestrator never sees a name it cannot
+    dispatch. Phases with no enabled agent are skipped.
     """
-    specs = enabled_subagents(disabled_subagents)
+    specs = enabled_subagents(subagent_specs, disabled_subagents)
     lines: list[str] = []
     for phase in SUBAGENT_PHASE_ORDER:
         in_phase = [s for s in specs if s.type == phase]

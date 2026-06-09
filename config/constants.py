@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 SANDBOX_REPO_DIR: str = "/home/agentuser/repo"
 
-# Subagent registry — the shipped roster lives in config/subagents.json so
+# Subagent registry — the shipped subagents live in config/subagents.json so
 # both the agent (which builds the SDK agent defs) and the dashboard (which
 # renders the toggle UI) read one source of truth.
 SUBAGENTS_FILE: str = "subagents.json"
@@ -20,14 +20,39 @@ SUBAGENT_PHASE_LABELS: dict[str, str] = {
     "review": "Review",
 }
 
-# Valid subagent `type` values (phase grouping). A roster entry with any
+# Valid subagent `type` values (phase grouping). A subagent entry with any
 # other type is rejected at load.
 SUBAGENT_TYPES: frozenset[str] = frozenset(SUBAGENT_PHASE_ORDER)
+
+# Valid `model` tier strings for a subagent. A repo-defined agent with any
+# other tier is rejected at load (a typo would otherwise silently downgrade
+# to sonnet). These are the canonical tier literals — the agent container's
+# utils.constants.TIER_OPUS/TIER_SONNET hold the same values, but config is
+# the lowest layer and cannot import from autofyn.
+ALLOWED_SUBAGENT_MODELS: frozenset[str] = frozenset({"opus", "sonnet"})
+
+# Tools a repo-defined subagent may request. Explicit literal of the tools
+# the shipped subagents use — NOT derived from subagents.json at runtime, so
+# the whitelist can't drift with the data it guards. A repo agent requesting
+# any tool outside this set is rejected at load.
+ALLOWED_SUBAGENT_TOOLS: frozenset[str] = frozenset(
+    {"Bash", "Edit", "Glob", "Grep", "Read", "WebFetch", "WebSearch", "Write"}
+)
+
+# Upper bound on repo-defined subagents — caps the per-agent prompt-body
+# HTTP reads done at bootstrap. Well above any realistic count.
+MAX_REPO_SUBAGENTS: int = 32
+
+# `needs_verification` is optional in a subagent entry — when omitted, the
+# agent does not get the verification-rules fragment (run tests/typecheck).
+# Only agents that inspect runnable code opt in. Repo-defined agents can omit
+# it entirely.
+DEFAULT_NEEDS_VERIFICATION: bool = False
 
 
 @dataclass(frozen=True)
 class SubagentSpec:
-    """One shipped subagent's metadata, loaded from config/subagents.json.
+    """One subagent's metadata, from config/subagents.json or a repo overlay.
 
     `name`/`type`/`description` are UI-facing (rendered in the settings
     toggle). `model`/`tools`/`prompt_file` are runtime-only (consumed when
