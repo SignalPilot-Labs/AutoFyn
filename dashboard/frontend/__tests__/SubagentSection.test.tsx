@@ -1,9 +1,9 @@
 /**
  * Behavioral tests for SubagentSection — per-repo subagent enable/disable.
  *
- * Covers: roster renders from the API; toggling an enabled agent persists it
- * into the disabled list; a save failure rolls the toggle back; and no active
- * repo shows the hint instead of fetching.
+ * Covers: subagents render from the API; toggling an enabled agent persists
+ * it into the disabled list; a save failure rolls the toggle back; and no
+ * active repo shows the hint instead of fetching.
  */
 
 import { render, screen, waitFor, act } from "@testing-library/react";
@@ -19,7 +19,7 @@ vi.mock("@/lib/settings-api", () => ({
 
 import { SubagentSection } from "@/components/settings/SubagentSection";
 
-const ROSTER = {
+const SUBAGENTS = {
   repo: "org/repo",
   agents: [
     { name: "architect", type: "plan", description: "designs work" },
@@ -32,12 +32,12 @@ const ROSTER = {
 beforeEach(() => {
   fetchRepoSubagents.mockReset();
   saveRepoSubagents.mockReset();
-  fetchRepoSubagents.mockResolvedValue({ ...ROSTER, disabled: [] });
+  fetchRepoSubagents.mockResolvedValue({ ...SUBAGENTS, disabled: [] });
   saveRepoSubagents.mockResolvedValue({ ok: true, disabled_count: 0 });
 });
 
 describe("SubagentSection", () => {
-  it("renders the roster grouped by phase once loaded", async () => {
+  it("renders the subagents grouped by phase once loaded", async () => {
     render(<SubagentSection activeRepo="org/repo" />);
     await waitFor(() => expect(screen.getByText("architect")).toBeInTheDocument());
     expect(screen.getByText("code-reviewer")).toBeInTheDocument();

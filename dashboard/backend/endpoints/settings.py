@@ -240,11 +240,11 @@ async def save_repo_mcp_servers(repo: str, body: SaveMcpServersRequest) -> dict:
 
 @router.get("/repos/{repo:path}/subagents")
 async def get_repo_subagents(repo: str) -> dict:
-    """Get the subagent roster and which ones are disabled for a repo.
+    """Get the shipped subagents and which ones are disabled for a repo.
 
-    `agents` is the shipped roster (name/type/description) the toggle UI
+    `agents` is the shipped list (name/type/description) the toggle UI
     renders; `disabled` is the user's per-repo off-list. No setting → none
-    disabled (full roster enabled).
+    disabled (all enabled).
     """
     repo = validate_repo_slug(repo)
     agents = [
@@ -268,18 +268,18 @@ async def save_repo_subagents(repo: str, body: SaveDisabledSubagentsRequest) -> 
     """Save the disabled-subagents list for a repo. Full replacement.
 
     Rejects unknown agent names and the all-disabled case — a run needs at
-    least one subagent. An empty list deletes the setting (full roster).
+    least one subagent. An empty list deletes the setting (all enabled).
     """
     repo = validate_repo_slug(repo)
-    roster = {spec.name for spec in load_subagents()}
+    shipped_names = {spec.name for spec in load_subagents()}
     disabled = set(body.disabled)
-    unknown = disabled - roster
+    unknown = disabled - shipped_names
     if unknown:
         raise HTTPException(
             status_code=422,
             detail=f"Unknown subagent(s): {', '.join(sorted(unknown))}",
         )
-    if disabled >= roster:
+    if disabled >= shipped_names:
         raise HTTPException(
             status_code=422,
             detail="Cannot disable every subagent — at least one must stay enabled",

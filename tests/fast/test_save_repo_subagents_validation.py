@@ -2,7 +2,7 @@
 
 The endpoint must reject (1) unknown agent names and (2) the all-disabled
 case — a run needs at least one subagent. A valid partial list is persisted;
-an empty list deletes the setting (full roster re-enabled).
+an empty list deletes the setting (all subagents re-enabled).
 """
 
 from __future__ import annotations

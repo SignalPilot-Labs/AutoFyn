@@ -4,6 +4,7 @@ A disabled agent must not appear in the SDK `options.agents` dict, so the
 orchestrator has no way to dispatch it. Enabled agents are unaffected.
 """
 
+from config.loader import merge_subagents
 from db.constants import SUPPORTED_OPUS
 from prompts.subagent import build_agent_defs
 
@@ -17,6 +18,8 @@ def _defs(disabled: list[str] | None) -> dict[str, dict]:
         tool_call_timeout_sec=600,
         base_branch="main",
         disabled_subagents=disabled,
+        subagent_specs=merge_subagents(None),
+        repo_prompt_bodies={},
     )
 
 

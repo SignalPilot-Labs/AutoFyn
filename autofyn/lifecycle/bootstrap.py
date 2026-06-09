@@ -47,6 +47,7 @@ from utils.models import (
     get_fallback_model,
 )
 from utils.run_config import RunAgentConfig, load_run_agent_config
+from utils.run_subagents import SubagentConfig, load_repo_subagents
 
 log = logging.getLogger("lifecycle.bootstrap")
 
@@ -73,7 +74,7 @@ async def bootstrap_run(
 
     fallback_model = get_fallback_model(model)
 
-    branch_name, is_resume, run_config = await _resolve_branch_and_clone(
+    branch_name, is_resume, run_config, subagent_config = await _resolve_branch_and_clone(
         sandbox, run_id, custom_prompt, github_repo, base_branch
     )
 
@@ -122,6 +123,7 @@ async def bootstrap_run(
         run_start_time=run_start_time,
         starting_round=starting_round,
         run_config=run_config,
+        subagent_config=subagent_config,
     )
 
 
@@ -134,10 +136,10 @@ async def _resolve_branch_and_clone(
     custom_prompt: str,
     github_repo: str,
     base_branch: str,
-) -> tuple[str, bool, RunAgentConfig]:
+) -> tuple[str, bool, RunAgentConfig, SubagentConfig]:
     """Resolve the working branch, clone the repo, persist branch/status to DB.
 
-    Returns (branch_name, is_resume, run_config).
+    Returns (branch_name, is_resume, run_config, subagent_config).
     """
     # Resume: reuse existing branch if the DB already has one for this run.
     # Pre-bootstrap runs have branch_name=NULL; fresh runs need a new name.
@@ -151,12 +153,13 @@ async def _resolve_branch_and_clone(
     )
     await log_audit(run_id, "repo_cloned", {"repo": github_repo, "branch": branch_name})
     run_config = await load_run_agent_config(sandbox)
+    subagent_config = await load_repo_subagents(sandbox)
     is_resume = bool(existing_branch)
     if is_resume:
         await db.update_run_status(run_id, RUN_STATUS_RUNNING)
     else:
         await db.update_run_branch(run_id, branch_name)
-    return branch_name, is_resume, run_config
+    return branch_name, is_resume, run_config, subagent_config
 
 
 async def _build_run_context(
