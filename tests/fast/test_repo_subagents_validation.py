@@ -10,6 +10,7 @@ import json
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
+import httpx
 import pytest
 
 from config.constants import MAX_REPO_SUBAGENTS
@@ -117,7 +118,42 @@ class TestRepoSubagentsValidation:
             await load_repo_subagents(sandbox)
 
     @pytest.mark.asyncio
-    async def test_malformed_json_propagates(self) -> None:
+    async def test_malformed_json_rejected_with_clear_error(self) -> None:
         sandbox = _sandbox_with_raw("{not valid json")
-        with pytest.raises(json.JSONDecodeError):
+        with pytest.raises(RuntimeError, match="not valid JSON"):
+            await load_repo_subagents(sandbox)
+
+    @pytest.mark.asyncio
+    async def test_non_string_name_rejected(self) -> None:
+        sandbox = _sandbox_with_json([_entry(name=123)])
+        with pytest.raises(RuntimeError, match="non-empty string"):
+            await load_repo_subagents(sandbox)
+
+    @pytest.mark.asyncio
+    async def test_string_tools_rejected(self) -> None:
+        # "Read" as a bare string must NOT be iterated char-by-char.
+        sandbox = _sandbox_with_json([_entry(tools="Read")])
+        with pytest.raises(RuntimeError, match="list of strings"):
+            await load_repo_subagents(sandbox)
+
+    @pytest.mark.asyncio
+    async def test_non_string_tool_entry_rejected(self) -> None:
+        sandbox = _sandbox_with_json([_entry(tools=["Read", 7])])
+        with pytest.raises(RuntimeError, match="list of strings"):
+            await load_repo_subagents(sandbox)
+
+    @pytest.mark.asyncio
+    async def test_unreadable_prompt_file_reported_clearly(self) -> None:
+        # A prompt_file the sandbox rejects (dir / symlink-escape / oversize)
+        # surfaces as an httpx error — wrapped into a clear RuntimeError.
+        request = httpx.Request("POST", "http://sandbox/file_system/read")
+        response = httpx.Response(413, request=request)
+        sandbox = MagicMock()
+        sandbox.file_system.read = AsyncMock(
+            side_effect=[
+                json.dumps([_entry()]),
+                httpx.HTTPStatusError("too large", request=request, response=response),
+            ]
+        )
+        with pytest.raises(RuntimeError, match="could not be read"):
             await load_repo_subagents(sandbox)

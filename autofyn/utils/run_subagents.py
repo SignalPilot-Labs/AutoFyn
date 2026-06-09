@@ -17,6 +17,8 @@ import json
 from dataclasses import dataclass
 from pathlib import PurePosixPath
 
+import httpx
+
 from config.constants import (
     ALLOWED_SUBAGENT_MODELS,
     ALLOWED_SUBAGENT_TOOLS,
@@ -57,7 +59,11 @@ async def load_repo_subagents(sandbox: SandboxClient) -> SubagentConfig:
     if raw is None:
         return SubagentConfig(specs=merge_subagents(None), bodies={})
 
-    repo_specs = _parse_repo_specs(json.loads(raw))
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f".autofyn/subagents.json is not valid JSON: {exc}") from exc
+    repo_specs = _parse_repo_specs(parsed)
     specs = merge_subagents(repo_specs)
     bodies = await _prefetch_repo_bodies(sandbox, repo_specs)
     return SubagentConfig(specs=specs, bodies=bodies)
@@ -93,12 +99,19 @@ def _parse_repo_spec(entry: object) -> SubagentSpec:
     if not isinstance(entry, dict):
         raise RuntimeError("Each repo subagent entry must be a JSON object")
     name = entry["name"]
+    if not isinstance(name, str) or not name:
+        raise RuntimeError(f"Repo subagent 'name' must be a non-empty string, got: {name!r}")
+    tools = entry["tools"]
+    if not isinstance(tools, list) or not all(isinstance(t, str) for t in tools):
+        raise RuntimeError(
+            f"Repo subagent '{name}' tools must be a list of strings, got: {tools!r}"
+        )
     if entry["model"] not in ALLOWED_SUBAGENT_MODELS:
         raise RuntimeError(
             f"Repo subagent '{name}' has unknown model tier '{entry['model']}' — "
             f"must be one of {sorted(ALLOWED_SUBAGENT_MODELS)}"
         )
-    unknown_tools = set(entry["tools"]) - ALLOWED_SUBAGENT_TOOLS
+    unknown_tools = set(tools) - ALLOWED_SUBAGENT_TOOLS
     if unknown_tools:
         raise RuntimeError(
             f"Repo subagent '{name}' requests unknown tools: "
@@ -131,7 +144,14 @@ async def _prefetch_repo_bodies(
     """Fetch each repo agent's prompt body from the sandbox, fail-fast."""
     bodies: dict[str, str] = {}
     for spec in repo_specs:
-        body = await sandbox.file_system.read(f"{WORK_DIR}/{spec.prompt_file}")
+        try:
+            body = await sandbox.file_system.read(f"{WORK_DIR}/{spec.prompt_file}")
+        except httpx.HTTPStatusError as exc:
+            raise RuntimeError(
+                f"Repo subagent '{spec.name}' prompt_file could not be read "
+                f"(must be a file inside the repo, under 2 MiB): "
+                f"{spec.prompt_file} ({exc.response.status_code})"
+            ) from exc
         if body is None:
             raise RuntimeError(
                 f"Repo subagent '{spec.name}' prompt_file not found: "
