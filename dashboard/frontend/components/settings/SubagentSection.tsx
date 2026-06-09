@@ -167,20 +167,11 @@ export function SubagentSection({ activeRepo }: SubagentSectionProps) {
                               repo
                             </span>
                           )}
-                          <span
-                            className="block text-content text-text-secondary overflow-hidden"
-                            style={
-                              isExpanded
-                                ? undefined
-                                : {
-                                    display: "-webkit-box",
-                                    WebkitLineClamp: 2,
-                                    WebkitBoxOrient: "vertical",
-                                  }
-                            }
-                          >
-                            {agent.description}
-                          </span>
+                          {isExpanded && (
+                            <span className="block text-content text-text-secondary">
+                              {agent.description}
+                            </span>
+                          )}
                           <button
                             type="button"
                             onClick={() => toggleExpand(agent.name)}
