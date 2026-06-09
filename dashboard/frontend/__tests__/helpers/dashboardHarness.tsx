@@ -7,12 +7,13 @@
  *
  *  - sseControl: spies for connect/disconnect/clearEvents + fire the
  *    onRunEnded / onSessionResumed callbacks useDashboard passes to useSSE.
- *  - runsControl: set the runs list and capture refresh() calls.
+ *  - runsControl: set the runs list (runsControl.current.runs) and capture
+ *    refresh() calls.
  *  - apiMocks: the mocked fetch* functions, so a test can stub responses,
  *    make loadRunHistory hang/reject, etc.
  *
- * Call installDashboardMocks() at module top (it registers vi.mock factories),
- * then use the exported control objects inside tests.
+ * Importing this module registers the vi.mock factories (hoisted to module
+ * top); tests then drive the exported control objects.
  */
 
 import { vi } from "vitest";
@@ -30,7 +31,6 @@ export interface SseControl {
 
 export interface RunsControl {
   refresh: ReturnType<typeof vi.fn>;
-  setRuns: (runs: unknown[]) => void;
   current: { runs: unknown[]; loading: boolean };
 }
 
@@ -47,7 +47,6 @@ export const sseControl: SseControl = {
 
 export const runsControl: RunsControl = {
   refresh: vi.fn(),
-  setRuns: () => undefined, // replaced inside the mock factory's hook
   current: { runs: [], loading: false },
 };
 

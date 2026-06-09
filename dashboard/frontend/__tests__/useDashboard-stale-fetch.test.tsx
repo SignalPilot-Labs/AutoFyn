@@ -32,6 +32,8 @@ import {
 
 import { useDashboard } from "@/hooks/useDashboard";
 
+const ACTIVE_REPO_KEY = "sp_improve_active_repo";
+
 beforeEach(() => {
   localStorage.clear();
   resetDashboardMocks();
@@ -43,36 +45,39 @@ afterEach(() => {
 });
 
 describe("useDashboard init fetch: stale-result guard via initGenRef", () => {
-  it("does not apply state (or warn) when unmounted before init fetches resolve", async () => {
-    // Capture the resolvers so the init fetches stay pending across unmount.
-    let resolveSettings!: (v: unknown) => void;
+  it("discards a stale init fetch that resolves after unmount", async () => {
+    // A stored repo that the (pending) fetchRepos result will say no longer
+    // exists. On a LIVE mount the init effect would react to this by picking a
+    // fallback repo and overwriting localStorage. We use that observable
+    // localStorage write as the witness for "the stale result was applied".
+    localStorage.setItem(ACTIVE_REPO_KEY, "stale/repo");
+
+    // Keep the init fetchRepos pending so it can resolve AFTER unmount.
     let resolveRepos!: (v: unknown) => void;
-    apiMocks.fetchSettingsStatus.mockImplementationOnce(
-      () => new Promise((res) => { resolveSettings = res; }),
-    );
+    apiMocks.fetchSettingsStatus.mockResolvedValueOnce({ configured: true });
     apiMocks.fetchRepos.mockImplementationOnce(
       () => new Promise((res) => { resolveRepos = res; }),
     );
 
-    // Any console.error during the act() below (React's "state update on an
-    // unmounted component" warning surfaces here) fails the test.
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
-
     const { unmount } = renderHook(() => useDashboard());
 
-    // Unmount before the init fetches resolve — the cleanup bumps initGenRef.
+    // Unmount before fetchRepos resolves — the effect cleanup bumps initGenRef,
+    // so the pending .then() must short-circuit on its generation check.
     unmount();
 
-    // Now the stale fetches resolve. The guard must discard them: no setState,
-    // no throw, no warning.
+    // Now the stale fetch resolves with a list that does NOT contain
+    // "stale/repo" but DOES have a repo with runs (the fallback the unguarded
+    // code would pick). The guard must discard this entirely.
     await act(async () => {
-      resolveSettings({ configured: true });
-      resolveRepos([]);
+      resolveRepos([{ repo: "other/repo", run_count: 3 }]);
       await Promise.resolve();
     });
 
-    expect(errorSpy).not.toHaveBeenCalled();
-    errorSpy.mockRestore();
+    // Guard held: localStorage was never overwritten with the fallback. If the
+    // initGenRef guard were removed, the stale .then() would run
+    // setActiveRepoFilter("other/repo") + setItem and this would be
+    // "other/repo".
+    expect(localStorage.getItem(ACTIVE_REPO_KEY)).toBe("stale/repo");
   });
 
   it("applies settingsStatus on a normal mount", async () => {

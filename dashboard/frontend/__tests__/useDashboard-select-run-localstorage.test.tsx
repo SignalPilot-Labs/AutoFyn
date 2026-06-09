@@ -62,16 +62,12 @@ describe("handleSelectRun: persists last run id only on a successful load (BUG 1
 
     const { result } = renderHook(() => useDashboard());
 
-    // Make the load reject. handleSelectRun catches internally, but wrap in
-    // try/catch defensively so a rejection never fails the test outright.
+    // handleSelectRun catches the load error internally and resolves normally,
+    // so no try/catch is needed around the await here.
     apiMocks.loadRunHistory.mockRejectedValueOnce(new Error("network down"));
 
     await act(async () => {
-      try {
-        await result.current.handleSelectRun("bad-run");
-      } catch {
-        // handleSelectRun swallows the load error internally; ignore here.
-      }
+      await result.current.handleSelectRun("bad-run");
     });
 
     // The failed run id must never have reached localStorage.
@@ -100,11 +96,7 @@ describe("handleSelectRun: persists last run id only on a successful load (BUG 1
 
     apiMocks.loadRunHistory.mockRejectedValueOnce(new Error("404"));
     await act(async () => {
-      try {
-        await result.current.handleSelectRun("bad-run");
-      } catch {
-        // swallowed internally
-      }
+      await result.current.handleSelectRun("bad-run");
     });
 
     // The bad id never overwrote the good one.

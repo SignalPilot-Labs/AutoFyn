@@ -37,17 +37,11 @@ afterEach(() => {
 });
 
 describe("health poll: error handling", () => {
-  it("sets agentHealth to null when fetchAgentHealth rejects on mount", async () => {
-    apiMocks.fetchAgentHealth.mockRejectedValue(new Error("network down"));
-
-    const { result } = renderHook(() => useDashboard());
-
-    // The poll runs once immediately on mount; wait for the rejected check to
-    // settle and flip agentHealth to null.
-    await waitFor(() => expect(result.current.agentHealth).toBeNull());
-    expect(result.current.agentHealth).toBeNull();
-  });
-
+  // Note: there is deliberately no "rejects on mount → null" test. agentHealth
+  // STARTS null, so such a test passes whether or not the catch exists (it is
+  // vacuous). The test below is the real one: it drives a SUCCESSFUL poll first
+  // so agentHealth is non-null, THEN forces a rejection and asserts it flips
+  // back to null — which fails if the catch's setAgentHealth(null) is removed.
   it("does not leave health stale after a later poll error", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     try {
