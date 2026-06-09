@@ -168,7 +168,16 @@ export function SubagentSection({ activeRepo }: SubagentSectionProps) {
                             </span>
                           )}
                           <span
-                            className={`block text-content text-text-secondary ${isExpanded ? "" : "line-clamp-2"}`}
+                            className="block text-content text-text-secondary overflow-hidden"
+                            style={
+                              isExpanded
+                                ? undefined
+                                : {
+                                    display: "-webkit-box",
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: "vertical",
+                                  }
+                            }
                           >
                             {agent.description}
                           </span>

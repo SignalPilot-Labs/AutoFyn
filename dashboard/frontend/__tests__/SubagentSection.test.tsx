@@ -118,16 +118,18 @@ describe("SubagentSection", () => {
     render(<SubagentSection activeRepo="org/repo" />);
     await waitFor(() => expect(screen.getByText("architect")).toBeInTheDocument());
 
-    // Collapsed: the description is line-clamped.
+    // Collapsed: the clamp is applied via inline style (immune to class-order
+    // overrides), so the description shows as a 2-line -webkit-box.
     const desc = screen.getByText("designs work");
-    expect(desc.className).toContain("line-clamp-2");
+    expect(desc.style.display).toBe("-webkit-box");
+    expect(desc.style.webkitLineClamp).toBe("2");
 
     await act(async () => {
       screen.getAllByText("more")[0].click();
     });
 
-    // Expanded: the clamp is removed so the whole description shows.
-    expect(screen.getByText("designs work").className).not.toContain("line-clamp-2");
+    // Expanded: the inline clamp is removed so the whole description shows.
+    expect(screen.getByText("designs work").style.display).not.toBe("-webkit-box");
   });
 
   it("badges a repo-defined agent and shows it alongside shipped ones", async () => {
