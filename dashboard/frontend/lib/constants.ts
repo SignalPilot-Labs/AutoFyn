@@ -27,6 +27,11 @@ export const NETWORK_INFO_POLL_MS = 30_000;
 export const SSE_POLL_INTERVAL_MS = 1_000;
 export const SSE_FALLBACK_TIMEOUT_MS = 3_000;
 export const DIFF_POLL_INTERVAL_MS = 15_000;
+// Debounce for event-driven diff refetch. When Write/Edit SSE events land,
+// the diff is refetched after this quiet period so a burst of edits triggers
+// one refetch, not one per event. Far shorter than the poll interval so the
+// diff tracks live edits instead of lagging up to a full poll cycle.
+export const DIFF_REFETCH_DEBOUNCE_MS = 1_500;
 // Hard cap on diff text size held in memory. Enormous diffs (stale cache
 // bugs, unrelated-history merges) lock up the main thread on every parse.
 // Above this we drop the diff and the Changes panel shows a 'too large'
