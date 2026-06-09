@@ -19,8 +19,12 @@ import { useSSE } from "@/hooks/useSSE";
 import { useMobile } from "@/hooks/useMobile";
 import { useEventState } from "@/hooks/useEventState";
 import { useRunActions } from "@/hooks/useRunActions";
+import { useDashboardUI } from "@/hooks/useDashboardUI";
 
 export function useDashboard(): DashboardState {
+  const ui = useDashboardUI();
+  const { setStartModalOpen, setOnboardingOpen, showShortcuts, setShowShortcuts, handleToggleSidebar } = ui;
+
   const [activeRepoFilter, setActiveRepoFilter] = useState<string | null>(() => {
     try { return localStorage.getItem("sp_improve_active_repo") || null; } catch { return null; }
   });
@@ -28,24 +32,15 @@ export function useDashboard(): DashboardState {
   const { runs, loading: runsLoading, refresh: refreshRuns } = useRuns(activeRepoFilter);
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const [selectedRun, setSelectedRun] = useState<Run | null>(null);
-  const [startModalOpen, setStartModalOpen] = useState(false);
   const [agentHealth, setAgentHealth] = useState<AgentHealth | null>(null);
   const [branches, setBranches] = useState<string[]>(["main"]);
   const [settingsStatus, setSettingsStatus] = useState<SettingsStatus | null>(null);
-  const [onboardingOpen, setOnboardingOpen] = useState(false);
   const selectGenRef = useRef(0);
   const resumeGenRef = useRef(0);
   const initGenRef = useRef(0);
   const skipLastRunRestoreRef = useRef(false);
   const isMobile = useMobile();
-  const [mobilePanel, setMobilePanel] = useState<"feed" | "runs" | "changes" | "logs">("feed");
-  const [controlsOpen, setControlsOpen] = useState(false);
-  const [rightPanel, setRightPanel] = useState<"changes" | "logs">("changes");
-  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
-    try { return localStorage.getItem("autofyn_sidebar_collapsed") === "true"; } catch { return false; }
-  });
   const [busy, setBusy] = useState(false);
-  const [showShortcuts, setShowShortcuts] = useState(false);
 
   const selectedRunIdRef = useRef<string | null>(null);
   useEffect(() => { selectedRunIdRef.current = selectedRunId; }, [selectedRunId]);
@@ -96,14 +91,6 @@ export function useDashboard(): DashboardState {
   setHistoryLoadingRef.current = evState.setHistoryLoading;
   setHistoryTruncatedRef.current = evState.setHistoryTruncated;
   addEventRef.current = addEvent;
-
-  const handleToggleSidebar = useCallback(() => {
-    setSidebarCollapsed((prev) => {
-      const next = !prev;
-      try { localStorage.setItem("autofyn_sidebar_collapsed", String(next)); } catch {}
-      return next;
-    });
-  }, []);
 
   const runStatus: RunStatus | null = (selectedRun?.status as RunStatus) || null;
 
@@ -307,26 +294,13 @@ export function useDashboard(): DashboardState {
     busy,
     historyLoading,
     activeRepoFilter,
-    startModalOpen,
-    onboardingOpen,
     settingsStatus,
-    sidebarCollapsed,
-    mobilePanel,
-    controlsOpen,
-    rightPanel,
-    showShortcuts,
-    setShowShortcuts,
-    handleToggleSidebar,
     handleRepoSwitch,
     handleSelectRun,
-    setStartModalOpen,
-    setOnboardingOpen,
-    setMobilePanel,
-    setControlsOpen,
-    setRightPanel,
     setBranches,
     setSettingsStatus,
     setRepos,
+    ...ui,
     ...runActions,
   };
 }
