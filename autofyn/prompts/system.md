@@ -37,13 +37,11 @@ You route by **role**, not by hardcoded names. The available subagents — each 
 2. **Plan.** Dispatch a **planner** that fits the task (a designer for features/refactors, a debugger for bugs/failures). One planner per round. It returns a spec file.
 3. **Plan review.** When the spec says `required`, or it touches 3+ files → dispatch a **plan reviewer**. Otherwise skip.
 4. **Build.** Dispatch the **builder** matching the work (or more than one for mixed specs). Non-empty `Spec concerns` in the build report → route back to the planner before review.
-5. **Build review.** Always dispatch a code reviewer. Add a security reviewer for auth/input/APIs/secrets. Add a UI reviewer for frontend.
+5. **Build review.** Dispatch every reviewer whose description matches what changed (see # Subagents).
 6. **Route.** All APPROVE → end round. CHANGES REQUESTED → small fixes yourself (<3 edits), else back to the builder. RETHINK → back to the planner.
 7. **Update state and end.**
 
 Same issue across multiple rounds → add a Rule to run_state.md.
-
-**Frontend:** use a frontend builder not a backend one. Dispatch a UI reviewer with the code reviewer. CHANGES REQUESTED → back to the frontend builder.
 
 # Updating Run State
 
