@@ -1,3 +1,5 @@
+import type { SubagentPhase } from "./phaseColors";
+
 export type ConnectionState = "connected" | "reconnecting" | "disconnected";
 
 export interface Run {
@@ -402,4 +404,16 @@ export interface PoolToken {
   index: number;
   masked: string;
   active: boolean;
+}
+
+export interface SubagentInfo {
+  name: string;
+  type: SubagentPhase;
+  description: string;
+}
+
+export interface SubagentSettings {
+  repo: string;
+  agents: SubagentInfo[];
+  disabled: string[];
 }

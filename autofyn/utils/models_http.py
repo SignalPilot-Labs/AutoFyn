@@ -26,6 +26,7 @@ class StartRequest(BaseModel):
     env: dict[str, str] | None = None
     host_mounts: list[dict[str, str]] | None = None
     mcp_servers: dict[str, dict] | None = None
+    disabled_subagents: list[str] | None = None
     sandbox_id: str | None = None
     start_cmd: str = ""
 

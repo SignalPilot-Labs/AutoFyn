@@ -13,6 +13,7 @@ import { ModelSelector } from "@/components/ui/ModelSelector";
 import { TokenPoolSection } from "@/components/settings/TokenPoolSection";
 import { RemoteSandboxes } from "@/components/settings/RemoteSandboxes";
 import { RepoListSection } from "@/components/settings/RepoListSection";
+import { SubagentSection } from "@/components/settings/SubagentSection";
 import { SecurityBanner } from "@/components/settings/SecurityBanner";
 import { CredentialField } from "@/components/settings/CredentialField";
 import type { CredentialFieldConfig } from "@/components/settings/CredentialField";
@@ -330,6 +331,8 @@ export default function SettingsPage() {
             />
 
             <RemoteSandboxes />
+
+            <SubagentSection activeRepo={activeRepo} />
 
             <DefaultModelSetting />
 

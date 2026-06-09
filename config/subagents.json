@@ -1,0 +1,102 @@
+[
+  {
+    "name": "code-explorer",
+    "type": "explore",
+    "description": "Maps codebase structure, traces dependencies, finds implementations. Call when you need to understand how code is organized or where something lives. Be targeted — tell it what to look for.",
+    "model": "sonnet",
+    "tools": ["Read", "Write", "Glob", "Grep", "Bash", "WebSearch", "WebFetch"],
+    "prompt_file": "subagents/explore/code-explorer.md",
+    "needs_verification": false,
+    "needs_run_state": false
+  },
+  {
+    "name": "security-explorer",
+    "type": "explore",
+    "description": "Maps attack surface, finds suspect code, identifies vulnerability patterns. Call for security audits instead of a general code explorer. Produces a prioritized list of suspects with exploit hypotheses.",
+    "model": "sonnet",
+    "tools": ["Read", "Write", "Glob", "Grep", "Bash", "WebSearch", "WebFetch"],
+    "prompt_file": "subagents/explore/security-explorer.md",
+    "needs_verification": false,
+    "needs_run_state": true
+  },
+  {
+    "name": "debugger",
+    "type": "plan",
+    "description": "Debugging planner. Reproduces the bug, traces the root cause, and writes a fix spec a dev can implement. Call when something is broken.",
+    "model": "opus",
+    "tools": ["Read", "Write", "Glob", "Grep", "Bash", "WebSearch", "WebFetch"],
+    "prompt_file": "subagents/plan/debugger.md",
+    "needs_verification": false,
+    "needs_run_state": true
+  },
+  {
+    "name": "architect",
+    "type": "plan",
+    "description": "Designs the next unit of work. Analyzes current state, makes structural decisions, writes the round's spec. Call at the start of each round, and again to re-plan on RETHINK.",
+    "model": "opus",
+    "tools": ["Read", "Write", "Glob", "Grep", "Bash", "WebSearch", "WebFetch"],
+    "prompt_file": "subagents/plan/architect.md",
+    "needs_verification": false,
+    "needs_run_state": true
+  },
+  {
+    "name": "backend-dev",
+    "type": "build",
+    "description": "Implements Python, APIs, database, and infrastructure code from the planner's spec. Never use for React/Next.js/CSS/UI work.",
+    "model": "sonnet",
+    "tools": ["Read", "Write", "Edit", "Bash", "Glob", "Grep"],
+    "prompt_file": "subagents/build/backend-dev.md",
+    "needs_verification": true,
+    "needs_run_state": true
+  },
+  {
+    "name": "frontend-dev",
+    "type": "build",
+    "description": "Implements React, Next.js, TypeScript UI, CSS, and styling from the planner's spec. Never use for Python/backend work.",
+    "model": "sonnet",
+    "tools": ["Read", "Write", "Edit", "Bash", "Glob", "Grep"],
+    "prompt_file": "subagents/build/frontend-dev.md",
+    "needs_verification": true,
+    "needs_run_state": true
+  },
+  {
+    "name": "spec-reviewer",
+    "type": "review",
+    "description": "Reviews the planner's spec BEFORE any code is written. Checks design quality, file placement, coupling, simplicity, and CLAUDE.md compliance. Call on every spec marked `Spec review: required`.",
+    "model": "opus",
+    "tools": ["Read", "Write", "Glob", "Grep", "Bash"],
+    "prompt_file": "subagents/review/spec-reviewer.md",
+    "needs_verification": false,
+    "needs_run_state": true
+  },
+  {
+    "name": "code-reviewer",
+    "type": "review",
+    "description": "Reviews code post-build for correctness, design, spec compliance, and quality. Runs tests, linter, typechecker. Call after every build.",
+    "model": "opus",
+    "tools": ["Read", "Write", "Glob", "Grep", "Bash", "WebSearch", "WebFetch"],
+    "prompt_file": "subagents/review/code-reviewer.md",
+    "needs_verification": true,
+    "needs_run_state": true
+  },
+  {
+    "name": "ui-reviewer",
+    "type": "review",
+    "description": "Reviews frontend for visual consistency, spacing, hierarchy, accessibility, and AI slop. Call alongside the code reviewer whenever a frontend builder made changes.",
+    "model": "opus",
+    "tools": ["Read", "Write", "Glob", "Grep", "Bash"],
+    "prompt_file": "subagents/review/ui-reviewer.md",
+    "needs_verification": true,
+    "needs_run_state": true
+  },
+  {
+    "name": "security-reviewer",
+    "type": "review",
+    "description": "Audits code for security vulnerabilities: injection, auth gaps, leaked secrets, unsafe config. Call when changes touch auth, user input, APIs, or secrets.",
+    "model": "opus",
+    "tools": ["Read", "Write", "Glob", "Grep", "Bash"],
+    "prompt_file": "subagents/review/security-reviewer.md",
+    "needs_verification": true,
+    "needs_run_state": true
+  }
+]

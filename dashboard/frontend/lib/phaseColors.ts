@@ -11,6 +11,10 @@
 
 export type SubagentPhase = "explore" | "plan" | "build" | "review";
 
+// Canonical phase ordering for grouped displays (settings subagent list,
+// etc.). Mirrors SUBAGENT_PHASE_ORDER in config/constants.py.
+export const SUBAGENT_PHASE_ORDER: SubagentPhase[] = ["explore", "plan", "build", "review"];
+
 export interface PhaseMeta {
   label: string;
   color: string;

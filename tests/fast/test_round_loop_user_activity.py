@@ -98,6 +98,7 @@ class TestRoundLoopUserActivity:
 
                     host_mounts=None,
                     user_env_keys=[],
+                    disabled_subagents=[],
                 )
 
     @pytest.mark.asyncio
@@ -118,6 +119,7 @@ class TestRoundLoopUserActivity:
 
                     host_mounts=None,
                     user_env_keys=[],
+                    disabled_subagents=[],
                 )
             except OSError:
                 raised = True
