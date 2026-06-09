@@ -6,6 +6,7 @@ import logging
 from cryptography.fernet import InvalidToken
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, func
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend import auth, crypto
 from backend.constants import (
@@ -20,6 +21,7 @@ from db.constants import (
     GITHUB_REPO_MAX_LEN,
     GITHUB_REPO_RE,
     HOST_MOUNTS_KEY_PREFIX,
+    REPO_SUBAGENTS_CACHE_KEY_PREFIX,
     validate_host_mount,
 )
 from backend.models import (
@@ -100,6 +102,11 @@ def _mcp_servers_key(repo: str) -> str:
 def _disabled_subagents_key(repo: str) -> str:
     """Setting table key for the per-repo disabled-subagents list."""
     return f"{DISABLED_SUBAGENTS_KEY_PREFIX}{repo}"
+
+
+def _repo_subagents_cache_key(repo: str) -> str:
+    """Setting table key for a repo's cached user-defined subagents."""
+    return f"{REPO_SUBAGENTS_CACHE_KEY_PREFIX}{repo}"
 
 
 @router.get("/settings")
@@ -240,27 +247,54 @@ async def save_repo_mcp_servers(repo: str, body: SaveMcpServersRequest) -> dict:
 
 @router.get("/repos/{repo:path}/subagents")
 async def get_repo_subagents(repo: str) -> dict:
-    """Get the shipped subagents and which ones are disabled for a repo.
+    """Get the subagents (shipped + repo-defined) and which are disabled.
 
-    `agents` is the shipped list (name/type/description) the toggle UI
-    renders; `disabled` is the user's per-repo off-list. No setting → none
-    disabled (all enabled).
+    `agents` is the merged list (name/type/description/source) the toggle UI
+    renders; each carries `source` = "shipped" or "repo". Repo-defined agents
+    come from a cache the agent writes at run time (a repo never run yet shows
+    shipped agents only). A repo agent that overrides a shipped name wins.
+    `disabled` is the user's per-repo off-list.
     """
     repo = validate_repo_slug(repo)
-    agents = [
-        {"name": spec.name, "type": spec.type, "description": spec.description}
-        for spec in load_subagents()
-    ]
     async with session() as s:
-        setting = await s.get(Setting, _disabled_subagents_key(repo))
-        if not setting:
-            return {"repo": repo, "agents": agents, "disabled": []}
-        try:
-            disabled: list[str] = json.loads(setting.value)
-        except (json.JSONDecodeError, TypeError) as e:
-            log.error("Failed to parse disabled subagents for %s: %s", repo, e, exc_info=True)
-            raise HTTPException(status_code=500, detail="Failed to parse disabled subagents") from e
+        agents = await _merged_subagents(s, repo)
+        disabled = await _disabled_subagents(s, repo)
     return {"repo": repo, "agents": agents, "disabled": disabled}
+
+
+async def _merged_subagents(s: AsyncSession, repo: str) -> list[dict]:
+    """Shipped subagents merged with the repo's cached ones (repo wins)."""
+    merged: dict[str, dict] = {
+        spec.name: {
+            "name": spec.name,
+            "type": spec.type,
+            "description": spec.description,
+            "source": "shipped",
+        }
+        for spec in load_subagents()
+    }
+    cached = await s.get(Setting, _repo_subagents_cache_key(repo))
+    if cached:
+        try:
+            repo_agents: list[dict] = json.loads(cached.value)
+        except (json.JSONDecodeError, TypeError) as e:
+            log.error("Failed to parse repo subagents cache for %s: %s", repo, e, exc_info=True)
+            raise HTTPException(status_code=500, detail="Failed to parse repo subagents") from e
+        for agent in repo_agents:
+            merged[agent["name"]] = {**agent, "source": "repo"}
+    return list(merged.values())
+
+
+async def _disabled_subagents(s: AsyncSession, repo: str) -> list[str]:
+    """The user's per-repo disabled-subagents list ([] if unset)."""
+    setting = await s.get(Setting, _disabled_subagents_key(repo))
+    if not setting:
+        return []
+    try:
+        return json.loads(setting.value)
+    except (json.JSONDecodeError, TypeError) as e:
+        log.error("Failed to parse disabled subagents for %s: %s", repo, e, exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to parse disabled subagents") from e
 
 
 @router.put("/repos/{repo:path}/subagents")
@@ -271,20 +305,20 @@ async def save_repo_subagents(repo: str, body: SaveDisabledSubagentsRequest) -> 
     least one subagent. An empty list deletes the setting (all enabled).
     """
     repo = validate_repo_slug(repo)
-    shipped_names = {spec.name for spec in load_subagents()}
     disabled = set(body.disabled)
-    unknown = disabled - shipped_names
-    if unknown:
-        raise HTTPException(
-            status_code=422,
-            detail=f"Unknown subagent(s): {', '.join(sorted(unknown))}",
-        )
-    if disabled >= shipped_names:
-        raise HTTPException(
-            status_code=422,
-            detail="Cannot disable every subagent — at least one must stay enabled",
-        )
     async with session() as s:
+        known_names = {a["name"] for a in await _merged_subagents(s, repo)}
+        unknown = disabled - known_names
+        if unknown:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Unknown subagent(s): {', '.join(sorted(unknown))}",
+            )
+        if disabled >= known_names:
+            raise HTTPException(
+                status_code=422,
+                detail="Cannot disable every subagent — at least one must stay enabled",
+            )
         if disabled:
             await upsert_setting(
                 s, _disabled_subagents_key(repo), json.dumps(sorted(disabled)), False

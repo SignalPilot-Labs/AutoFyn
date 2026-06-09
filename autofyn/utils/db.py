@@ -5,6 +5,7 @@ prevent DB failures from crashing the agent. Errors are logged via the
 standard logging module, never silently swallowed.
 """
 
+import json
 import logging
 from collections.abc import Callable
 from datetime import datetime, timezone
@@ -14,6 +15,7 @@ from sqlalchemy import func, select, update
 from db.connection import connect, close, get_session_factory
 from db.constants import (
     ACTIVE_RUN_STATUSES,
+    REPO_SUBAGENTS_CACHE_KEY_PREFIX,
     RUN_STATUS_CRASHED,
     RUN_STATUS_RATE_LIMITED,
     RUN_STATUS_RUNNING,
@@ -72,6 +74,28 @@ async def update_run_branch(run_id: str, branch_name: str) -> None:
                 status=RUN_STATUS_RUNNING,
             )
         )
+        await s.commit()
+
+
+@swallow_errors
+async def cache_repo_subagents(repo: str, agents: list[dict[str, str]]) -> None:
+    """Persist a repo's user-defined subagents so the dashboard can show them.
+
+    Written at bootstrap after the repo is cloned and `.autofyn/subagents.json`
+    is parsed. `agents` is the UI-facing subset (name/type/description) of the
+    repo-defined agents — an empty list clears the cache when a repo drops its
+    overlay. Non-critical: a failed write just means Settings shows shipped
+    agents only until the next run (hence @swallow_errors).
+    """
+    key = f"{REPO_SUBAGENTS_CACHE_KEY_PREFIX}{repo}"
+    value = json.dumps(agents)
+    async with get_session_factory()() as s:
+        existing = await s.get(Setting, key)
+        if existing:
+            existing.value = value
+            existing.encrypted = False
+        else:
+            s.add(Setting(key=key, value=value, encrypted=False))
         await s.commit()
 
 

@@ -230,6 +230,11 @@ REMOTE_SANDBOX_KEY_PREFIX: str = "remote_sandbox:"
 REMOTE_MOUNTS_KEY_PREFIX: str = "remote_mounts:"
 HOST_MOUNTS_KEY_PREFIX: str = "host_mounts:"
 DISABLED_SUBAGENTS_KEY_PREFIX: str = "disabled_subagents:"
+# Cache of a repo's user-defined subagents (name/type/description), written by
+# the agent at bootstrap after it reads .autofyn/subagents.json, read by the
+# dashboard so Settings can show repo agents without a GitHub fetch. Reflects
+# the last run — a repo never run yet shows shipped agents only.
+REPO_SUBAGENTS_CACHE_KEY_PREFIX: str = "repo_subagents_cache:"
 # Upper bound on the disabled-subagents list — a safety cap on request size,
 # well above the shipped subagent count.
 MAX_SUBAGENTS: int = 100

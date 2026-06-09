@@ -12,6 +12,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
+from config.constants import MAX_REPO_SUBAGENTS
 from utils.run_subagents import load_repo_subagents
 
 
@@ -34,6 +35,13 @@ def _sandbox_with_json(entries: list[dict]) -> MagicMock:
     """Mock sandbox whose first read returns the subagents.json text."""
     sandbox = MagicMock()
     sandbox.file_system.read = AsyncMock(return_value=json.dumps(entries))
+    return sandbox
+
+
+def _sandbox_with_raw(text: str) -> MagicMock:
+    """Mock sandbox whose first read returns arbitrary (possibly malformed) text."""
+    sandbox = MagicMock()
+    sandbox.file_system.read = AsyncMock(return_value=text)
     return sandbox
 
 
@@ -80,4 +88,36 @@ class TestRepoSubagentsValidation:
     async def test_duplicate_names_rejected(self) -> None:
         sandbox = _sandbox_with_json([_entry(), _entry()])
         with pytest.raises(RuntimeError, match="Duplicate"):
+            await load_repo_subagents(sandbox)
+
+    @pytest.mark.asyncio
+    async def test_empty_prompt_file_rejected(self) -> None:
+        sandbox = _sandbox_with_json([_entry(prompt_file="")])
+        with pytest.raises(RuntimeError, match="empty prompt_file"):
+            await load_repo_subagents(sandbox)
+
+    @pytest.mark.asyncio
+    async def test_too_many_agents_rejected(self) -> None:
+        # One past MAX_REPO_SUBAGENTS — distinct names so dup-check isn't the cause.
+        entries = [_entry(name=f"agent-{i}") for i in range(MAX_REPO_SUBAGENTS + 1)]
+        sandbox = _sandbox_with_json(entries)
+        with pytest.raises(RuntimeError, match="max is"):
+            await load_repo_subagents(sandbox)
+
+    @pytest.mark.asyncio
+    async def test_non_list_json_rejected(self) -> None:
+        sandbox = _sandbox_with_raw(json.dumps({"name": "x"}))
+        with pytest.raises(RuntimeError, match="must be a JSON array"):
+            await load_repo_subagents(sandbox)
+
+    @pytest.mark.asyncio
+    async def test_non_object_entry_rejected(self) -> None:
+        sandbox = _sandbox_with_raw(json.dumps(["just-a-string"]))
+        with pytest.raises(RuntimeError, match="must be a JSON object"):
+            await load_repo_subagents(sandbox)
+
+    @pytest.mark.asyncio
+    async def test_malformed_json_propagates(self) -> None:
+        sandbox = _sandbox_with_raw("{not valid json")
+        with pytest.raises(json.JSONDecodeError):
             await load_repo_subagents(sandbox)

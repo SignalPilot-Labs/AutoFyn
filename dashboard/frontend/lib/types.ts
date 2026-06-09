@@ -410,6 +410,7 @@ export interface SubagentInfo {
   name: string;
   type: SubagentPhase;
   description: string;
+  source: "shipped" | "repo";
 }
 
 export interface SubagentSettings {

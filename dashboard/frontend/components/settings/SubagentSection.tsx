@@ -159,6 +159,14 @@ export function SubagentSection({ activeRepo }: SubagentSectionProps) {
                           <span className="text-content font-mono text-accent-hover">
                             {agent.name}
                           </span>
+                          {agent.source === "repo" && (
+                            <span
+                              className="ml-1.5 align-middle text-content uppercase tracking-wide px-1 py-0.5 rounded"
+                              style={{ color: meta.color, backgroundColor: hexToRgba(meta.color, 0.12) }}
+                            >
+                              repo
+                            </span>
+                          )}
                           <span
                             className={`block text-content text-text-secondary ${isExpanded ? "" : "line-clamp-2"}`}
                           >

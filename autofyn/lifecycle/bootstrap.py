@@ -154,12 +154,32 @@ async def _resolve_branch_and_clone(
     await log_audit(run_id, "repo_cloned", {"repo": github_repo, "branch": branch_name})
     run_config = await load_run_agent_config(sandbox)
     subagent_config = await load_repo_subagents(sandbox)
+    await _cache_repo_subagents_for_dashboard(github_repo, subagent_config)
     is_resume = bool(existing_branch)
     if is_resume:
         await db.update_run_status(run_id, RUN_STATUS_RUNNING)
     else:
         await db.update_run_branch(run_id, branch_name)
     return branch_name, is_resume, run_config, subagent_config
+
+
+async def _cache_repo_subagents_for_dashboard(
+    github_repo: str,
+    subagent_config: SubagentConfig,
+) -> None:
+    """Persist this repo's user-defined subagents so Settings can show them.
+
+    Only the repo-defined agents are cached (those whose body was prefetched
+    from the repo — their names are the keys of `subagent_config.bodies`),
+    shaped to the UI-facing name/type/description. Empty when the repo has no
+    overlay, which clears any stale cache.
+    """
+    repo_agents = [
+        {"name": spec.name, "type": spec.type, "description": spec.description}
+        for spec in subagent_config.specs
+        if spec.name in subagent_config.bodies
+    ]
+    await db.cache_repo_subagents(github_repo, repo_agents)
 
 
 async def _build_run_context(

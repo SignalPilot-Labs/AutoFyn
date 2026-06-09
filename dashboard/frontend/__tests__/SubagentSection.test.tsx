@@ -22,9 +22,10 @@ import { SubagentSection } from "@/components/settings/SubagentSection";
 const SUBAGENTS = {
   repo: "org/repo",
   agents: [
-    { name: "architect", type: "plan", description: "designs work" },
-    { name: "code-reviewer", type: "review", description: "reviews code" },
-    { name: "ui-reviewer", type: "review", description: "reviews UI" },
+    { name: "architect", type: "plan", description: "designs work", source: "shipped" },
+    { name: "code-reviewer", type: "review", description: "reviews code", source: "shipped" },
+    { name: "ui-reviewer", type: "review", description: "reviews UI", source: "shipped" },
+    { name: "ml-trainer", type: "build", description: "trains models", source: "repo" },
   ],
   disabled: [] as string[],
 };
@@ -71,17 +72,17 @@ describe("SubagentSection", () => {
     render(<SubagentSection activeRepo="org/repo" />);
     await waitFor(() => expect(screen.getByText("ui-reviewer")).toBeInTheDocument());
 
-    // Initially "3 of 3 enabled".
-    expect(screen.getByText("3 of 3 enabled")).toBeInTheDocument();
+    // Initially "4 of 4 enabled".
+    expect(screen.getByText("4 of 4 enabled")).toBeInTheDocument();
 
     await act(async () => {
       screen.getByLabelText("Disable ui-reviewer").click();
     });
 
-    // After the failed save, the count reverts to 3 of 3 (toggle rolled back)
+    // After the failed save, the count reverts to 4 of 4 (toggle rolled back)
     // and an error is shown.
     await waitFor(() => expect(screen.getByText("network down")).toBeInTheDocument());
-    expect(screen.getByText("3 of 3 enabled")).toBeInTheDocument();
+    expect(screen.getByText("4 of 4 enabled")).toBeInTheDocument();
   });
 
   it("expands and collapses a description via the more/less control", async () => {
@@ -89,7 +90,7 @@ describe("SubagentSection", () => {
     await waitFor(() => expect(screen.getByText("architect")).toBeInTheDocument());
 
     // Each agent row starts collapsed with a "more" control.
-    expect(screen.getAllByText("more").length).toBe(3);
+    expect(screen.getAllByText("more").length).toBe(4);
 
     await act(async () => {
       screen.getAllByText("more")[0].click();
@@ -97,7 +98,7 @@ describe("SubagentSection", () => {
 
     // The clicked row now reads "less"; the other two still read "more".
     expect(screen.getByText("less")).toBeInTheDocument();
-    expect(screen.getAllByText("more").length).toBe(2);
+    expect(screen.getAllByText("more").length).toBe(3);
   });
 
   it("clicking more expands the description without disabling the agent", async () => {
@@ -110,7 +111,7 @@ describe("SubagentSection", () => {
 
     // The more/less control must not toggle the agent's enabled state.
     expect(saveRepoSubagents).not.toHaveBeenCalled();
-    expect(screen.getByText("3 of 3 enabled")).toBeInTheDocument();
+    expect(screen.getByText("4 of 4 enabled")).toBeInTheDocument();
   });
 
   it("clamps the description until expanded, then shows it in full", async () => {
@@ -127,5 +128,14 @@ describe("SubagentSection", () => {
 
     // Expanded: the clamp is removed so the whole description shows.
     expect(screen.getByText("designs work").className).not.toContain("line-clamp-2");
+  });
+
+  it("badges a repo-defined agent and shows it alongside shipped ones", async () => {
+    render(<SubagentSection activeRepo="org/repo" />);
+    await waitFor(() => expect(screen.getByText("ml-trainer")).toBeInTheDocument());
+
+    // The repo-defined agent renders a single "repo" badge; shipped ones don't.
+    const badges = screen.getAllByText("repo");
+    expect(badges.length).toBe(1);
   });
 });
