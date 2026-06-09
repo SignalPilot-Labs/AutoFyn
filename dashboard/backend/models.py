@@ -99,8 +99,8 @@ class SaveDisabledSubagentsRequest(BaseModel):
     """Request body for saving the per-repo disabled-subagents list.
 
     Holds the names of shipped subagents the user has turned off. Names are
-    validated against the roster (and the all-disabled case rejected) in the
-    endpoint, where the roster is loaded.
+    validated against the shipped subagents (and the all-disabled case
+    rejected) in the endpoint, where they are loaded.
     """
 
     disabled: list[str] = Field(default_factory=list, max_length=MAX_SUBAGENTS)

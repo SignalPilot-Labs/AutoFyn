@@ -24,7 +24,13 @@ from pathlib import Path
 
 import yaml
 
-from config.constants import SANDBOX_REPO_DIR, SUBAGENT_TYPES, SUBAGENTS_FILE, SubagentSpec
+from config.constants import (
+    DEFAULT_NEEDS_VERIFICATION,
+    SANDBOX_REPO_DIR,
+    SUBAGENT_TYPES,
+    SUBAGENTS_FILE,
+    SubagentSpec,
+)
 
 log = logging.getLogger("config")
 
@@ -42,8 +48,10 @@ _cache: dict[tuple[str | None, str | None], dict] = {}
 
 
 def clear_cache() -> None:
-    """Reset the config cache. For tests only."""
+    """Reset the config and shipped-subagents caches. For tests only."""
+    global _subagents_cache
     _cache.clear()
+    _subagents_cache = None
 
 
 # ── Safety bounds ────────────────────────────────────────────────────
@@ -294,12 +302,12 @@ _subagents_cache: tuple[SubagentSpec, ...] | None = None
 
 
 def load_subagents() -> tuple[SubagentSpec, ...]:
-    """Load and validate the shipped subagent roster from subagents.json.
+    """Load and validate the shipped subagents from subagents.json.
 
-    Cached after first read. Fails fast on a malformed roster: unknown
+    Cached after first read. Fails fast on a malformed list: unknown
     `type` or duplicate name — a broken registry must surface at startup,
     not silently drop an agent. Prompt-file existence is NOT checked here:
-    the dashboard container reads the roster (name/type/description) for its
+    the dashboard container reads the list (name/type/description) for its
     toggle UI but does not ship the prompt markdown.
     """
     global _subagents_cache
@@ -314,26 +322,53 @@ def load_subagents() -> tuple[SubagentSpec, ...]:
         if name in seen:
             raise RuntimeError(f"Duplicate subagent name in {SUBAGENTS_FILE}: {name}")
         seen.add(name)
-        if entry["type"] not in SUBAGENT_TYPES:
-            raise RuntimeError(
-                f"Subagent '{name}' has unknown type '{entry['type']}' — "
-                f"must be one of {sorted(SUBAGENT_TYPES)}"
-            )
-        specs.append(
-            SubagentSpec(
-                name=name,
-                type=entry["type"],
-                description=entry["description"],
-                model=entry["model"],
-                tools=tuple(entry["tools"]),
-                prompt_file=entry["prompt_file"],
-                needs_verification=entry["needs_verification"],
-                needs_run_state=entry["needs_run_state"],
-            )
-        )
+        specs.append(subagent_spec_from_entry(entry, label="Subagent"))
 
     _subagents_cache = tuple(specs)
     return _subagents_cache
+
+
+def subagent_spec_from_entry(entry: dict, label: str) -> SubagentSpec:
+    """Build a SubagentSpec from a parsed JSON entry, validating `type`.
+
+    Shared by the shipped loader and the repo overlay parser so the 8-field
+    construction lives once. `type` is checked against SUBAGENT_TYPES and
+    `needs_verification` defaults when omitted. `label` prefixes the error
+    message ("Subagent" / "Repo subagent"). Callers layer any additional
+    (untrusted-input) checks on top.
+    """
+    name = entry["name"]
+    if entry["type"] not in SUBAGENT_TYPES:
+        raise RuntimeError(
+            f"{label} '{name}' has unknown type '{entry['type']}' — "
+            f"must be one of {sorted(SUBAGENT_TYPES)}"
+        )
+    return SubagentSpec(
+        name=name,
+        type=entry["type"],
+        description=entry["description"],
+        model=entry["model"],
+        tools=tuple(entry["tools"]),
+        prompt_file=entry["prompt_file"],
+        needs_verification=entry.get("needs_verification", DEFAULT_NEEDS_VERIFICATION),
+        needs_run_state=entry["needs_run_state"],
+    )
+
+
+def merge_subagents(
+    repo_specs: tuple[SubagentSpec, ...] | None,
+) -> tuple[SubagentSpec, ...]:
+    """Merge shipped subagents with a repo overlay, local-repo-wins-by-name.
+
+    A repo spec with a shipped name replaces that entry wholesale; a new name
+    is appended after the shipped agents. Shipped phase order is preserved.
+    Pure and uncached — runs once per run at bootstrap.
+    """
+    merged: dict[str, SubagentSpec] = {spec.name: spec for spec in load_subagents()}
+    if repo_specs:
+        for spec in repo_specs:
+            merged[spec.name] = spec
+    return tuple(merged.values())
 
 
 def agent_config() -> dict:

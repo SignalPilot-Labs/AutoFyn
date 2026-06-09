@@ -86,6 +86,8 @@ async def _build_round_context(
         user_env_keys=user_env_keys,
         base_branch=run.base_branch,
         disabled_subagents=disabled_subagents,
+        subagent_specs=bootstrap.subagent_config.specs,
+        repo_prompt_bodies=bootstrap.subagent_config.bodies,
     )
     return round_context, prior_reports
 
@@ -112,6 +114,8 @@ def _build_round_options(
         tool_call_timeout_sec=tool_call_timeout_sec,
         base_branch=bootstrap.run.base_branch,
         disabled_subagents=disabled_subagents,
+        subagent_specs=round_context.subagent_specs,
+        repo_prompt_bodies=round_context.repo_prompt_bodies,
     )
     options["system_prompt"] = {
         "type": system_prompt["type"],
