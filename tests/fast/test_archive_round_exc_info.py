@@ -121,6 +121,7 @@ class TestArchiveRoundExcInfo:
 
                 host_mounts=None,
                 user_env_keys=[],
+                disabled_subagents=[],
             )
 
         warning_records = [
@@ -169,6 +170,7 @@ class TestArchiveRoundExcInfo:
 
                 host_mounts=None,
                 user_env_keys=[],
+                disabled_subagents=[],
             )
 
         assert result == terminal_outcome  # type: ignore[comparison-overlap]

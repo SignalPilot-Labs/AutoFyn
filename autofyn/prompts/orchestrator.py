@@ -8,7 +8,9 @@ rounds summary, prior-round file index, user messages).
 
 from claude_agent_sdk.types import SystemPromptPreset
 
+from config.constants import SUBAGENT_PHASE_LABELS, SUBAGENT_PHASE_ORDER
 from prompts.loader import load_markdown, render_environment, render_time_status
+from prompts.subagent import enabled_subagents
 from utils.constants import ROUND_DIR_PREFIX, STUCK_RECOVERY_REPORT_NAME
 from utils.models import RoundContext, UserAction
 
@@ -52,8 +54,31 @@ def build_round_system_prompt(
 
 
 def _apply_placeholders(template: str, context: RoundContext) -> str:
-    """Replace `{ROUND_NUMBER}` in the template with the current round."""
-    return template.replace("{ROUND_NUMBER}", str(context.round_number))
+    """Replace `{ROUND_NUMBER}` and `{AVAILABLE_SUBAGENTS}` in the template."""
+    return (
+        template
+        .replace("{ROUND_NUMBER}", str(context.round_number))
+        .replace("{AVAILABLE_SUBAGENTS}", _render_subagent_list(context.disabled_subagents))
+    )
+
+
+def _render_subagent_list(disabled_subagents: list[str]) -> str:
+    """Render the enabled subagents grouped by phase, as markdown bullets.
+
+    Disabled agents are omitted entirely so the orchestrator never sees a
+    name it cannot dispatch. Phases with no enabled agent are skipped.
+    """
+    specs = enabled_subagents(disabled_subagents)
+    lines: list[str] = []
+    for phase in SUBAGENT_PHASE_ORDER:
+        in_phase = [s for s in specs if s.type == phase]
+        if not in_phase:
+            continue
+        lines.append(f"**{SUBAGENT_PHASE_LABELS[phase]}**")
+        for spec in in_phase:
+            lines.append(f"- `{spec.name}` — {spec.description}")
+        lines.append("")
+    return "\n".join(lines).strip()
 
 
 # ── Dynamic context blocks ───────────────────────────────────────────

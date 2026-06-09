@@ -25,7 +25,7 @@ from backend.constants import (
     SIGNAL_AGENT_PATHS,
 )
 from db.connection import get_session_factory
-from db.constants import HOST_MOUNTS_KEY_PREFIX, REMOTE_MOUNTS_KEY_PREFIX
+from db.constants import DISABLED_SUBAGENTS_KEY_PREFIX, HOST_MOUNTS_KEY_PREFIX, REMOTE_MOUNTS_KEY_PREFIX
 from db.models import AuditLog, ControlSignal, Run, Setting
 
 
@@ -223,6 +223,16 @@ async def read_credentials(repo: str | None, sandbox_id: str | None) -> dict:
             mcp_setting = await s.get(Setting, mcp_key)
             if mcp_setting:
                 creds["mcp_servers"] = _decrypt_json(mcp_setting, mcp_key)
+
+            disabled_key = f"{DISABLED_SUBAGENTS_KEY_PREFIX}{repo}"
+            disabled_setting = await s.get(Setting, disabled_key)
+            if disabled_setting:
+                try:
+                    creds["disabled_subagents"] = json.loads(disabled_setting.value)
+                except (json.JSONDecodeError, TypeError) as e:
+                    raise CredentialDecryptionError(
+                        f"Stored config '{disabled_key}' exists but cannot be parsed — data may be corrupted"
+                    ) from e
 
     return creds
 

@@ -1,4 +1,4 @@
-import type { SettingsStatus, Settings, PoolToken } from "./types";
+import type { SettingsStatus, Settings, PoolToken, SubagentSettings } from "./types";
 import { apiFetch } from "./fetch";
 
 export async function fetchSettingsStatus(): Promise<SettingsStatus> {
@@ -55,5 +55,27 @@ export async function removePoolToken(index: number): Promise<{ ok: boolean; cou
     method: "DELETE",
   });
   if (!res.ok) throw new Error("Failed to remove token");
+  return res.json();
+}
+
+export async function fetchRepoSubagents(repo: string): Promise<SubagentSettings> {
+  const res = await apiFetch(`/api/repos/${encodeURIComponent(repo)}/subagents`);
+  if (!res.ok) throw new Error("Failed to fetch subagents");
+  return res.json();
+}
+
+export async function saveRepoSubagents(
+  repo: string,
+  disabled: string[],
+): Promise<{ ok: boolean; disabled_count: number }> {
+  const res = await apiFetch(`/api/repos/${encodeURIComponent(repo)}/subagents`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ disabled }),
+  });
+  if (!res.ok) {
+    const detail = await res.json().catch(() => null);
+    throw new Error(detail?.detail ?? "Failed to save subagents");
+  }
   return res.json();
 }

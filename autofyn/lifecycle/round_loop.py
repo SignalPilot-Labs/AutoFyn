@@ -54,6 +54,7 @@ async def _build_round_context(
     bootstrap: BootstrapResult,
     host_mounts: list[dict[str, str]] | None,
     user_env_keys: list[str],
+    disabled_subagents: list[str],
 ) -> tuple[RoundContext, list[str]]:
     """Drain inbox, load prior metadata/reports/user activity, build the
     RoundContext. Returns (round_context, prior_reports) — prior_reports is
@@ -84,6 +85,7 @@ async def _build_round_context(
         host_mounts=host_mounts,
         user_env_keys=user_env_keys,
         base_branch=run.base_branch,
+        disabled_subagents=disabled_subagents,
     )
     return round_context, prior_reports
 
@@ -94,6 +96,7 @@ def _build_round_options(
     round_context: RoundContext,
     host_mounts: list[dict[str, str]] | None,
     user_env_keys: list[str],
+    disabled_subagents: list[str],
 ) -> dict[str, Any]:
     """Build the per-round SDK options dict (base options + agents +
     system_prompt). No I/O."""
@@ -108,6 +111,7 @@ def _build_round_options(
         user_model=options["model"],
         tool_call_timeout_sec=tool_call_timeout_sec,
         base_branch=bootstrap.run.base_branch,
+        disabled_subagents=disabled_subagents,
     )
     options["system_prompt"] = {
         "type": system_prompt["type"],
@@ -177,6 +181,7 @@ async def run_rounds(
     bootstrap: BootstrapResult,
     host_mounts: list[dict[str, str]] | None,
     user_env_keys: list[str],
+    disabled_subagents: list[str],
 ) -> str:
     """Run rounds until the orchestrator or user says stop.
 
@@ -201,10 +206,11 @@ async def run_rounds(
         await bootstrap.reports.ensure_round_directory(round_number)
 
         round_context, prior_reports = await _build_round_context(
-            round_number, bootstrap, host_mounts, user_env_keys
+            round_number, bootstrap, host_mounts, user_env_keys, disabled_subagents
         )
         options = _build_round_options(
-            round_number, bootstrap, round_context, host_mounts, user_env_keys
+            round_number, bootstrap, round_context, host_mounts, user_env_keys,
+            disabled_subagents,
         )
         initial_prompt = _build_initial_prompt(
             round_number, bootstrap, time_lock, prior_reports

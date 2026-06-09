@@ -17,18 +17,20 @@ Config split:
     subagent_idle_kill_sec — see utils/run_config.py RunAgentConfig.
 """
 
+import json
 import logging
 import os
 from pathlib import Path
 
 import yaml
 
-from config.constants import SANDBOX_REPO_DIR
+from config.constants import SANDBOX_REPO_DIR, SUBAGENT_TYPES, SUBAGENTS_FILE, SubagentSpec
 
 log = logging.getLogger("config")
 
 _AUTOFYN_ROOT = Path(__file__).parent.parent
 _DEFAULT_CONFIG = _AUTOFYN_ROOT / "config" / "config.yml"
+_SUBAGENTS_PATH = _AUTOFYN_ROOT / "config" / SUBAGENTS_FILE
 _GLOBAL_CONFIG = Path.home() / ".autofyn" / "config.yml"
 _PROJECT_CONFIG = Path(SANDBOX_REPO_DIR) / ".autofyn" / "config.yml"
 
@@ -286,6 +288,52 @@ def load(overlay: dict | None) -> dict:
 
     _cache[cache_key] = config
     return config
+
+
+_subagents_cache: tuple[SubagentSpec, ...] | None = None
+
+
+def load_subagents() -> tuple[SubagentSpec, ...]:
+    """Load and validate the shipped subagent roster from subagents.json.
+
+    Cached after first read. Fails fast on a malformed roster: unknown
+    `type` or duplicate name — a broken registry must surface at startup,
+    not silently drop an agent. Prompt-file existence is NOT checked here:
+    the dashboard container reads the roster (name/type/description) for its
+    toggle UI but does not ship the prompt markdown.
+    """
+    global _subagents_cache
+    if _subagents_cache is not None:
+        return _subagents_cache
+
+    raw = json.loads(_SUBAGENTS_PATH.read_text())
+    specs: list[SubagentSpec] = []
+    seen: set[str] = set()
+    for entry in raw:
+        name = entry["name"]
+        if name in seen:
+            raise RuntimeError(f"Duplicate subagent name in {SUBAGENTS_FILE}: {name}")
+        seen.add(name)
+        if entry["type"] not in SUBAGENT_TYPES:
+            raise RuntimeError(
+                f"Subagent '{name}' has unknown type '{entry['type']}' — "
+                f"must be one of {sorted(SUBAGENT_TYPES)}"
+            )
+        specs.append(
+            SubagentSpec(
+                name=name,
+                type=entry["type"],
+                description=entry["description"],
+                model=entry["model"],
+                tools=tuple(entry["tools"]),
+                prompt_file=entry["prompt_file"],
+                needs_verification=entry["needs_verification"],
+                needs_run_state=entry["needs_run_state"],
+            )
+        )
+
+    _subagents_cache = tuple(specs)
+    return _subagents_cache
 
 
 def agent_config() -> dict:

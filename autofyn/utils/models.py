@@ -182,6 +182,7 @@ class RoundContext:
     host_mounts: list[dict[str, str]] | None
     user_env_keys: list[str]
     base_branch: str
+    disabled_subagents: list[str]
 
 
 # ── Bootstrap ───────────────────────────────────────────────────────
@@ -268,17 +269,6 @@ class StuckSubagent:
     agent_type: str
     idle_seconds: int
     total_seconds: int
-
-
-@dataclass(frozen=True)
-class SubagentDef:
-    """Definition of a single subagent (name, phase, model, tools)."""
-
-    name: str
-    phase: str
-    description: str
-    model: str
-    tools: list[str]
 
 
 # ── In-process run registry ─────────────────────────────────────────

@@ -367,6 +367,7 @@ class AgentServer:
                 bootstrap,
                 body.host_mounts,
                 list((body.env or {}).keys()),
+                body.disabled_subagents or [],
             )
             log.info("Run %s: round loop returned %s", run_id, terminal_status)
 

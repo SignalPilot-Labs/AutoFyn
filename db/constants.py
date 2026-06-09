@@ -229,6 +229,10 @@ WORK_DIR_RE: re.Pattern[str] = re.compile(r"^(~/?|/)[a-zA-Z0-9._/\-]*$")
 REMOTE_SANDBOX_KEY_PREFIX: str = "remote_sandbox:"
 REMOTE_MOUNTS_KEY_PREFIX: str = "remote_mounts:"
 HOST_MOUNTS_KEY_PREFIX: str = "host_mounts:"
+DISABLED_SUBAGENTS_KEY_PREFIX: str = "disabled_subagents:"
+# Upper bound on the disabled-subagents list — a safety cap on request size,
+# well above the shipped roster count.
+MAX_SUBAGENTS: int = 100
 SANDBOX_NAME_MIN_LEN: int = 1
 SANDBOX_NAME_MAX_LEN: int = 256
 SSH_TARGET_MIN_LEN: int = 1
