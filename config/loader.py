@@ -322,28 +322,37 @@ def load_subagents() -> tuple[SubagentSpec, ...]:
         if name in seen:
             raise RuntimeError(f"Duplicate subagent name in {SUBAGENTS_FILE}: {name}")
         seen.add(name)
-        if entry["type"] not in SUBAGENT_TYPES:
-            raise RuntimeError(
-                f"Subagent '{name}' has unknown type '{entry['type']}' — "
-                f"must be one of {sorted(SUBAGENT_TYPES)}"
-            )
-        specs.append(
-            SubagentSpec(
-                name=name,
-                type=entry["type"],
-                description=entry["description"],
-                model=entry["model"],
-                tools=tuple(entry["tools"]),
-                prompt_file=entry["prompt_file"],
-                needs_verification=entry.get(
-                    "needs_verification", DEFAULT_NEEDS_VERIFICATION
-                ),
-                needs_run_state=entry["needs_run_state"],
-            )
-        )
+        specs.append(subagent_spec_from_entry(entry, label="Subagent"))
 
     _subagents_cache = tuple(specs)
     return _subagents_cache
+
+
+def subagent_spec_from_entry(entry: dict, label: str) -> SubagentSpec:
+    """Build a SubagentSpec from a parsed JSON entry, validating `type`.
+
+    Shared by the shipped loader and the repo overlay parser so the 8-field
+    construction lives once. `type` is checked against SUBAGENT_TYPES and
+    `needs_verification` defaults when omitted. `label` prefixes the error
+    message ("Subagent" / "Repo subagent"). Callers layer any additional
+    (untrusted-input) checks on top.
+    """
+    name = entry["name"]
+    if entry["type"] not in SUBAGENT_TYPES:
+        raise RuntimeError(
+            f"{label} '{name}' has unknown type '{entry['type']}' — "
+            f"must be one of {sorted(SUBAGENT_TYPES)}"
+        )
+    return SubagentSpec(
+        name=name,
+        type=entry["type"],
+        description=entry["description"],
+        model=entry["model"],
+        tools=tuple(entry["tools"]),
+        prompt_file=entry["prompt_file"],
+        needs_verification=entry.get("needs_verification", DEFAULT_NEEDS_VERIFICATION),
+        needs_run_state=entry["needs_run_state"],
+    )
 
 
 def merge_subagents(

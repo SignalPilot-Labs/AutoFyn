@@ -20,12 +20,10 @@ from pathlib import PurePosixPath
 from config.constants import (
     ALLOWED_SUBAGENT_MODELS,
     ALLOWED_SUBAGENT_TOOLS,
-    DEFAULT_NEEDS_VERIFICATION,
     MAX_REPO_SUBAGENTS,
-    SUBAGENT_TYPES,
     SubagentSpec,
 )
-from config.loader import merge_subagents
+from config.loader import merge_subagents, subagent_spec_from_entry
 from sandbox_client.client import SandboxClient
 from utils.constants import WORK_DIR
 
@@ -86,40 +84,28 @@ def _parse_repo_specs(raw: object) -> tuple[SubagentSpec, ...]:
 
 
 def _parse_repo_spec(entry: object) -> SubagentSpec:
-    """Validate one untrusted repo entry into a SubagentSpec, fail-fast."""
+    """Validate one untrusted repo entry into a SubagentSpec, fail-fast.
+
+    Layers the untrusted-input checks (model tier, tool whitelist, prompt-path
+    containment) on top of the shared `subagent_spec_from_entry` builder, which
+    owns the `type` check and the 8-field construction.
+    """
     if not isinstance(entry, dict):
         raise RuntimeError("Each repo subagent entry must be a JSON object")
     name = entry["name"]
-    if entry["type"] not in SUBAGENT_TYPES:
-        raise RuntimeError(
-            f"Repo subagent '{name}' has unknown type '{entry['type']}' — "
-            f"must be one of {sorted(SUBAGENT_TYPES)}"
-        )
     if entry["model"] not in ALLOWED_SUBAGENT_MODELS:
         raise RuntimeError(
             f"Repo subagent '{name}' has unknown model tier '{entry['model']}' — "
             f"must be one of {sorted(ALLOWED_SUBAGENT_MODELS)}"
         )
-    tools = tuple(entry["tools"])
-    unknown_tools = set(tools) - ALLOWED_SUBAGENT_TOOLS
+    unknown_tools = set(entry["tools"]) - ALLOWED_SUBAGENT_TOOLS
     if unknown_tools:
         raise RuntimeError(
             f"Repo subagent '{name}' requests unknown tools: "
             f"{sorted(unknown_tools)} — allowed: {sorted(ALLOWED_SUBAGENT_TOOLS)}"
         )
     _validate_repo_prompt_path(name, entry["prompt_file"])
-    return SubagentSpec(
-        name=name,
-        type=entry["type"],
-        description=entry["description"],
-        model=entry["model"],
-        tools=tools,
-        prompt_file=entry["prompt_file"],
-        needs_verification=entry.get(
-            "needs_verification", DEFAULT_NEEDS_VERIFICATION
-        ),
-        needs_run_state=entry["needs_run_state"],
-    )
+    return subagent_spec_from_entry(entry, label="Repo subagent")
 
 
 def _validate_repo_prompt_path(name: str, prompt_file: str) -> None:
