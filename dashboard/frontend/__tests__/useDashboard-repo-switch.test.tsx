@@ -81,6 +81,47 @@ describe("handleRepoSwitch: invalidates in-flight loadRunHistory from a select (
     expect(connectedRunIds).not.toContain("run-A");
   });
 
+  it("a stale session-resume load resolving after a repo switch does not connect for run-A", async () => {
+    // The resume twin of the bug above: handleSessionResumed guards its load
+    // with resumeGenRef (not selectGenRef), so handleRepoSwitch must bump
+    // resumeGenRef too. Otherwise an in-flight resume load resolves after the
+    // switch and connects for the old run, clobbering the empty selection.
+    runsControl.current.runs = [makeRun({ id: "run-A", run_id: "run-A" })];
+
+    const { result } = renderHook(() => useDashboard());
+
+    // Select run-A so selectedRunIdRef points at it (resume reads that ref).
+    await act(async () => { await result.current.handleSelectRun("run-A"); });
+    sseControl.connect.mockClear();
+
+    // Make the resume's loadRunHistory hang so we can interleave the switch.
+    let resolveResume!: (v: unknown) => void;
+    apiMocks.loadRunHistory.mockImplementationOnce(
+      () => new Promise((res) => { resolveResume = res; }),
+    );
+
+    // Fire session-resumed for run-A — its loadRunHistory is now pending.
+    act(() => { sseControl.fireSessionResumed(); });
+
+    // Switch repos before the resume load resolves. This must bump resumeGenRef
+    // (line 226), making the pending resume stale.
+    await act(async () => {
+      await result.current.handleRepoSwitch("other/repo");
+    });
+    const connectsAfterSwitch = sseControl.connect.mock.calls.length;
+
+    // Now the stale resume load resolves.
+    await act(async () => {
+      resolveResume({ events: [], lastToolId: 5, lastAuditId: 5, truncated: false });
+      await Promise.resolve();
+    });
+
+    // The stale resume must NOT have connected — especially not for run-A.
+    expect(sseControl.connect.mock.calls.length).toBe(connectsAfterSwitch);
+    const connectedRunIds = sseControl.connect.mock.calls.map((c) => c[0]);
+    expect(connectedRunIds).not.toContain("run-A");
+  });
+
   it("the select still connects for run-A when NO repo switch interleaves", async () => {
     // Control case: without the invalidation race, the same select connects
     // normally. Proves the assertion above isn't trivially true.
