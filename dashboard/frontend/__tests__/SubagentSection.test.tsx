@@ -60,7 +60,7 @@ describe("SubagentSection", () => {
     await waitFor(() => expect(screen.getByText("ui-reviewer")).toBeInTheDocument());
 
     await act(async () => {
-      screen.getByText("ui-reviewer").click();
+      screen.getByLabelText("Disable ui-reviewer").click();
     });
 
     expect(saveRepoSubagents).toHaveBeenCalledWith("org/repo", ["ui-reviewer"]);
@@ -75,7 +75,7 @@ describe("SubagentSection", () => {
     expect(screen.getByText("3 of 3 enabled")).toBeInTheDocument();
 
     await act(async () => {
-      screen.getByText("ui-reviewer").click();
+      screen.getByLabelText("Disable ui-reviewer").click();
     });
 
     // After the failed save, the count reverts to 3 of 3 (toggle rolled back)
@@ -108,8 +108,24 @@ describe("SubagentSection", () => {
       screen.getAllByText("more")[0].click();
     });
 
-    // The more/less toggle must not bubble to the row's enable/disable click.
+    // The more/less control must not toggle the agent's enabled state.
     expect(saveRepoSubagents).not.toHaveBeenCalled();
     expect(screen.getByText("3 of 3 enabled")).toBeInTheDocument();
+  });
+
+  it("clamps the description until expanded, then shows it in full", async () => {
+    render(<SubagentSection activeRepo="org/repo" />);
+    await waitFor(() => expect(screen.getByText("architect")).toBeInTheDocument());
+
+    // Collapsed: the description is line-clamped.
+    const desc = screen.getByText("designs work");
+    expect(desc.className).toContain("line-clamp-2");
+
+    await act(async () => {
+      screen.getAllByText("more")[0].click();
+    });
+
+    // Expanded: the clamp is removed so the whole description shows.
+    expect(screen.getByText("designs work").className).not.toContain("line-clamp-2");
   });
 });

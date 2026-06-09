@@ -134,14 +134,16 @@ export function SubagentSection({ activeRepo }: SubagentSectionProps) {
                     const isEnabled = !disabled.has(agent.name);
                     const isExpanded = expanded.has(agent.name);
                     return (
-                      <button
+                      <div
                         key={agent.name}
-                        onClick={() => toggle(agent.name)}
-                        disabled={saving}
-                        className="w-full flex items-start gap-2.5 text-left px-2.5 py-2 rounded border border-transparent hover:border-border hover:bg-white/[0.02] transition-colors disabled:opacity-60"
+                        className="flex items-start gap-2.5 px-2.5 py-2 rounded border border-transparent hover:border-border hover:bg-white/[0.02] transition-colors"
                       >
-                        <span
-                          className="mt-0.5 shrink-0 flex items-center justify-center w-3.5 h-3.5 rounded-sm border transition-colors"
+                        <button
+                          type="button"
+                          onClick={() => toggle(agent.name)}
+                          disabled={saving}
+                          aria-label={`${isEnabled ? "Disable" : "Enable"} ${agent.name}`}
+                          className="mt-0.5 shrink-0 flex items-center justify-center w-3.5 h-3.5 rounded-sm border transition-colors disabled:opacity-60"
                           style={{
                             borderColor: isEnabled ? meta.color : "var(--border)",
                             backgroundColor: isEnabled ? hexToRgba(meta.color, 0.18) : "transparent",
@@ -152,8 +154,8 @@ export function SubagentSection({ activeRepo }: SubagentSectionProps) {
                               <polyline points="2 6 5 9 10 3" />
                             </svg>
                           )}
-                        </span>
-                        <span className="min-w-0 flex-1">
+                        </button>
+                        <div className="min-w-0 flex-1 text-left">
                           <span className="text-content font-mono text-accent-hover">
                             {agent.name}
                           </span>
@@ -162,14 +164,15 @@ export function SubagentSection({ activeRepo }: SubagentSectionProps) {
                           >
                             {agent.description}
                           </span>
-                          <span
-                            onClick={(e) => { e.stopPropagation(); toggleExpand(agent.name); }}
-                            className="mt-0.5 inline-block text-content text-accent-hover hover:underline cursor-pointer"
+                          <button
+                            type="button"
+                            onClick={() => toggleExpand(agent.name)}
+                            className="mt-0.5 text-content text-accent-hover hover:underline cursor-pointer"
                           >
                             {isExpanded ? "less" : "more"}
-                          </span>
-                        </span>
-                      </button>
+                          </button>
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
