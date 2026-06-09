@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import type { Run, FeedEvent, RunStatus, SettingsStatus, RepoInfo } from "@/lib/types";
+import type { Run, RunStatus, SettingsStatus, RepoInfo } from "@/lib/types";
 import {
   fetchAgentHealth,
   fetchRepos,
@@ -13,13 +13,11 @@ import type { DashboardState } from "@/hooks/dashboardTypes";
 import { AGENT_HEALTH_POLL_MS, TERMINAL_STATUSES, isActiveStatus } from "@/lib/constants";
 import { fetchSettingsStatus } from "@/lib/settings-api";
 import { isAtCapacity } from "@/lib/capacity";
-import { loadRunHistory } from "@/lib/loadRunHistory";
 import { useRuns } from "@/hooks/useRuns";
-import { useSSE } from "@/hooks/useSSE";
 import { useMobile } from "@/hooks/useMobile";
-import { useEventState } from "@/hooks/useEventState";
 import { useRunActions } from "@/hooks/useRunActions";
 import { useDashboardUI } from "@/hooks/useDashboardUI";
+import { useRunSession } from "@/hooks/useRunSession";
 
 export function useDashboard(): DashboardState {
   const ui = useDashboardUI();
@@ -35,8 +33,6 @@ export function useDashboard(): DashboardState {
   const [agentHealth, setAgentHealth] = useState<AgentHealth | null>(null);
   const [branches, setBranches] = useState<string[]>(["main"]);
   const [settingsStatus, setSettingsStatus] = useState<SettingsStatus | null>(null);
-  const selectGenRef = useRef(0);
-  const resumeGenRef = useRef(0);
   const initGenRef = useRef(0);
   const skipLastRunRestoreRef = useRef(false);
   const isMobile = useMobile();
@@ -44,93 +40,17 @@ export function useDashboard(): DashboardState {
 
   const selectedRunIdRef = useRef<string | null>(null);
   useEffect(() => { selectedRunIdRef.current = selectedRunId; }, [selectedRunId]);
-  const cursorsRef = useRef({ afterTool: 0, afterAudit: 0 });
 
-  // Stable refs — wired to useEventState setters after useSSE (ordering constraint)
   const refreshRunsRef = useRef(refreshRuns);
   refreshRunsRef.current = refreshRuns;
-  const setHistoryEventsRef = useRef<(events: FeedEvent[]) => void>(() => undefined);
-  const setHistoryLoadingRef = useRef<(v: boolean) => void>(() => undefined);
-  const setHistoryTruncatedRef = useRef<(v: boolean) => void>(() => undefined);
-  const addEventRef = useRef<(event: FeedEvent) => void>(() => undefined);
 
-  const handleRunEnded = useCallback(() => {
-    refreshRunsRef.current();
-    setBusy(false);
-  }, []);
-
-  const handleSessionResumed = useCallback(() => {
-    const runId = selectedRunIdRef.current;
-    if (!runId) return;
-    const gen = ++resumeGenRef.current;
-    sseRef.current.disconnect();
-    setHistoryLoadingRef.current(true);
-    loadRunHistory(runId).then(({ events, lastToolId, lastAuditId, truncated }) => {
-      if (gen !== resumeGenRef.current) return;
-      setHistoryEventsRef.current(events);
-      setHistoryTruncatedRef.current(truncated);
-      cursorsRef.current = { afterTool: lastToolId, afterAudit: lastAuditId };
-      sseRef.current.clearEvents();
-      sseRef.current.connect(runId, { afterTool: lastToolId, afterAudit: lastAuditId });
-      setHistoryLoadingRef.current(false);
-    }).catch((err) => {
-      if (gen !== resumeGenRef.current) return;
-      setHistoryLoadingRef.current(false);
-      addEventRef.current({ _kind: "control", text: `Session resume failed: ${err}`, ts: new Date().toISOString() });
-    });
-  }, []);
-
-  const { events: liveEvents, connected, connectionState, clearEvents, connect: sseConnect, disconnect: sseDisconnect } = useSSE(handleRunEnded, handleSessionResumed);
-  const sseRef = useRef({ connect: sseConnect, disconnect: sseDisconnect, clearEvents });
-  sseRef.current = { connect: sseConnect, disconnect: sseDisconnect, clearEvents };
-
-  const evState = useEventState(liveEvents);
-  const { allEvents, historyLoading, historyTruncated, addEvent } = evState;
-
-  setHistoryEventsRef.current = evState.setHistoryEvents;
-  setHistoryLoadingRef.current = evState.setHistoryLoading;
-  setHistoryTruncatedRef.current = evState.setHistoryTruncated;
-  addEventRef.current = addEvent;
+  const session = useRunSession({ selectedRunIdRef, setSelectedRunId, refreshRunsRef, setBusy });
+  const {
+    allEvents, connected, connectionState, historyLoading, historyTruncated,
+    addEvent, handleSelectRun, resetSession, sseRef, cursorsRef,
+  } = session;
 
   const runStatus: RunStatus | null = (selectedRun?.status as RunStatus) || null;
-
-  const handleSelectRun = useCallback(
-    async (id: string): Promise<FeedEvent[]> => {
-      const gen = ++selectGenRef.current;
-      // Also invalidate any in-flight session resume: selecting a run means we
-      // no longer want a pending resume's loadRunHistory to connect() to the
-      // run it was resuming (it would clobber this selection's connection).
-      resumeGenRef.current++;
-      sseRef.current.disconnect();
-      setSelectedRunId(id);
-      setHistoryLoadingRef.current(true);
-      sseRef.current.clearEvents();
-      let lastToolId = 0;
-      let lastAuditId = 0;
-      let loadedEvents: FeedEvent[] = [];
-      try {
-        const result = await loadRunHistory(id);
-        if (gen !== selectGenRef.current) return loadedEvents;
-        setHistoryEventsRef.current(result.events);
-        setHistoryTruncatedRef.current(result.truncated);
-        localStorage.setItem("autofyn_last_run_id", id);
-        loadedEvents = result.events;
-        lastToolId = result.lastToolId;
-        lastAuditId = result.lastAuditId;
-      } catch (err) {
-        console.warn("Failed to load history:", err);
-        if (gen === selectGenRef.current) setHistoryEventsRef.current([]);
-      } finally {
-        if (gen === selectGenRef.current) setHistoryLoadingRef.current(false);
-      }
-      if (gen !== selectGenRef.current) return loadedEvents;
-      cursorsRef.current = { afterTool: lastToolId, afterAudit: lastAuditId };
-      sseRef.current.connect(id, { afterTool: lastToolId, afterAudit: lastAuditId });
-      refreshRunsRef.current();
-      return loadedEvents;
-    },
-    [],
-  );
 
   const runActions = useRunActions({
     selectedRunId,
@@ -221,13 +141,11 @@ export function useDashboard(): DashboardState {
       if (repo) localStorage.setItem("sp_improve_active_repo", repo);
       else localStorage.removeItem("sp_improve_active_repo");
     } catch {}
-    sseRef.current.disconnect();
-    selectGenRef.current += 1;
-    resumeGenRef.current += 1; // cancel any in-flight session resume too
+    // Tear down the session (disconnect, invalidate in-flight loads, clear
+    // events) before clearing the selection for the new repo context.
+    resetSession();
     setSelectedRunId(null);
     setSelectedRun(null);
-    setHistoryEventsRef.current([]);
-    sseRef.current.clearEvents();
     setBranches(["main"]);
     if (repo) {
       try { await setActiveRepo(repo); } catch (e) { console.error("Failed to set active repo:", e); }
@@ -237,7 +155,7 @@ export function useDashboard(): DashboardState {
       if (repoGen !== initGenRef.current) return;
       setRepos(r);
     });
-  }, []);
+  }, [resetSession]);
 
   useEffect(() => {
     if (selectedRunId) {
