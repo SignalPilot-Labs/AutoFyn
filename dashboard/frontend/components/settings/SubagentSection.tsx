@@ -23,8 +23,10 @@ export function SubagentSection({ activeRepo }: SubagentSectionProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   useEffect(() => {
+    setExpanded(new Set());
     if (!activeRepo) {
       setAgents([]);
       setDisabled(new Set());
@@ -71,6 +73,15 @@ export function SubagentSection({ activeRepo }: SubagentSectionProps) {
     if (next.has(name)) next.delete(name);
     else next.add(name);
     void persist(next);
+  };
+
+  const toggleExpand = (name: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
   };
 
   const enabledCount = agents.length - disabled.size;
@@ -121,6 +132,7 @@ export function SubagentSection({ activeRepo }: SubagentSectionProps) {
                 <div className="space-y-1">
                   {inPhase.map((agent) => {
                     const isEnabled = !disabled.has(agent.name);
+                    const isExpanded = expanded.has(agent.name);
                     return (
                       <button
                         key={agent.name}
@@ -145,8 +157,16 @@ export function SubagentSection({ activeRepo }: SubagentSectionProps) {
                           <span className="text-content font-mono text-accent-hover">
                             {agent.name}
                           </span>
-                          <span className="block text-content text-text-secondary">
+                          <span
+                            className={`block text-content text-text-secondary ${isExpanded ? "" : "line-clamp-2"}`}
+                          >
                             {agent.description}
+                          </span>
+                          <span
+                            onClick={(e) => { e.stopPropagation(); toggleExpand(agent.name); }}
+                            className="mt-0.5 inline-block text-content text-accent-hover hover:underline cursor-pointer"
+                          >
+                            {isExpanded ? "less" : "more"}
                           </span>
                         </span>
                       </button>

@@ -83,4 +83,33 @@ describe("SubagentSection", () => {
     await waitFor(() => expect(screen.getByText("network down")).toBeInTheDocument());
     expect(screen.getByText("3 of 3 enabled")).toBeInTheDocument();
   });
+
+  it("expands and collapses a description via the more/less control", async () => {
+    render(<SubagentSection activeRepo="org/repo" />);
+    await waitFor(() => expect(screen.getByText("architect")).toBeInTheDocument());
+
+    // Each agent row starts collapsed with a "more" control.
+    expect(screen.getAllByText("more").length).toBe(3);
+
+    await act(async () => {
+      screen.getAllByText("more")[0].click();
+    });
+
+    // The clicked row now reads "less"; the other two still read "more".
+    expect(screen.getByText("less")).toBeInTheDocument();
+    expect(screen.getAllByText("more").length).toBe(2);
+  });
+
+  it("clicking more expands the description without disabling the agent", async () => {
+    render(<SubagentSection activeRepo="org/repo" />);
+    await waitFor(() => expect(screen.getByText("architect")).toBeInTheDocument());
+
+    await act(async () => {
+      screen.getAllByText("more")[0].click();
+    });
+
+    // The more/less toggle must not bubble to the row's enable/disable click.
+    expect(saveRepoSubagents).not.toHaveBeenCalled();
+    expect(screen.getByText("3 of 3 enabled")).toBeInTheDocument();
+  });
 });
