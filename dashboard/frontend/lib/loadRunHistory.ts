@@ -5,13 +5,15 @@ import { fetchToolCalls, fetchAuditLog } from "@/lib/api";
 import { HISTORY_FETCH_LIMIT } from "@/lib/constants";
 import { applyPostToPre, compareEvents } from "@/lib/eventPipeline";
 
-function mergeToolPhases(tools: ToolCall[]): ToolCall[] {
+export function mergeToolPhases(tools: ToolCall[]): ToolCall[] {
   // Pair pre/post tool rows strictly by tool_use_id. An unmatched post is
   // kept as-is so error outputs stay visible. Name-based fallback matching
   // has been removed — it was dead code (the backend always stores a
   // tool_use_id) and could mis-pair concurrent Agent calls. The fold is
-  // immutable (via applyPostToPre) and skips a pre that already has output,
-  // matching the live SSE merge exactly.
+  // immutable (via applyPostToPre). The `!pre.output_data` clause mirrors the
+  // live SSE merge; in practice it never decides a pairing here because
+  // tool_calls rows are insert-only and a "pre" row always has output_data
+  // null — so it is a redundant guard, not a behavioral gate.
   const merged: ToolCall[] = [];
 
   for (const t of tools) {

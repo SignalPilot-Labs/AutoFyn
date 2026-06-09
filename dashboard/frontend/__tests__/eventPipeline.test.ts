@@ -61,14 +61,20 @@ describe("applyPostToPre", () => {
   });
 
   it("is immutable — neither argument is mutated", () => {
-    const pre = toolCall({ phase: "pre", output_data: null, duration_ms: null });
-    const post = toolCall({ phase: "post", output_data: { x: 1 }, duration_ms: 5 });
+    const pre = toolCall({ id: 1, phase: "pre", output_data: null, duration_ms: null });
+    const post = toolCall({ id: 2, phase: "post", output_data: { x: 1 }, duration_ms: 5 });
 
     applyPostToPre(pre, post);
 
+    // pre keeps its original (pre) state.
     expect(pre.phase).toBe("pre");
     expect(pre.output_data).toBeNull();
     expect(pre.duration_ms).toBeNull();
+    // post is read-only input — also untouched.
+    expect(post.id).toBe(2);
+    expect(post.phase).toBe("post");
+    expect(post.output_data).toEqual({ x: 1 });
+    expect(post.duration_ms).toBe(5);
   });
 });
 
