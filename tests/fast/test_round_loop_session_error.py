@@ -152,6 +152,7 @@ class TestRoundLoopSessionErrorRoundNumber:
 
                 host_mounts=None,
                 user_env_keys=[],
+                disabled_subagents=[],
             )
 
         assert result == RUN_STATUS_COMPLETED
@@ -210,6 +211,7 @@ class TestRoundLoopSessionErrorRoundNumber:
 
                 host_mounts=None,
                 user_env_keys=[],
+                disabled_subagents=[],
             )
 
         # runner.run was called 4 times (1 success + 2 errors + 1 final)

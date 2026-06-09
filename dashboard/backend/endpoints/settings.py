@@ -14,7 +14,9 @@ from backend.constants import (
     MASTER_KEY_PATH,
     SECRET_KEYS,
 )
+from config.loader import load_subagents
 from db.constants import (
+    DISABLED_SUBAGENTS_KEY_PREFIX,
     GITHUB_REPO_MAX_LEN,
     GITHUB_REPO_RE,
     HOST_MOUNTS_KEY_PREFIX,
@@ -22,6 +24,7 @@ from db.constants import (
 )
 from backend.models import (
     AddTokenRequest,
+    SaveDisabledSubagentsRequest,
     SaveMcpServersRequest,
     SaveMountsRequest,
     SaveRepoEnvRequest,
@@ -92,6 +95,11 @@ def _host_mounts_key(repo: str) -> str:
 def _mcp_servers_key(repo: str) -> str:
     """Setting table key for per-repo MCP server configurations."""
     return f"mcp_servers:{repo}"
+
+
+def _disabled_subagents_key(repo: str) -> str:
+    """Setting table key for the per-repo disabled-subagents list."""
+    return f"{DISABLED_SUBAGENTS_KEY_PREFIX}{repo}"
 
 
 @router.get("/settings")
@@ -228,6 +236,65 @@ async def save_repo_mcp_servers(repo: str, body: SaveMcpServersRequest) -> dict:
                 await s.delete(existing)
         await s.commit()
     return {"ok": True, "repo": repo, "server_count": len(body.servers)}
+
+
+@router.get("/repos/{repo:path}/subagents")
+async def get_repo_subagents(repo: str) -> dict:
+    """Get the subagent roster and which ones are disabled for a repo.
+
+    `agents` is the shipped roster (name/type/description) the toggle UI
+    renders; `disabled` is the user's per-repo off-list. No setting → none
+    disabled (full roster enabled).
+    """
+    repo = validate_repo_slug(repo)
+    agents = [
+        {"name": spec.name, "type": spec.type, "description": spec.description}
+        for spec in load_subagents()
+    ]
+    async with session() as s:
+        setting = await s.get(Setting, _disabled_subagents_key(repo))
+        if not setting:
+            return {"repo": repo, "agents": agents, "disabled": []}
+        try:
+            disabled: list[str] = json.loads(setting.value)
+        except (json.JSONDecodeError, TypeError) as e:
+            log.error("Failed to parse disabled subagents for %s: %s", repo, e, exc_info=True)
+            raise HTTPException(status_code=500, detail="Failed to parse disabled subagents") from e
+    return {"repo": repo, "agents": agents, "disabled": disabled}
+
+
+@router.put("/repos/{repo:path}/subagents")
+async def save_repo_subagents(repo: str, body: SaveDisabledSubagentsRequest) -> dict:
+    """Save the disabled-subagents list for a repo. Full replacement.
+
+    Rejects unknown agent names and the all-disabled case — a run needs at
+    least one subagent. An empty list deletes the setting (full roster).
+    """
+    repo = validate_repo_slug(repo)
+    roster = {spec.name for spec in load_subagents()}
+    disabled = set(body.disabled)
+    unknown = disabled - roster
+    if unknown:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Unknown subagent(s): {', '.join(sorted(unknown))}",
+        )
+    if disabled >= roster:
+        raise HTTPException(
+            status_code=422,
+            detail="Cannot disable every subagent — at least one must stay enabled",
+        )
+    async with session() as s:
+        if disabled:
+            await upsert_setting(
+                s, _disabled_subagents_key(repo), json.dumps(sorted(disabled)), False
+            )
+        else:
+            existing = await s.get(Setting, _disabled_subagents_key(repo))
+            if existing:
+                await s.delete(existing)
+        await s.commit()
+    return {"ok": True, "repo": repo, "disabled_count": len(disabled)}
 
 
 @router.get("/repos")

@@ -3,7 +3,7 @@
 from fastapi import Path
 from pydantic import BaseModel, Field, field_validator
 
-from db.constants import DEFAULT_EFFORT, DEFAULT_MODEL, ENV_VAR_KEY_RE, ENV_VAR_MAX_KEY_LEN, ENV_VAR_MAX_VALUE_LEN, GITHUB_REPO_MAX_LEN, GITHUB_REPO_PATTERN, MAX_ENV_VARS, MAX_HOST_MOUNTS, MAX_MCP_SERVERS, VALID_EFFORTS_PATTERN, VALID_MODELS_PATTERN, VALID_PRESET_PATTERN, validate_prompt_length
+from db.constants import DEFAULT_EFFORT, DEFAULT_MODEL, ENV_VAR_KEY_RE, ENV_VAR_MAX_KEY_LEN, ENV_VAR_MAX_VALUE_LEN, GITHUB_REPO_MAX_LEN, GITHUB_REPO_PATTERN, MAX_ENV_VARS, MAX_HOST_MOUNTS, MAX_MCP_SERVERS, MAX_SUBAGENTS, VALID_EFFORTS_PATTERN, VALID_MODELS_PATTERN, VALID_PRESET_PATTERN, validate_prompt_length
 
 
 RunId = Path(min_length=36, max_length=36, pattern=r"^[0-9a-f\-]{36}$")
@@ -93,6 +93,17 @@ class SaveMcpServersRequest(BaseModel):
         if len(v) > MAX_MCP_SERVERS:
             raise ValueError(f"Cannot configure more than {MAX_MCP_SERVERS} MCP servers")
         return v
+
+
+class SaveDisabledSubagentsRequest(BaseModel):
+    """Request body for saving the per-repo disabled-subagents list.
+
+    Holds the names of shipped subagents the user has turned off. Names are
+    validated against the roster (and the all-disabled case rejected) in the
+    endpoint, where the roster is loaded.
+    """
+
+    disabled: list[str] = Field(default_factory=list, max_length=MAX_SUBAGENTS)
 
 
 class SaveRepoEnvRequest(BaseModel):
