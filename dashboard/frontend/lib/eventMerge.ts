@@ -3,6 +3,7 @@
  */
 
 import type { FeedEvent, ToolCall } from "@/lib/types";
+import { applyPostToPre } from "@/lib/eventPipeline";
 
 /**
  * Merge a tool call event into an existing event list.
@@ -20,12 +21,8 @@ export function mergeToolEvent(prev: FeedEvent[], data: ToolCall): FeedEvent[] {
       if (ev._kind !== "tool" || ev.data.phase !== "pre" || ev.data.output_data)
         continue;
       if (ev.data.tool_use_id !== data.tool_use_id) continue;
-      const merged = { ...ev.data };
-      merged.output_data = data.output_data;
-      merged.duration_ms = data.duration_ms;
-      merged.phase = "post";
       const next = [...prev];
-      next[i] = { _kind: "tool", data: merged };
+      next[i] = { _kind: "tool", data: applyPostToPre(ev.data, data) };
       return next;
     }
   }
