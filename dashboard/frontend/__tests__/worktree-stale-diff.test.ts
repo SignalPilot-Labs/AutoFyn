@@ -8,7 +8,8 @@
  *
  * The fix adds `diffGenRef` (a useRef counter), increments it on each new runId in
  * the initial fetch effect, and checks `gen !== diffGenRef.current` before every
- * `set*` call in both `fetchDiffBodies` and the polling effect.
+ * `set*` call in `fetchDiffBodies` and in the shared `refetchDiff` callback that
+ * both the polling effect and the event-driven refetch delegate to.
  */
 
 import { describe, it, expect } from "vitest";
@@ -43,41 +44,50 @@ describe("WorkTree: stale diff fetch guard via generation counter", () => {
     expect(fnBody).toContain("setTmpDiff(");
   });
 
-  it("initial fetch effect guards setDiffData in .then with generation check", () => {
+  it("refetchDiff guards setDiffData in .then with a generation check", () => {
+    const fnStart = SRC.indexOf("const refetchDiff = useCallback");
+    const fnEnd = SRC.indexOf("}, [fetchDiffBodies]);", fnStart);
+    const fnBody = SRC.slice(fnStart, fnEnd);
+    // setDiffData only runs when the captured gen still matches.
+    expect(fnBody).toContain("if (gen === diffGenRef.current) setDiffData(d)");
+  });
+
+  it("initial fetch effect bumps the generation and delegates to refetchDiff", () => {
     const effectStart = SRC.indexOf("const gen = ++diffGenRef.current");
-    const fetchStart = SRC.indexOf("fetchRunDiff(runId)", effectStart);
-    // Find the .then callback after this fetchRunDiff call
-    const thenStart = SRC.indexOf(".then(", fetchStart);
-    const thenEnd = SRC.indexOf(")", thenStart + 6);
-    const surroundingBlock = SRC.slice(thenStart, thenStart + 200);
-    expect(surroundingBlock).toContain("if (gen !== diffGenRef.current) return");
-    expect(surroundingBlock).toContain("setDiffData(");
+    expect(effectStart).toBeGreaterThan(-1);
+    const callStart = SRC.indexOf("refetchDiff(runId, gen)", effectStart);
+    expect(callStart).toBeGreaterThan(effectStart);
   });
 
-  it("initial fetch effect passes gen to fetchDiffBodies", () => {
-    const effectStart = SRC.indexOf("const gen = ++diffGenRef.current");
-    const callStart = SRC.indexOf("fetchDiffBodies(runId, gen)", effectStart);
-    expect(callStart).toBeGreaterThan(-1);
+  // The poll and the event-driven refetch both delegate to the shared
+  // `refetchDiff` callback, which is where the generation guard now lives.
+  // These assertions follow the guard into that callback rather than
+  // expecting it inlined in each effect.
+  it("refetchDiff is the shared stats+bodies fetcher taking (id, gen)", () => {
+    expect(SRC).toMatch(/refetchDiff\s*=\s*useCallback\(\s*\(id:\s*string,\s*gen:\s*number\)/);
   });
 
-  it("polling effect captures gen from diffGenRef.current without incrementing", () => {
-    const pollingEffect = SRC.indexOf("const id = setInterval");
-    const genCapture = SRC.indexOf("const gen = diffGenRef.current", pollingEffect);
-    expect(genCapture).toBeGreaterThan(pollingEffect);
+  it("refetchDiff guards setDiffData with a generation check", () => {
+    const fnStart = SRC.indexOf("const refetchDiff = useCallback");
+    const fnEnd = SRC.indexOf("}, [fetchDiffBodies]);", fnStart);
+    const fnBody = SRC.slice(fnStart, fnEnd);
+    expect(fnBody).toContain("if (gen !== diffGenRef.current) return");
+    expect(fnBody).toContain("setDiffData(");
+    // Bodies are fetched through the gen-guarded fetchDiffBodies helper.
+    expect(fnBody).toContain("fetchDiffBodies(id, gen)");
   });
 
-  it("polling effect passes gen to fetchDiffBodies", () => {
+  it("polling effect calls refetchDiff with the current generation", () => {
     const pollingEffect = SRC.indexOf("const id = setInterval");
     const pollingEnd = SRC.indexOf("return () => clearInterval(id)", pollingEffect);
     const pollingBody = SRC.slice(pollingEffect, pollingEnd);
-    expect(pollingBody).toContain("fetchDiffBodies(runId, gen)");
+    expect(pollingBody).toContain("refetchDiff(runId, diffGenRef.current)");
   });
 
-  it("polling effect guards setDiffData with generation check", () => {
-    const pollingEffect = SRC.indexOf("const id = setInterval");
-    const pollingEnd = SRC.indexOf("return () => clearInterval(id)", pollingEffect);
-    const pollingBody = SRC.slice(pollingEffect, pollingEnd);
-    expect(pollingBody).toContain("if (gen !== diffGenRef.current) return");
-    expect(pollingBody).toContain("setDiffData(");
+  it("event-driven refetch calls refetchDiff with the current generation", () => {
+    const debounceEffect = SRC.indexOf("const t = setTimeout");
+    const debounceEnd = SRC.indexOf("return () => clearTimeout(t)", debounceEffect);
+    const debounceBody = SRC.slice(debounceEffect, debounceEnd);
+    expect(debounceBody).toContain("refetchDiff(runId, diffGenRef.current)");
   });
 });

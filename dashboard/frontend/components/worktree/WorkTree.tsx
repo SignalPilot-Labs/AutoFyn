@@ -15,7 +15,12 @@ import {
   resolveSessionTree,
 } from "@/lib/worktree-utils";
 import type { TreeNode } from "@/lib/worktree-utils";
-import { DIFF_MAX_BYTES, DIFF_POLL_INTERVAL_MS, TERMINAL_STATUSES } from "@/lib/constants";
+import {
+  DIFF_MAX_BYTES,
+  DIFF_POLL_INTERVAL_MS,
+  DIFF_REFETCH_DEBOUNCE_MS,
+  TERMINAL_STATUSES,
+} from "@/lib/constants";
 import { FileDiffViewer } from "./FileDiffViewer";
 
 /* ── Icons ── */
@@ -228,11 +233,9 @@ export function WorkTree({ events, runId, runStatus }: WorkTreeProps) {
   const [tmpTooLarge, setTmpTooLarge] = useState(false);
   const [selectedFile, setSelectedFile] = useState<{ path: string; status: string } | null>(null);
 
-  // Fetch diff bodies (repo + tmp). Extracted so both mount and poll
-  // can call it — before this, bodies were one-shot on mount so newly
-  // written round reports were visible in the tree (via liveTree from
-  // the event stream) but couldn't be opened until a manual refresh.
-  // The `gen` parameter guards against stale results from prior runs.
+  // Fetch diff bodies (repo + tmp). Called only via refetchDiff so every
+  // refresh path fetches stats and bodies together. The `gen` parameter
+  // guards against stale results from a prior run overwriting current state.
   const fetchDiffBodies = useCallback((id: string, gen: number) => {
     Promise.all([
       fetchDiffRepo(id).then(d => d.diff).catch(() => ""),
@@ -252,7 +255,26 @@ export function WorkTree({ events, runId, runStatus }: WorkTreeProps) {
     });
   }, []);
 
-  // Fetch diff stats (file list) when run changes
+  // Refetch stats + bodies for the current generation. The single fetch path
+  // shared by the mount effect, the interval poll, and the event-driven
+  // refetch, so all three behave identically. Returns the stats promise so
+  // callers can chain loading state. The stats `.catch` sets a "live" sentinel
+  // so an early-run failure (sandbox/branch not ready -> 409) keeps the run
+  // refreshable instead of stalling on an unavailable source.
+  const refetchDiff = useCallback((id: string, gen: number): Promise<void> => {
+    fetchDiffBodies(id, gen);
+    return fetchRunDiff(id)
+      .then(d => { if (gen === diffGenRef.current) setDiffData(d); })
+      .catch(err => {
+        if (gen !== diffGenRef.current) return;
+        console.warn("WorkTree: diff stats fetch failed, enabling refetch retry:", err);
+        setDiffData({ source: "live", files: [], total_files: 0, total_added: 0, total_removed: 0 });
+      });
+  }, [fetchDiffBodies]);
+
+  // Initial fetch when the run changes. Resets per-run state, bumps the
+  // generation so stale in-flight fetches from the prior run are discarded,
+  // then delegates the actual fetch to refetchDiff.
   useEffect(() => {
     if (!runId) {
       setDiffData(null);
@@ -269,41 +291,11 @@ export function WorkTree({ events, runId, runStatus }: WorkTreeProps) {
     setRepoTooLarge(false);
     setTmpTooLarge(false);
     setDiffLoading(true);
-    fetchRunDiff(runId)
-      .then(d => {
-        if (gen !== diffGenRef.current) return;
-        setDiffData(d);
-        setDiffLoading(false);
-      })
-      .catch(err => {
-        if (gen !== diffGenRef.current) return;
-        console.warn("WorkTree: diff stats fetch failed, enabling polling retry:", err);
-        // Set a live-source sentinel so isPollingSource becomes true and the
-        // existing polling interval retries fetchRunDiff automatically.
-        setDiffData({ source: "live", files: [], total_files: 0, total_added: 0, total_removed: 0 });
-        setDiffLoading(false);
-      });
-    fetchDiffBodies(runId, gen);
+    refetchDiff(runId, gen).finally(() => {
+      if (gen === diffGenRef.current) setDiffLoading(false);
+    });
     return () => { diffGenRef.current++; };
-  }, [runId]);
-
-  // Poll all three diff sources for live/agent runs so the tree, badge,
-  // and click-to-open all stay fresh mid-round. Before this, only stats
-  // were polled — repoDiff and tmpDiff were one-shot on mount, so newly
-  // written round reports appeared in the tree (via liveTree from events)
-  // but couldn't be opened until a manual refresh fetched the diff body.
-  const isPollingSource = diffData?.source === "live" || diffData?.source === "agent";
-  useEffect(() => {
-    if (!runId || !isPollingSource) return;
-    const id = setInterval(() => {
-      const gen = diffGenRef.current;
-      fetchRunDiff(runId)
-        .then(d => { if (gen !== diffGenRef.current) return; setDiffData(d); })
-        .catch(err => console.warn("WorkTree: diff poll failed:", err));
-      fetchDiffBodies(runId, gen);
-    }, DIFF_POLL_INTERVAL_MS);
-    return () => clearInterval(id);
-  }, [runId, isPollingSource]);
+  }, [runId, refetchDiff]);
 
   // Live changes from event stream. Split tmp/round-N writes off from the
   // rest: those are always new files (correctly 'added'), while other
@@ -312,6 +304,44 @@ export function WorkTree({ events, runId, runStatus }: WorkTreeProps) {
   // /diff/tmp hasn't returned yet but the Write event is already in feed.
   const liveChanges = useMemo(() => extractFileChanges(events), [events]);
   const writeChanges = useMemo(() => liveChanges.filter(c => c.action !== "read"), [liveChanges]);
+
+  // Whether the run's diff should keep refreshing. True while the sandbox is
+  // live ("live"/"agent"), AND while the run is active but its diff source is
+  // not yet ready ("unavailable" from an early-run 409) — otherwise a run
+  // selected at startup would never start polling and the diff would stay
+  // empty until a page reload. A "stored" (terminal, persisted) diff is final
+  // and needs no refresh.
+  const runIsActive = runStatus !== null && !TERMINAL_STATUSES.has(runStatus);
+  const isRefreshSource =
+    diffData?.source === "live" ||
+    diffData?.source === "agent" ||
+    (runIsActive && diffData?.source === "unavailable");
+
+  // Poll all diff sources so the tree, badge, and click-to-open all stay
+  // fresh mid-round as a fallback when no events are arriving.
+  useEffect(() => {
+    if (!runId || !isRefreshSource) return;
+    const id = setInterval(() => {
+      refetchDiff(runId, diffGenRef.current);
+    }, DIFF_POLL_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [runId, isRefreshSource, refetchDiff]);
+
+  // Event-driven refetch: the authoritative git diff is otherwise only
+  // refreshed by the 15s poll, so a Write/Edit appears in the file tree
+  // (built from SSE events) up to a full poll cycle before its diff body and
+  // line counts catch up. Debounce a refetch off the live write count so a
+  // burst of edits triggers one refetch shortly after they land, not one per
+  // event. This is the fix for "diff doesn't update until reload / round end".
+  const liveWriteCount = writeChanges.length;
+  useEffect(() => {
+    if (!runId || !isRefreshSource || liveWriteCount === 0) return;
+    const t = setTimeout(() => {
+      refetchDiff(runId, diffGenRef.current);
+    }, DIFF_REFETCH_DEBOUNCE_MS);
+    return () => clearTimeout(t);
+  }, [runId, isRefreshSource, liveWriteCount, refetchDiff]);
+
   const liveTree = useMemo(() => {
     const tmpLive = liveChanges.filter(c => c.path.startsWith("tmp/"));
     const repoLive = liveChanges.filter(c => !c.path.startsWith("tmp/"));
