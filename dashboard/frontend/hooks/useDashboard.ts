@@ -97,6 +97,10 @@ export function useDashboard(): DashboardState {
   const handleSelectRun = useCallback(
     async (id: string): Promise<FeedEvent[]> => {
       const gen = ++selectGenRef.current;
+      // Also invalidate any in-flight session resume: selecting a run means we
+      // no longer want a pending resume's loadRunHistory to connect() to the
+      // run it was resuming (it would clobber this selection's connection).
+      resumeGenRef.current++;
       sseRef.current.disconnect();
       setSelectedRunId(id);
       setHistoryLoadingRef.current(true);
@@ -219,6 +223,7 @@ export function useDashboard(): DashboardState {
     } catch {}
     sseRef.current.disconnect();
     selectGenRef.current += 1;
+    resumeGenRef.current += 1; // cancel any in-flight session resume too
     setSelectedRunId(null);
     setSelectedRun(null);
     setHistoryEventsRef.current([]);
