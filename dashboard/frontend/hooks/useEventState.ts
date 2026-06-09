@@ -2,24 +2,7 @@
 
 import { useState, useCallback, useMemo } from "react";
 import type { FeedEvent } from "@/lib/types";
-
-function getEventTs(e: FeedEvent): string {
-  if (e._kind === "tool") return e.data.ts;
-  if (e._kind === "audit") return e.data.ts;
-  if (e._kind === "usage") return e.data.ts;
-  return e.ts;
-}
-
-function getEventPriority(e: FeedEvent): number {
-  // Audit/llm events sort before tool events at same timestamp (matches backend TYPE_PRIORITY)
-  return e._kind === "tool" ? 1 : 0;
-}
-
-function getEventId(e: FeedEvent): number {
-  if (e._kind === "tool") return e.data.id;
-  if (e._kind === "audit") return e.data.id;
-  return 0;
-}
+import { applyPostToPre, getEventTs, getEventPriority, getEventId } from "@/lib/eventPipeline";
 
 export interface EventState {
   historyEvents: FeedEvent[];
@@ -66,15 +49,7 @@ export function deduplicateToolEvents(
       }
       const orig = patchedHistory[idx];
       if (orig._kind === "tool") {
-        patchedHistory[idx] = {
-          _kind: "tool",
-          data: {
-            ...orig.data,
-            output_data: ev.data.output_data,
-            duration_ms: ev.data.duration_ms,
-            phase: ev.data.phase,
-          },
-        };
+        patchedHistory[idx] = { _kind: "tool", data: applyPostToPre(orig.data, ev.data) };
       }
     } else {
       filteredLive.push(ev);
