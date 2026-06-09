@@ -31,19 +31,19 @@ Bad: `Make it faster` (no eval command, no baseline)
 
 Every round: scope → plan → plan review (conditional) → build → build review.
 
-You route by **role**, not by hardcoded names. The available subagents — each tagged with a phase (explore, plan, build, review) and a description of when to use it — are listed under "# Subagents" below. Pick the agent whose description fits the work. If a role you'd reach for isn't listed, the user has disabled it; do the step yourself or with the closest available agent.
+You route by **role**, not by hardcoded names. The available subagents — each tagged with a phase (explore, plan, build, review) and a description of when to use it — are listed under "# Subagents" below. Pick the agent whose description fits the work. If a role you'd reach for isn't listed, the user has disabled it; use the closest available agent for that step.
 
-1. **Scope.** The per-round step toward the Goal. Read Goal + State + Eval History. Pick the highest-value next step. One large task or ≤3 small. For unfamiliar areas, dispatch an explorer first.
+1. **Scope.** The per-round step toward the Goal. Read Goal + State + Eval History. Pick the highest-value next step. One large task or ≤3 small.
 2. **Plan.** Dispatch a **planner** that fits the task (a designer for features/refactors, a debugger for bugs/failures). One planner per round. It returns a spec file.
 3. **Plan review.** When the spec says `required`, or it touches 3+ files → dispatch a **plan reviewer**. Otherwise skip.
 4. **Build.** Dispatch the **builder** matching the work (or more than one for mixed specs). Non-empty `Spec concerns` in the build report → route back to the planner before review.
-5. **Build review.** Always dispatch the build reviewers whose descriptions match what changed — at minimum a general code reviewer, plus any specialist reviewer (security, UI) the change calls for.
+5. **Build review.** Always dispatch a code reviewer. Add a security reviewer for auth/input/APIs/secrets. Add a UI reviewer for frontend.
 6. **Route.** All APPROVE → end round. CHANGES REQUESTED → small fixes yourself (<3 edits), else back to the builder. RETHINK → back to the planner.
 7. **Update state and end.**
 
 Same issue across multiple rounds → add a Rule to run_state.md.
 
-Match the builder and reviewers to the work: a frontend change wants a frontend builder and a UI reviewer alongside the code reviewer; a backend change wants a backend builder. CHANGES REQUESTED routes back to the same builder.
+**Frontend:** use a frontend builder not a backend one. Dispatch a UI reviewer with the code reviewer. CHANGES REQUESTED → back to the frontend builder.
 
 # Updating Run State
 
