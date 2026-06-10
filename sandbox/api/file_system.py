@@ -5,6 +5,7 @@ manipulate files in the sandbox without piping shell commands through /exec.
 """
 
 import json
+import logging
 from pathlib import Path
 
 from aiohttp import web
@@ -15,6 +16,8 @@ from constants import (
     FS_PATH_EMPTY_MSG,
     FS_READ_MAX_BYTES,
 )
+
+log = logging.getLogger("sandbox.endpoints.file_system")
 
 
 def validate_fs_path(raw_path: str) -> Path:
@@ -121,7 +124,14 @@ async def handle_read_dir(request: web.Request) -> web.Response:
                 {"error": f"dir too large (>{FS_READ_MAX_BYTES})"},
                 status=413,
             )
-        files[entry.name] = entry.read_text(encoding="utf-8")
+        # This endpoint's contract is text files (round reports, memory). A
+        # non-UTF-8 artifact (e.g. a PDF an agent downloaded into the dir) is not
+        # part of that contract — skip it rather than 500 the whole listing.
+        try:
+            files[entry.name] = entry.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            log.info("read_dir: skipping non-text file %s", entry)
+            continue
     return web.json_response({"exists": True, "files": files})
 
 
