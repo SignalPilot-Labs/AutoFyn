@@ -26,6 +26,7 @@ import { StopConfirmDialog } from "@/components/ui/StopConfirmDialog";
 import { ToastProvider } from "@/components/ui/Toast";
 import { fetchSettingsStatus } from "@/lib/settings-api";
 import { fetchRepos } from "@/lib/api";
+import { useAgentPhases } from "@/hooks/useAgentPhases";
 import {
   SIDEBAR_DEFAULT_WIDTH,
   SIDEBAR_MIN_WIDTH,
@@ -107,6 +108,10 @@ function MonitorPageInner() {
     maxWidthRatio: RIGHT_PANEL_MAX_WIDTH_RATIO,
     direction: "right",
   });
+
+  // Backend-sourced name→phase map for the selected run's subagents, used to
+  // color agent cards in the feed (shipped + repo-defined agents alike).
+  const agentPhases = useAgentPhases(selectedRun?.github_repo ?? null);
 
   const agentReachable = agentHealth != null && agentHealth.status !== "unreachable";
   const agentIdle = agentHealth?.status === "idle";
@@ -264,6 +269,7 @@ function MonitorPageInner() {
               isLoading={historyLoading}
               historyTruncated={historyTruncated}
               hasSelectedRun={selectedRunId !== null}
+              agentPhases={agentPhases}
             />
             {selectedRunId && (
               <CommandInput

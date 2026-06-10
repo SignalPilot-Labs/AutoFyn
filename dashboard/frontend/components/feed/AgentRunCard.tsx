@@ -15,7 +15,7 @@ import {
   IDLE_WARN_MS,
 } from "@/components/feed/eventCardHelpers";
 import { AGENT_IDLE_TIMER_INTERVAL_MS } from "@/lib/constants";
-import { resolvePhase, hexToRgba } from "@/lib/phaseColors";
+import { resolvePhase, hexToRgba, type SubagentPhase } from "@/lib/phaseColors";
 import {
   AgentRunStatusBadge,
   IdleWarningBanner,
@@ -30,6 +30,7 @@ function AgentRunCardInner({
   ts,
   runActive,
   runPaused,
+  agentPhases,
 }: {
   tool: ToolCall;
   childTools: ToolCall[];
@@ -38,6 +39,7 @@ function AgentRunCardInner({
   ts: string;
   runActive: boolean;
   runPaused: boolean;
+  agentPhases: Record<string, SubagentPhase>;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
@@ -58,7 +60,7 @@ function AgentRunCardInner({
   const isCompleted = !isPending && !!tool.output_data;
   const isFailed = !runActive && !isPending && !isPaused && tool.phase === "pre" && !tool.output_data;
 
-  const { phase, meta: phaseMeta } = resolvePhase(subType);
+  const { phase, meta: phaseMeta } = resolvePhase(subType, agentPhases);
 
   const lastActivityTs =
     childTools.length > 0
