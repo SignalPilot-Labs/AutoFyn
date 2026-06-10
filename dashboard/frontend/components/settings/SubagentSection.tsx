@@ -167,11 +167,11 @@ export function SubagentSection({ activeRepo }: SubagentSectionProps) {
                               repo
                             </span>
                           )}
-                          <span
-                            className={`block text-content text-text-secondary ${isExpanded ? "" : "line-clamp-2"}`}
-                          >
-                            {agent.description}
-                          </span>
+                          {isExpanded && (
+                            <span className="block text-content text-text-secondary">
+                              {agent.description}
+                            </span>
+                          )}
                           <button
                             type="button"
                             onClick={() => toggleExpand(agent.name)}

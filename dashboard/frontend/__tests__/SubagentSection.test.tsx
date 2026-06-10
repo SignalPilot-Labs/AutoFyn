@@ -114,20 +114,24 @@ describe("SubagentSection", () => {
     expect(screen.getByText("4 of 4 enabled")).toBeInTheDocument();
   });
 
-  it("clamps the description until expanded, then shows it in full", async () => {
+  it("hides the description until expanded, then hides it again on less", async () => {
     render(<SubagentSection activeRepo="org/repo" />);
     await waitFor(() => expect(screen.getByText("architect")).toBeInTheDocument());
 
-    // Collapsed: the description is line-clamped.
-    const desc = screen.getByText("designs work");
-    expect(desc.className).toContain("line-clamp-2");
+    // Collapsed: the description is not rendered at all.
+    expect(screen.queryByText("designs work")).not.toBeInTheDocument();
 
+    // "more" → the description appears.
     await act(async () => {
       screen.getAllByText("more")[0].click();
     });
+    expect(screen.getByText("designs work")).toBeInTheDocument();
 
-    // Expanded: the clamp is removed so the whole description shows.
-    expect(screen.getByText("designs work").className).not.toContain("line-clamp-2");
+    // "less" → the description is removed again.
+    await act(async () => {
+      screen.getByText("less").click();
+    });
+    expect(screen.queryByText("designs work")).not.toBeInTheDocument();
   });
 
   it("badges a repo-defined agent and shows it alongside shipped ones", async () => {

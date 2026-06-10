@@ -18,17 +18,20 @@ import {
   SingleToolCard,
 } from "@/components/feed/ToolGroupCards";
 import { AgentRunCard } from "@/components/feed/AgentRunCard";
+import type { SubagentPhase } from "@/lib/phaseColors";
 
 export function GroupedEventCard({
   event,
   isLast,
   runActive,
   runPaused,
+  agentPhases,
 }: {
   event: GroupedEvent;
   isLast: boolean;
   runActive: boolean;
   runPaused: boolean;
+  agentPhases: Record<string, SubagentPhase>;
 }) {
   switch (event.type) {
     case "llm_message":
@@ -84,6 +87,7 @@ export function GroupedEventCard({
           ts={event.ts}
           runActive={runActive}
           runPaused={runPaused}
+          agentPhases={agentPhases}
         />
       );
     case "single_tool":

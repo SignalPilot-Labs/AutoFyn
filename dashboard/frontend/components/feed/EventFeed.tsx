@@ -7,6 +7,7 @@ import type { FeedEvent } from "@/lib/types";
 import { SCROLL_BOTTOM_THRESHOLD, SKELETON_COUNT, SKELETON_HEIGHT, SKELETON_WIDTHS, THINKING_INDICATOR_DELAY_MS } from "@/lib/constants";
 import { groupEvents } from "@/lib/groupEvents";
 import { GroupedEventCard } from "./GroupedEventCard";
+import type { SubagentPhase } from "@/lib/phaseColors";
 import { EmptyEvents, EmptyRunEvents } from "@/components/ui/EmptyStates";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 
@@ -38,6 +39,7 @@ export function EventFeed({
   isLoading,
   historyTruncated,
   hasSelectedRun,
+  agentPhases,
 }: {
   events: FeedEvent[];
   runActive: boolean;
@@ -45,6 +47,7 @@ export function EventFeed({
   isLoading: boolean;
   historyTruncated: boolean;
   hasSelectedRun: boolean;
+  agentPhases: Record<string, SubagentPhase>;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [autoScroll, setAutoScroll] = useState(true);
@@ -190,6 +193,7 @@ export function EventFeed({
                       isLast={i === grouped.length - 1}
                       runActive={gev.type === "agent_run" ? runActive : runActive && (!lastInterruptionTs || gev.ts > lastInterruptionTs)}
                       runPaused={runPaused}
+                      agentPhases={agentPhases}
                     />
                   </ErrorBoundary>
                 </motion.div>
