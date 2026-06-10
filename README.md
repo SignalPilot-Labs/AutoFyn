@@ -14,7 +14,7 @@ built the [#1 Spider 2.0 DBT agent](https://github.com/SignalPilot-Labs/SignalPi
 
 </div>
 
-**[Getting Started](docs/user/getting-started.md)** · **[CLI](docs/user/cli.md)** · **[Remote Sandboxes](docs/user/remote-sandboxes.md)** · **[Config](docs/user/config.md)** · **[FAQ](docs/user/faq.md)**
+**[Getting Started](docs/user/getting-started.md)** · **[CLI](docs/user/cli.md)** · **[Remote Sandboxes](docs/user/remote-sandboxes.md)** · **[Config](docs/user/config.md)** · **[Custom Subagents](docs/user/custom-subagents.md)** · **[FAQ](docs/user/faq.md)**
 
 ---
 
@@ -88,6 +88,7 @@ LLM agents that run in a loop hit three failure modes: context grows until the m
 - **Policy updates from failures.** Reviewer findings and repeated mistakes become persistent Rules: `ALWAYS: run migrations before tests (because round 4 broke prod, round 4)`. Global rules are injected into every subagent. Per-subagent rules (e.g. `architect.md`, `code-reviewer.md`) let each subagent accumulate domain-specific knowledge across rounds.
 - **Honest feedback loop.** Reviewers are independent. A round that improves the metric but violates a constraint is rejected. The agent corrects course instead of reinforcing bad decisions.
 - **Time-locked episodes.** `end_session` is denied until the budget expires. It iterates toward the target for the full duration.
+- **Custom subagents.** A repo can drop a `.autofyn/subagents.json` to bring its own subagents — adding new ones or overriding the shipped team by name — to tailor the pipeline to a domain (ML research, formal proofs, data work). See [Custom Subagents](docs/user/custom-subagents.md).
 
 ## CLI reference
 
