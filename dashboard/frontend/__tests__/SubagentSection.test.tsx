@@ -22,10 +22,10 @@ import { SubagentSection } from "@/components/settings/SubagentSection";
 const SUBAGENTS = {
   repo: "org/repo",
   agents: [
-    { name: "architect", type: "plan", description: "designs work", source: "shipped" },
-    { name: "code-reviewer", type: "review", description: "reviews code", source: "shipped" },
-    { name: "ui-reviewer", type: "review", description: "reviews UI", source: "shipped" },
-    { name: "ml-trainer", type: "build", description: "trains models", source: "repo" },
+    { name: "architect", type: "plan", description: "designs work", source: "core" },
+    { name: "code-reviewer", type: "review", description: "reviews code", source: "core" },
+    { name: "ui-reviewer", type: "review", description: "reviews UI", source: "core" },
+    { name: "ml-trainer", type: "build", description: "trains models", source: "user" },
   ],
   disabled: [] as string[],
 };
@@ -134,12 +134,12 @@ describe("SubagentSection", () => {
     expect(screen.queryByText("designs work")).not.toBeInTheDocument();
   });
 
-  it("badges every agent by source: repo agents 'repo', shipped agents 'core'", async () => {
+  it("badges every agent by source: user agents 'user', core agents 'core'", async () => {
     render(<SubagentSection activeRepo="org/repo" />);
     await waitFor(() => expect(screen.getByText("ml-trainer")).toBeInTheDocument());
 
-    // The fixture has one repo agent and three shipped ones.
-    expect(screen.getAllByText("repo")).toHaveLength(1);
+    // The fixture has one user-defined agent and three core ones.
+    expect(screen.getAllByText("user")).toHaveLength(1);
     expect(screen.getAllByText("core")).toHaveLength(3);
   });
 });

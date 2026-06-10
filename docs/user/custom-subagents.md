@@ -1,122 +1,102 @@
 # Custom Subagents
 
-AutoFyn ships a set of subagents organized by phase — Explore (`code-explorer`,
-`security-explorer`), Plan (`architect`, `debugger`), Build (`backend-dev`,
-`frontend-dev`), and Review (`code-reviewer`, `ui-reviewer`, `security-reviewer`,
-`spec-reviewer`). The orchestrator routes work to them by role.
+AutoFyn ships a team of subagents — explorers, planners, builders, reviewers —
+and the orchestrator routes work to them by role. You can **add your own** by
+putting a `.autofyn/subagents.json` file in your repo, to tailor the team to a
+domain the built-in agents don't cover (ML research, formal proofs, data work).
 
-A target repo can **bring its own subagents** by dropping a
-`.autofyn/subagents.json` file in its root. This lets you tailor the team to a
-domain the shipped agents don't cover — ML research, formal proofs, data
-pipelines — without changing AutoFyn itself.
+- Add a new agent, and it joins the run.
+- Reuse a built-in name, and your version replaces it.
+- AutoFyn reads the file when it clones your repo — edit it, and the next run
+  picks it up. No UI step, no rebuild.
 
-- **New agents** defined in the file appear in the run.
-- **Same-named agents override** the shipped ones (the repo wins).
-- Each agent's prompt body lives in the repo too, so an agent ships with its own
-  instructions.
+## Quick start
 
-Discovery rides the existing clone: AutoFyn reads the file once per run at
-bootstrap, exactly like the `.autofyn/config.yml` overlay. There's no UI step and
-no sync — edit the file, and the next run picks it up.
+Add a folder `.autofyn/` to your repo with two files.
 
-## The file
-
-Put a JSON array of agent definitions at `.autofyn/subagents.json` in your repo
-root:
+**`.autofyn/subagents.json`** — one agent:
 
 ```json
 [
   {
-    "name": "proof-builder",
-    "type": "build",
-    "description": "Fills a proof outline into a complete, rigorous proof. Call after the outline is ready.",
-    "model": "opus",
-    "tools": ["Read", "Write", "Edit", "Glob", "Grep", "Bash"],
-    "prompt_file": ".autofyn/subagents/proof-builder.md",
+    "name": "data-explorer",
+    "type": "explore",
+    "description": "Profiles datasets and reports schema, size, and quality issues. Call before any data work.",
+    "model": "sonnet",
+    "tools": ["Read", "Glob", "Grep", "Bash"],
+    "prompt_file": ".autofyn/subagents/data-explorer.md",
     "needs_run_state": true
   }
 ]
 ```
 
-### Fields
+**`.autofyn/subagents/data-explorer.md`** — what the agent does (this becomes its
+system prompt):
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| `name` | yes | Unique agent name. Reusing a shipped name overrides that agent. |
-| `type` | yes | The phase: `explore`, `plan`, `build`, or `review`. Determines when the orchestrator dispatches it and the card color in the dashboard. |
-| `description` | yes | When to call this agent. The orchestrator routes **by description**, so write it as a clear "call this when…". |
-| `model` | yes | `opus` or `sonnet`. A tier *request* — on a sonnet run, every agent runs on sonnet regardless (cost-conscious). |
-| `tools` | yes | Subset of the allowed tools: `Bash`, `Edit`, `Glob`, `Grep`, `Read`, `WebFetch`, `WebSearch`, `Write`. |
-| `prompt_file` | yes | Repo-relative path to the agent's prompt body (a Markdown file). Must stay inside the repo — no absolute paths, no `..`. |
-| `needs_run_state` | yes | `true` if the agent should read `/tmp/memory/run_state.md` and keep per-role rules across rounds. |
-| `needs_verification` | no | Defaults `false`. `true` appends the verification checklist (typecheck/lint/test) — leave it off for agents with no code to verify. |
+```markdown
+You are the data-explorer. Profile the datasets in this repo and report what
+you find — schema, row counts, missing values, anomalies. Do not modify data.
 
-### The prompt body
-
-`prompt_file` points to a Markdown file anywhere in the repo (commonly under
-`.autofyn/subagents/`). Its contents become the agent's system prompt. AutoFyn
-appends the shared fragments (environment, git rules, and — per the `needs_*`
-flags — verification and run-state context), so write the body as the agent's
-role and instructions.
-
-A subagent receives its dispatch via a report file. By convention, write your
-report to `/tmp/round-{ROUND_NUMBER}/<agent-name>.md` so the next agent in the
-round can read it — `{ROUND_NUMBER}` is substituted at runtime. Reviewers that
-override a shipped reviewer should emit the same verdict vocabulary the
-orchestrator routes on: `APPROVE`, `CHANGES REQUESTED`, or `RETHINK`.
-
-## How merging works
-
-The repo's agents are merged over the shipped set, **repo-wins-by-name**:
-
-```
-shipped subagents (config/subagents.json)
-  ↓ overlaid by
-.autofyn/subagents.json (in your repo)
+Write your report to `/tmp/round-{ROUND_NUMBER}/data-explorer.md` so the next
+agent can read it.
 ```
 
-A new name is added to the team; a name that matches a shipped agent replaces it
-wholesale (including its prompt body). Shipped phase order is preserved. If you
-override a shipped reviewer (e.g. `security-reviewer`), that review now runs your
-version — be deliberate about it.
+Commit both, start a run, and the orchestrator will call `data-explorer` during
+the explore phase. That's the whole feature.
 
-## Validation
+## The fields
 
-The file is untrusted (the agent operating on your repo can write it), so every
-entry is validated at load and a violation **fails the run fast** with a clear
-error. The checks:
+| Field | Required | What it is |
+|-------|----------|------------|
+| `name` | yes | The agent's name. Reuse a built-in name to replace it. |
+| `type` | yes | Its phase — `explore`, `plan`, `build`, or `review`. Decides when it runs. |
+| `description` | yes | *When to call it.* The orchestrator routes on this, so write a clear "call this when…". |
+| `model` | yes | `opus` or `sonnet`. (On a sonnet run everything runs on sonnet to save cost.) |
+| `tools` | yes | Any of: `Bash`, `Edit`, `Glob`, `Grep`, `Read`, `WebFetch`, `WebSearch`, `Write`. |
+| `prompt_file` | yes | Path (inside your repo) to the agent's prompt. |
+| `needs_run_state` | yes | `true` to let the agent read the run's goal/rules and remember lessons across rounds. Use `true` for most agents. |
+| `needs_verification` | no | Defaults `false`. Set `true` only for a **build** agent that writes code — it adds a "run the typechecker/linter/tests" step. Leave it off (or omit it) for anything that isn't producing code to verify. |
 
-- `type` is one of the four phases; `model` is `opus` or `sonnet`.
-- `tools` is a subset of the allowed tools above — no arbitrary tool names.
-- `prompt_file` is non-empty, repo-relative, and contains no `..` — it cannot
-  read files outside the repo. (The sandbox enforces this a second time.)
-- No duplicate names, and at most **32** repo agents.
+## Two things to know
 
-## Seeing them in the dashboard
+**Your prompt is the agent's job description.** Write `prompt_file` as the
+agent's role and instructions. AutoFyn adds the shared context (environment, git
+rules, and — when you set the `needs_*` flags — the run state and verification
+checklist). End it by telling the agent to write its report to
+`/tmp/round-{ROUND_NUMBER}/<your-agent-name>.md`; that's how the next agent in
+the round receives the handoff (`{ROUND_NUMBER}` is filled in at runtime).
 
-Repo agents don't show in **Settings → Subagents** until the repo has been run at
-least once — AutoFyn records the repo's subagent list at bootstrap, and Settings
-reads from that. After the first run, your agents appear with a `REPO` badge
-(shipped agents show `CORE`) and can be toggled on or off per repo like any other
-subagent.
+**Planners and reviewers have a contract.** If your agent is a `plan` agent (it
+replaces or acts like the built-in `architect`), its output is a *spec*, and the
+first line must say whether that spec needs review:
 
-## Example: a math-proof team
-
-A repo solving olympiad problems might define an explore → outline → review →
-build → review pipeline:
-
-```json
-[
-  { "name": "math-explorer",   "type": "explore", "description": "Reads the problem and prior attempts; reports promising techniques. Call first.", "model": "sonnet", "tools": ["Read", "Write", "Glob", "Grep", "Bash"], "prompt_file": ".autofyn/subagents/math-explorer.md",   "needs_run_state": true },
-  { "name": "proof-outliner",  "type": "plan",    "description": "Outlines a proof strategy and the key lemmas. Marks 'Spec review: required' when non-trivial.",  "model": "opus",   "tools": ["Read", "Write", "Glob", "Grep", "Bash"], "prompt_file": ".autofyn/subagents/proof-outliner.md",  "needs_run_state": true },
-  { "name": "outline-reviewer","type": "review",  "description": "Reviews a proof outline before details are filled in.", "model": "opus", "tools": ["Read", "Write", "Glob", "Grep", "Bash"], "prompt_file": ".autofyn/subagents/outline-reviewer.md", "needs_run_state": true },
-  { "name": "proof-builder",   "type": "build",   "description": "Fills the outline into a complete, rigorous proof.", "model": "opus", "tools": ["Read", "Write", "Edit", "Glob", "Grep", "Bash"], "prompt_file": ".autofyn/subagents/proof-builder.md", "needs_run_state": true },
-  { "name": "math-reviewer",   "type": "review",  "description": "Adversarially judges the proof and returns an APPROVE / CHANGES REQUESTED / RETHINK verdict.", "model": "opus", "tools": ["Read", "Write", "Glob", "Grep", "Bash"], "prompt_file": ".autofyn/subagents/math-reviewer.md", "needs_run_state": true }
-]
+```
+Spec review: required
 ```
 
-Because these override `code-explorer` / `architect` / `spec-reviewer` /
-`backend-dev` / `code-reviewer` by name, the orchestrator's role-based routing
-picks them up with no further configuration. Use the repo's `CLAUDE.md` to tell
-the orchestrator about the domain (e.g. "no build step; the deliverable is a
-proof file").
+Use `required` for anything non-trivial, `skip` for small mechanical work — the
+orchestrator reads this to decide whether to run a reviewer before the build. If
+your agent is a `review` agent, end with one of `APPROVE`, `CHANGES REQUESTED`,
+or `RETHINK` — the verdict the orchestrator routes on (approve → done, changes →
+back to the builder, rethink → back to the planner).
+
+## A few rules
+
+- The file is validated when AutoFyn reads it, and a bad entry **stops the run
+  with a clear error** — so you find out immediately, not mid-way.
+- `prompt_file` must stay inside your repo (no absolute paths, no `..`).
+- `tools` can only be the eight listed above; `model` only `opus`/`sonnet`.
+- Up to 32 custom agents, and no duplicate names.
+
+## In the dashboard
+
+After a repo's first run, its custom agents show up in **Settings → Subagents**
+with a `USER` badge (built-in ones show `CORE`), and you can toggle any of them
+on or off per repo. Before that first run, only the built-in agents appear.
+
+---
+
+Want a fuller example? A repo can replace the whole pipeline — see how a
+math-proof team overrides explore/plan/build/review by name to solve theorem
+problems instead of writing code. The pattern is the same: name your agents,
+write their prompts, and let the orchestrator route by description.

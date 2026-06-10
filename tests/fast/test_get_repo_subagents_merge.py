@@ -1,9 +1,9 @@
-"""Regression test: get_repo_subagents merges shipped + cached repo agents.
+"""Regression test: get_repo_subagents merges core + cached user agents.
 
-Settings shows the same list a run uses: shipped agents (source=shipped) plus
-the repo's cached user-defined agents (source=repo), repo winning on a name
-collision. Repo agents come from the cache the agent writes at run time; a
-repo never run yet (no cache row) shows shipped agents only.
+Settings shows the same list a run uses: core (shipped) agents (source=core)
+plus the repo's cached user-defined agents (source=user), the user agent
+winning on a name collision. User agents come from the cache the agent writes
+at run time; a repo never run yet (no cache row) shows core agents only.
 """
 
 from __future__ import annotations
@@ -67,7 +67,7 @@ class TestGetRepoSubagentsMerge:
             result = await settings_mod.get_repo_subagents("org/repo")
         names = {a["name"] for a in result["agents"]}
         assert names == {s.name for s in load_subagents()}
-        assert all(a["source"] == "shipped" for a in result["agents"])
+        assert all(a["source"] == "core" for a in result["agents"])
         assert result["disabled"] == []
 
     @pytest.mark.asyncio
@@ -77,9 +77,9 @@ class TestGetRepoSubagentsMerge:
         with patch.object(settings_mod, "session", ctx):
             result = await settings_mod.get_repo_subagents("org/repo")
         by_name = {a["name"]: a for a in result["agents"]}
-        assert by_name["ml-trainer"]["source"] == "repo"
-        assert by_name["architect"]["source"] == "shipped"
-        # Repo agent is additive on top of the full shipped set.
+        assert by_name["ml-trainer"]["source"] == "user"
+        assert by_name["architect"]["source"] == "core"
+        # User agent is additive on top of the full core set.
         assert len(result["agents"]) == len(load_subagents()) + 1
 
     @pytest.mark.asyncio
@@ -90,8 +90,8 @@ class TestGetRepoSubagentsMerge:
         with patch.object(settings_mod, "session", ctx):
             result = await settings_mod.get_repo_subagents("org/repo")
         by_name = {a["name"]: a for a in result["agents"]}
-        # Same name → repo wins, count unchanged.
-        assert by_name["code-reviewer"]["source"] == "repo"
+        # Same name → user wins, count unchanged.
+        assert by_name["code-reviewer"]["source"] == "user"
         assert by_name["code-reviewer"]["description"] == "repo's reviewer"
         assert len(result["agents"]) == len(load_subagents())
 
