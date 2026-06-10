@@ -250,9 +250,9 @@ async def get_repo_subagents(repo: str) -> dict:
     """Get the subagents (shipped + repo-defined) and which are disabled.
 
     `agents` is the merged list (name/type/description/source) the toggle UI
-    renders; each carries `source` = "shipped" or "repo". Repo-defined agents
-    come from a cache the agent writes at run time (a repo never run yet shows
-    shipped agents only). A repo agent that overrides a shipped name wins.
+    renders; each carries `source` = "core" (shipped) or "user" (repo-defined).
+    User agents come from a cache the agent writes at run time (a repo never run
+    yet shows core agents only). A user agent that overrides a core name wins.
     `disabled` is the user's per-repo off-list.
     """
     repo = validate_repo_slug(repo)
@@ -263,13 +263,13 @@ async def get_repo_subagents(repo: str) -> dict:
 
 
 async def _merged_subagents(s: AsyncSession, repo: str) -> list[dict]:
-    """Shipped subagents merged with the repo's cached ones (repo wins)."""
+    """Core (shipped) subagents merged with the repo's cached ones (user wins)."""
     merged: dict[str, dict] = {
         spec.name: {
             "name": spec.name,
             "type": spec.type,
             "description": spec.description,
-            "source": "shipped",
+            "source": "core",
         }
         for spec in load_subagents()
     }
@@ -281,7 +281,7 @@ async def _merged_subagents(s: AsyncSession, repo: str) -> list[dict]:
             log.error("Failed to parse repo subagents cache for %s: %s", repo, e, exc_info=True)
             raise HTTPException(status_code=500, detail="Failed to parse repo subagents") from e
         for agent in repo_agents:
-            merged[agent["name"]] = {**agent, "source": "repo"}
+            merged[agent["name"]] = {**agent, "source": "user"}
     return list(merged.values())
 
 
