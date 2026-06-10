@@ -134,12 +134,12 @@ describe("SubagentSection", () => {
     expect(screen.queryByText("designs work")).not.toBeInTheDocument();
   });
 
-  it("badges a repo-defined agent and shows it alongside shipped ones", async () => {
+  it("badges every agent by source: repo agents 'repo', shipped agents 'core'", async () => {
     render(<SubagentSection activeRepo="org/repo" />);
     await waitFor(() => expect(screen.getByText("ml-trainer")).toBeInTheDocument());
 
-    // The repo-defined agent renders a single "repo" badge; shipped ones don't.
-    const badges = screen.getAllByText("repo");
-    expect(badges.length).toBe(1);
+    // The fixture has one repo agent and three shipped ones.
+    expect(screen.getAllByText("repo")).toHaveLength(1);
+    expect(screen.getAllByText("core")).toHaveLength(3);
   });
 });
