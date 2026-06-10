@@ -159,14 +159,12 @@ export function SubagentSection({ activeRepo }: SubagentSectionProps) {
                           <span className="text-content font-mono text-accent-hover">
                             {agent.name}
                           </span>
-                          {agent.source === "repo" && (
-                            <span
-                              className="ml-1.5 align-middle text-content uppercase tracking-wide px-1 py-0.5 rounded"
-                              style={{ color: meta.color, backgroundColor: hexToRgba(meta.color, 0.12) }}
-                            >
-                              repo
-                            </span>
-                          )}
+                          <span
+                            className="ml-1.5 align-middle text-content uppercase tracking-wide px-1 py-0.5 rounded"
+                            style={{ color: meta.color, backgroundColor: hexToRgba(meta.color, 0.12) }}
+                          >
+                            {agent.source === "repo" ? "repo" : "core"}
+                          </span>
                           {isExpanded && (
                             <span className="block text-content text-text-secondary">
                               {agent.description}
@@ -175,7 +173,7 @@ export function SubagentSection({ activeRepo }: SubagentSectionProps) {
                           <button
                             type="button"
                             onClick={() => toggleExpand(agent.name)}
-                            className="mt-0.5 text-content text-accent-hover hover:underline cursor-pointer"
+                            className="ml-1.5 mt-0.5 text-content text-accent-hover hover:underline cursor-pointer"
                           >
                             {isExpanded ? "less" : "more"}
                           </button>
