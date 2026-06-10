@@ -15,6 +15,7 @@ const DEFAULT_FEED_PROPS = {
   isLoading: false,
   historyTruncated: false,
   hasSelectedRun: true,
+  agentPhases: {},
 };
 
 function makeToolEvent(id: number, name: string): FeedEvent {

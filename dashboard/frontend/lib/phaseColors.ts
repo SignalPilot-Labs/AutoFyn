@@ -20,19 +20,6 @@ export interface PhaseMeta {
   color: string;
 }
 
-export const SUBAGENT_PHASE_MAP: Record<string, SubagentPhase> = {
-  "code-explorer": "explore",
-  "security-explorer": "explore",
-  "debugger": "plan",
-  "architect": "plan",
-  "spec-reviewer": "review",
-  "backend-dev": "build",
-  "frontend-dev": "build",
-  "code-reviewer": "review",
-  "ui-reviewer": "review",
-  "security-reviewer": "review",
-};
-
 export const PHASE_META: Record<SubagentPhase, PhaseMeta> = {
   explore: { label: "Explore", color: "#44ddff" }, // cyan
   plan:    { label: "Plan",    color: "#cc88ff" }, // purple
@@ -45,11 +32,18 @@ export const DEFAULT_PHASE_META: PhaseMeta = {
   color: "#ff8844",
 };
 
-export function resolvePhase(agentType: string): {
+export function resolvePhase(
+  agentType: string,
+  agentPhases: Record<string, SubagentPhase>,
+): {
   phase: SubagentPhase | null;
   meta: PhaseMeta;
 } {
-  const phase = SUBAGENT_PHASE_MAP[agentType] ?? null;
+  // The backend is the source of truth for name→phase: agentPhases is the
+  // run's merged subagent list (shipped + repo overlay) from
+  // GET /repos/{repo}/subagents. Falls back to the default only for a name
+  // the backend doesn't know (e.g. events from before the list loaded).
+  const phase = agentPhases[agentType] ?? null;
   if (phase === null) {
     return { phase: null, meta: DEFAULT_PHASE_META };
   }

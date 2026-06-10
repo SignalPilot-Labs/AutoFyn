@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { Run, FeedEvent, RunStatus, ConnectionState } from "@/lib/types";
 import { RunList } from "@/components/sidebar/RunList";
 import { EventFeed } from "@/components/feed/EventFeed";
+import { useAgentPhases } from "@/hooks/useAgentPhases";
 import { CommandInput } from "@/components/controls/CommandInput";
 import { WorkTree } from "@/components/worktree/WorkTree";
 import { ContainerLogs } from "@/components/logs/ContainerLogs";
@@ -105,6 +106,7 @@ export function MobileLayout({
   onRestart,
   showToast,
 }: MobileLayoutProps) {
+  const agentPhases = useAgentPhases(selectedRun?.github_repo ?? null);
   return (
     <>
       {/* Mobile panel content */}
@@ -136,6 +138,7 @@ export function MobileLayout({
                 isLoading={historyLoading}
                 historyTruncated={historyTruncated}
                 hasSelectedRun={selectedRunId !== null}
+                agentPhases={agentPhases}
               />
               {selectedRunId && (
                 <CommandInput

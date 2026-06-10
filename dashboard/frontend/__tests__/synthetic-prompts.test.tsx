@@ -19,6 +19,7 @@ const DEFAULT_FEED_PROPS = {
   isLoading: false,
   historyTruncated: false,
   hasSelectedRun: true,
+  agentPhases: {},
 };
 
 /* ── Factories ── */
@@ -303,6 +304,7 @@ describe("AgentRunCard paused badge state", () => {
         ts={tool.ts}
         runActive={true}
         runPaused={true}
+        agentPhases={{ "frontend-dev": "build" }}
       />
     );
 
