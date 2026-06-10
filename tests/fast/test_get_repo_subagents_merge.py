@@ -102,3 +102,17 @@ class TestGetRepoSubagentsMerge:
         with patch.object(settings_mod, "session", ctx):
             result = await settings_mod.get_repo_subagents("org/repo")
         assert result["disabled"] == ["ui-reviewer"]
+
+    @pytest.mark.asyncio
+    async def test_disabled_ghost_name_is_pruned(self) -> None:
+        # A user agent that was disabled, then removed from .autofyn/subagents.json
+        # (no cache row, so it's not in the merged set), must not linger in the
+        # returned disabled list — otherwise the "N of M enabled" count is wrong.
+        disabled_key = f"{DISABLED_SUBAGENTS_KEY_PREFIX}org/repo"
+        ctx = _session_ctx(
+            {disabled_key: _setting(json.dumps(["ui-reviewer", "ml-trainer"]))}
+        )
+        with patch.object(settings_mod, "session", ctx):
+            result = await settings_mod.get_repo_subagents("org/repo")
+        # ui-reviewer is a real shipped agent (kept); ml-trainer is gone (pruned).
+        assert result["disabled"] == ["ui-reviewer"]
