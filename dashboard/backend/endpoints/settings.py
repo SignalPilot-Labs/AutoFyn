@@ -253,12 +253,16 @@ async def get_repo_subagents(repo: str) -> dict:
     renders; each carries `source` = "core" (shipped) or "user" (repo-defined).
     User agents come from a cache the agent writes at run time (a repo never run
     yet shows core agents only). A user agent that overrides a core name wins.
-    `disabled` is the user's per-repo off-list.
+    `disabled` is the user's per-repo off-list, filtered to names that still
+    exist in the merged set — so an agent removed from `.autofyn/subagents.json`
+    leaves no ghost in the disabled list or the "N of M enabled" count.
     """
     repo = validate_repo_slug(repo)
     async with session() as s:
         agents = await _merged_subagents(s, repo)
-        disabled = await _disabled_subagents(s, repo)
+        stored_disabled = await _disabled_subagents(s, repo)
+    known_names = {a["name"] for a in agents}
+    disabled = [name for name in stored_disabled if name in known_names]
     return {"repo": repo, "agents": agents, "disabled": disabled}
 
 
