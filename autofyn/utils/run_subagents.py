@@ -9,8 +9,9 @@ prefetches each repo agent's prompt body so the per-round prompt builder can
 stay synchronous.
 
 The repo file is untrusted (the AI agent can write it), so every entry is
-validated at load: known `type`, known `model` tier, whitelisted `tools`, and
-a `prompt_file` constrained to within the repo. Any violation fails the run.
+validated at load: known `type`, known `model` tier, `tools` that don't name
+the reserved session-gate server, and a `prompt_file` constrained to within
+the repo. Any violation fails the run.
 """
 
 import json
@@ -21,8 +22,9 @@ import httpx
 
 from config.constants import (
     ALLOWED_SUBAGENT_MODELS,
-    ALLOWED_SUBAGENT_TOOLS,
     MAX_REPO_SUBAGENTS,
+    SESSION_GATE_SERVER_NAME,
+    SESSION_GATE_TOOL_PREFIX,
     SubagentSpec,
 )
 from config.loader import merge_subagents, subagent_spec_from_entry
@@ -92,9 +94,12 @@ def _parse_repo_specs(raw: object) -> tuple[SubagentSpec, ...]:
 def _parse_repo_spec(entry: object) -> SubagentSpec:
     """Validate one untrusted repo entry into a SubagentSpec, fail-fast.
 
-    Layers the untrusted-input checks (model tier, tool whitelist, prompt-path
-    containment) on top of the shared `subagent_spec_from_entry` builder, which
-    owns the `type` check and the 8-field construction.
+    Layers the untrusted-input checks (model tier, session-gate tool block,
+    prompt-path containment) on top of the shared `subagent_spec_from_entry`
+    builder, which owns the `type` check and the 8-field construction. The
+    repo's declared `tools` list IS the allowlist for that agent — built-ins
+    plus any MCP tool its dashboard mcp_servers config wires in — with the sole
+    exception of the session-gate tools, which a subagent may never request.
     """
     if not isinstance(entry, dict):
         raise RuntimeError("Each repo subagent entry must be a JSON object")
@@ -111,11 +116,15 @@ def _parse_repo_spec(entry: object) -> SubagentSpec:
             f"Repo subagent '{name}' has unknown model tier '{entry['model']}' — "
             f"must be one of {sorted(ALLOWED_SUBAGENT_MODELS)}"
         )
-    unknown_tools = set(tools) - ALLOWED_SUBAGENT_TOOLS
-    if unknown_tools:
+    gate_tools = {
+        t for t in tools
+        if t == SESSION_GATE_SERVER_NAME or t.startswith(SESSION_GATE_TOOL_PREFIX)
+    }
+    if gate_tools:
         raise RuntimeError(
-            f"Repo subagent '{name}' requests unknown tools: "
-            f"{sorted(unknown_tools)} — allowed: {sorted(ALLOWED_SUBAGENT_TOOLS)}"
+            f"Repo subagent '{name}' requests session-gate tools: "
+            f"{sorted(gate_tools)} — ending a round or the session is the "
+            f"orchestrator's alone; a subagent may not call them"
         )
     _validate_repo_prompt_path(name, entry["prompt_file"])
     return subagent_spec_from_entry(entry, label="Repo subagent")

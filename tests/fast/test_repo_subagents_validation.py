@@ -50,9 +50,42 @@ class TestRepoSubagentsValidation:
     """load_repo_subagents fails fast on every untrusted-input violation."""
 
     @pytest.mark.asyncio
-    async def test_unknown_tool_rejected(self) -> None:
-        sandbox = _sandbox_with_json([_entry(tools=["Read", "Sudo"])])
-        with pytest.raises(RuntimeError, match="Sudo"):
+    async def test_mcp_tool_allowed(self) -> None:
+        # The repo's declared tools ARE its allowlist: a wired-in MCP tool that
+        # is not a built-in must pass validation (it resolves via the repo's
+        # dashboard mcp_servers config).
+        sandbox = _sandbox_with_json(
+            [_entry(tools=["Read", "mcp__approach-ranker__sample_approaches"])]
+        )
+        config = await load_repo_subagents(sandbox)
+        (spec,) = (s for s in config.specs if s.name == "ml-trainer")
+        assert "mcp__approach-ranker__sample_approaches" in spec.tools
+
+    @pytest.mark.asyncio
+    async def test_session_gate_tool_rejected(self) -> None:
+        # Ending a round/session is the orchestrator's alone — a subagent may
+        # not request the session-gate tools, even though every other tool is
+        # allowed.
+        sandbox = _sandbox_with_json(
+            [_entry(tools=["Read", "mcp__session_gate__end_session"])]
+        )
+        with pytest.raises(RuntimeError, match="session-gate tools"):
+            await load_repo_subagents(sandbox)
+
+    @pytest.mark.asyncio
+    async def test_session_gate_end_round_rejected(self) -> None:
+        # end_round and end_session both live on the session_gate server, so the
+        # one prefix check must block both — not just end_session.
+        sandbox = _sandbox_with_json(
+            [_entry(tools=["Read", "mcp__session_gate__end_round"])]
+        )
+        with pytest.raises(RuntimeError, match="session-gate tools"):
+            await load_repo_subagents(sandbox)
+
+    @pytest.mark.asyncio
+    async def test_bare_session_gate_name_rejected(self) -> None:
+        sandbox = _sandbox_with_json([_entry(tools=["Read", "session_gate"])])
+        with pytest.raises(RuntimeError, match="session-gate tools"):
             await load_repo_subagents(sandbox)
 
     @pytest.mark.asyncio
