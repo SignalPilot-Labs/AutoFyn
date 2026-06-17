@@ -12,7 +12,7 @@ import { HostMountsEditor } from "@/components/controls/HostMountsEditor";
 import { SandboxPicker } from "@/components/controls/SandboxPicker";
 import { McpServersEditor } from "@/components/controls/McpServersEditor";
 import { clsx } from "clsx";
-import { capitalize, DEFAULT_BASE_BRANCH, DEFAULT_DOCKER_START_CMD, STARTER_PRESETS, STARTER_PRESET_KEYS, EFFORT_LEVELS, DEFAULT_EFFORT } from "@/lib/constants";
+import { capitalize, DEFAULT_DOCKER_START_CMD, STARTER_PRESETS, STARTER_PRESET_KEYS, EFFORT_LEVELS, DEFAULT_EFFORT } from "@/lib/constants";
 import type { StarterPresetKey, EffortLevel } from "@/lib/constants";
 import { useModels, findModel, resolveInitialModel } from "@/lib/models";
 import { fetchRepoEnv, saveRepoEnv, fetchRepoMounts, saveRepoMounts, fetchRemoteMounts, saveRemoteMounts, fetchRepoMcpServers, saveRepoMcpServers, fetchRemoteSandboxes, updateRemoteSandbox } from "@/lib/api";
@@ -24,6 +24,7 @@ export interface StartRunModalProps {
   onStart: (prompt: string | undefined, preset: string | undefined, budget: number, durationMinutes: number, baseBranch: string, model: string, effort: string, sandboxId: string | null, startCmd: string) => void;
   busy: boolean;
   branches: string[];
+  defaultBranch: string;
   activeRepo: string | null;
 }
 
@@ -90,11 +91,12 @@ const QUICK_START_ICONS: Record<string, React.ReactElement> = {
   ),
 };
 
-export function StartRunModal({ open, onClose, onStart, busy, branches, activeRepo }: StartRunModalProps) {
+export function StartRunModal({ open, onClose, onStart, busy, branches, defaultBranch, activeRepo }: StartRunModalProps) {
   const [customPrompt, setCustomPrompt] = useState("");
   const [budget, setBudget] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [baseBranch, setBaseBranch] = useState(DEFAULT_BASE_BRANCH);
+  const [baseBranch, setBaseBranch] = useState(defaultBranch);
+  const branchTouchedRef = useRef(false);
   const [selectedQuick, setSelectedQuick] = useState<StarterPresetKey | null>(null);
   const [model, setModel] = useState<string>("");
   const [effort, setEffort] = useState<EffortLevel>(DEFAULT_EFFORT);
@@ -162,7 +164,8 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, activeRe
       setCustomPrompt("");
       setBudget(0);
       setDuration(0);
-      setBaseBranch(DEFAULT_BASE_BRANCH);
+      setBaseBranch(defaultBranch);
+      branchTouchedRef.current = false;
       setSelectedQuick(null);
       setEffort(DEFAULT_EFFORT);
       setEnvText("");
@@ -181,7 +184,19 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, activeRe
       // with remote mounts for the correct sandbox.
       if (activeRepo) void loadMountsForSandbox(null);
     }
-  }, [open, activeRepo, loadMountsForSandbox]);
+  }, [open, activeRepo, loadMountsForSandbox, defaultBranch]);
+
+  // The repo's default branch is fetched asynchronously and may arrive after
+  // the modal has already opened. Follow it until the user picks a branch, so
+  // repos whose default is "master" (not "main") preselect correctly.
+  useEffect(() => {
+    if (open && !branchTouchedRef.current) setBaseBranch(defaultBranch);
+  }, [open, defaultBranch]);
+
+  const handleBranchSelect = useCallback((b: string): void => {
+    branchTouchedRef.current = true;
+    setBaseBranch(b);
+  }, []);
 
   // Restore last-used sandbox and its start command per repo.
   useEffect(() => {
@@ -355,7 +370,7 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, activeRe
               </div>
 
               <div className="p-5 space-y-4">
-                <BranchPicker branches={branches} selected={baseBranch} onSelect={setBaseBranch} />
+                <BranchPicker branches={branches} selected={baseBranch} defaultBranch={defaultBranch} onSelect={handleBranchSelect} />
 
                 {/* Quick prompts */}
                 <div>

@@ -23,6 +23,7 @@ function renderModal(overrides: Partial<{
   onStart: (...args: unknown[]) => void;
   busy: boolean;
   branches: string[];
+  defaultBranch: string;
   activeRepo: string | null;
 }> = {}) {
   const defaults = {
@@ -31,6 +32,7 @@ function renderModal(overrides: Partial<{
     onStart: vi.fn(),
     busy: false,
     branches: ["main"],
+    defaultBranch: "main",
     activeRepo: null,
   };
   const props = { ...defaults, ...overrides };
@@ -124,6 +126,7 @@ describe("StartRunModal: state reset on open (Bug 2)", () => {
         onStart={vi.fn()}
         busy={false}
         branches={["main"]}
+        defaultBranch="main"
         activeRepo={null}
       />,
     );
@@ -136,6 +139,7 @@ describe("StartRunModal: state reset on open (Bug 2)", () => {
         onStart={vi.fn()}
         busy={false}
         branches={["main"]}
+        defaultBranch="main"
         activeRepo={null}
       />,
     );
@@ -161,6 +165,7 @@ describe("StartRunModal: state reset on open (Bug 2)", () => {
         onStart={onStart}
         busy={false}
         branches={["main"]}
+        defaultBranch="main"
         activeRepo={null}
       />,
     );
@@ -171,6 +176,7 @@ describe("StartRunModal: state reset on open (Bug 2)", () => {
         onStart={onStart}
         busy={false}
         branches={["main"]}
+        defaultBranch="main"
         activeRepo={null}
       />,
     );
@@ -271,8 +277,9 @@ describe("StartRunModal: source code structural checks", () => {
     expect(src).toContain("prevOpenRef");
     // The effect must guard on !wasOpen && open
     expect(src).toContain("!wasOpen && open");
-    // Default values must be restored
-    expect(src).toContain("setBaseBranch(DEFAULT_BASE_BRANCH)");
+    // Default values must be restored — branch resets to the repo's default
+    // branch (not a hardcoded "main"), which may arrive asynchronously.
+    expect(src).toContain("setBaseBranch(defaultBranch)");
     expect(src).toContain("setEffort(DEFAULT_EFFORT)");
     expect(src).toContain("setStartCmd(DEFAULT_DOCKER_START_CMD)");
     // All error states must be cleared

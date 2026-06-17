@@ -51,6 +51,7 @@ export interface DashboardState {
   connectionState: ConnectionState;
   historyTruncated: boolean;
   branches: string[];
+  defaultBranch: string;
   isMobile: boolean;
   // Derived booleans
   isConfigured: boolean;
@@ -100,6 +101,7 @@ export interface DashboardState {
   setControlsOpen: (v: boolean) => void;
   setRightPanel: (v: "changes" | "logs") => void;
   setBranches: (v: string[]) => void;
+  setDefaultBranch: (v: string) => void;
   setSettingsStatus: (v: SettingsStatus) => void;
   setRepos: (v: RepoInfo[]) => void;
 }
