@@ -370,7 +370,7 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, defaultB
               </div>
 
               <div className="p-5 space-y-4">
-                <BranchPicker branches={branches} selected={baseBranch} onSelect={handleBranchSelect} />
+                <BranchPicker branches={branches} selected={baseBranch} defaultBranch={defaultBranch} onSelect={handleBranchSelect} />
 
                 {/* Quick prompts */}
                 <div>
