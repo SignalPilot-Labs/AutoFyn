@@ -31,13 +31,17 @@ SUBAGENT_TYPES: frozenset[str] = frozenset(SUBAGENT_PHASE_ORDER)
 # the lowest layer and cannot import from autofyn.
 ALLOWED_SUBAGENT_MODELS: frozenset[str] = frozenset({"opus", "sonnet"})
 
-# Tools a repo-defined subagent may request. Explicit literal of the tools
-# the shipped subagents use — NOT derived from subagents.json at runtime, so
-# the whitelist can't drift with the data it guards. A repo agent requesting
-# any tool outside this set is rejected at load.
-ALLOWED_SUBAGENT_TOOLS: frozenset[str] = frozenset(
-    {"Bash", "Edit", "Glob", "Grep", "Read", "WebFetch", "WebSearch", "Write"}
-)
+# A repo `.autofyn/subagents.json` declares its own tools per entry — that list
+# IS the allowlist for that agent (built-ins plus any MCP tool the repo wires in
+# via its dashboard mcp_servers config). The only tools a repo agent may NEVER
+# request are the session-gate tools: ending a round or the whole session is the
+# orchestrator's job alone, so a subagent must not be able to call them.
+# `SESSION_GATE_SERVER_NAME` mirrors the sandbox constant of the same name;
+# config is the lowest layer and cannot import from sandbox, so it is duplicated
+# here. A tool is forbidden if it is the bare server name or any `mcp__<server>__*`
+# tool from it.
+SESSION_GATE_SERVER_NAME: str = "session_gate"
+SESSION_GATE_TOOL_PREFIX: str = f"mcp__{SESSION_GATE_SERVER_NAME}__"
 
 # Upper bound on repo-defined subagents — caps the per-agent prompt-body
 # HTTP reads done at bootstrap. Well above any realistic count.
