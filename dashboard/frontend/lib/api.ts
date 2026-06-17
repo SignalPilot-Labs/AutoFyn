@@ -428,7 +428,12 @@ export async function fetchDiffTmp(runId: string): Promise<DiffRepoResponse> {
   return res.json();
 }
 
-export async function fetchBranches(repo: string): Promise<string[]> {
+export interface BranchListResponse {
+  branches: string[];
+  default_branch: string;
+}
+
+export async function fetchBranches(repo: string): Promise<BranchListResponse> {
   const res = await apiFetch(
     `/api/agent/branches?repo=${encodeURIComponent(repo)}`,
   );

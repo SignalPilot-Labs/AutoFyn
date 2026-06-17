@@ -36,6 +36,7 @@ function renderModal(overrides = {}) {
     onStart: vi.fn(),
     busy: false,
     branches: ["main", "staging", "develop"],
+    defaultBranch: "main",
     activeRepo: null,
   };
   const props = { ...defaults, ...overrides };
@@ -68,6 +69,32 @@ describe("StartRunModal", () => {
   it("shows branch selector with main", () => {
     renderModal();
     expect(document.body.textContent).toContain("main");
+  });
+
+  // Regression: older repos default to "master", not "main". The modal must
+  // preselect the repo's actual default branch, never a hardcoded "main".
+  it("preselects the repo's default branch when it is not main", () => {
+    renderModal({ branches: ["master", "feature"], defaultBranch: "master" });
+    const trigger = document.querySelector<HTMLButtonElement>(
+      'button[aria-haspopup="listbox"]',
+    );
+    expect(trigger?.textContent?.trim()).toBe("master");
+  });
+
+  it("passes the default branch to onStart when unchanged", async () => {
+    const { props } = renderModal({
+      branches: ["master", "feature"],
+      defaultBranch: "master",
+    });
+    const startBtn = Array.from(document.querySelectorAll("button")).find(
+      (b) => b.textContent?.trim() === "New Run",
+    );
+    if (startBtn) await userEvent.click(startBtn);
+    // baseBranch is the 5th positional arg of onStart.
+    expect(props.onStart).toHaveBeenCalledOnce();
+    expect((props.onStart as ReturnType<typeof vi.fn>).mock.calls[0][4]).toBe(
+      "master",
+    );
   });
 
   it("shows quick start options", () => {

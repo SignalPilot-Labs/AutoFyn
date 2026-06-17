@@ -252,8 +252,11 @@ async def start_agent_run(body: StartRunRequest) -> dict:
 
 
 @router.get("/agent/branches")
-async def list_branches(repo: str = Query(...)) -> list:
-    """List git branches for a repo via the agent (GitHub API proxy)."""
+async def list_branches(repo: str = Query(...)) -> dict:
+    """List git branches for a repo via the agent (GitHub API proxy).
+
+    Returns `{"branches": [...], "default_branch": "..."}`.
+    """
     creds = await read_credentials(repo, None)
     token = creds.get("git_token")
     if not token:

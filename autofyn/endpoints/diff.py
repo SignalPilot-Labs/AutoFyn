@@ -150,24 +150,39 @@ async def _stats_via_sandbox(server: "AgentServer", run_id: str) -> dict:
     return {"files": files}
 
 
-async def _list_github_branches(repo: str, token: str) -> list[str]:
-    """Proxy a branch listing request to the GitHub API."""
+async def _list_github_branches(repo: str, token: str) -> dict:
+    """Proxy a branch listing request to the GitHub API.
+
+    Returns the branch names plus the repo's default branch so the
+    dashboard can preselect it (older repos default to "master", not
+    "main"). The default branch lives on the repo object, not on the
+    per-branch entries, so we fetch both.
+    """
     if "/" not in repo:
         raise HTTPException(status_code=400, detail="repo must be owner/name")
-    url = f"{GITHUB_API_BASE_URL}/repos/{repo}/branches"
     headers = {
         "Authorization": f"token {token}",
         "Accept": "application/vnd.github+json",
     }
     async with httpx.AsyncClient(timeout=GITHUB_API_TIMEOUT_SEC) as client:
-        resp = await client.get(url, headers=headers, params={"per_page": GITHUB_BRANCHES_PER_PAGE})
-    if resp.status_code >= 400:
-        raise HTTPException(
-            status_code=resp.status_code,
-            detail=f"GitHub API error: {resp.text[:GITHUB_ERROR_PREVIEW_LEN]}",
+        branches_resp, repo_resp = await asyncio.gather(
+            client.get(
+                f"{GITHUB_API_BASE_URL}/repos/{repo}/branches",
+                headers=headers,
+                params={"per_page": GITHUB_BRANCHES_PER_PAGE},
+            ),
+            client.get(f"{GITHUB_API_BASE_URL}/repos/{repo}", headers=headers),
         )
-    data = resp.json()
-    return [b["name"] for b in data]
+    for resp in (branches_resp, repo_resp):
+        if resp.status_code >= 400:
+            raise HTTPException(
+                status_code=resp.status_code,
+                detail=f"GitHub API error: {resp.text[:GITHUB_ERROR_PREVIEW_LEN]}",
+            )
+    return {
+        "branches": [b["name"] for b in branches_resp.json()],
+        "default_branch": repo_resp.json()["default_branch"],
+    }
 
 
 def register_diff_routes(app: FastAPI, server: "AgentServer") -> None:
@@ -231,12 +246,13 @@ def register_diff_routes(app: FastAPI, server: "AgentServer") -> None:
     async def list_branches(
         repo: str,
         token: Annotated[str, Header(alias=HEADER_GITHUB_TOKEN)],
-    ) -> list[str]:
+    ) -> dict:
         """List branches on the GitHub remote for the given repo.
 
         Called by the dashboard's StartRunModal to populate the "branch from"
-        dropdown. The dashboard passes the git token it has in settings; we
-        just proxy to the GitHub API. No sandbox needed because this runs
-        before any run has started.
+        dropdown. Returns `{"branches": [...], "default_branch": "..."}` so
+        the modal can preselect the repo's real default. The dashboard passes
+        the git token it has in settings; we just proxy to the GitHub API. No
+        sandbox needed because this runs before any run has started.
         """
         return await _list_github_branches(repo, token)

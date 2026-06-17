@@ -1,5 +1,7 @@
 "use client";
 
+import { useCallback } from "react";
+
 import Image from "next/image";
 import Link from "next/link";
 import type { RunStatus } from "@/lib/types";
@@ -87,9 +89,25 @@ function MonitorPageInner() {
     setControlsOpen,
     setRightPanel,
     setBranches,
+    defaultBranch,
+    setDefaultBranch,
     setSettingsStatus,
     setRepos,
   } = dashboard;
+
+  const openNewRunModal = useCallback((): void => {
+    if (!activeRepoFilter) {
+      showToast("Select a repo first", "error");
+      return;
+    }
+    fetchBranches(activeRepoFilter)
+      .then(({ branches: names, default_branch }) => {
+        setBranches(names);
+        setDefaultBranch(default_branch);
+      })
+      .catch((err) => showToast(`Failed to load branches: ${err.message}`, "error"));
+    setStartModalOpen(true);
+  }, [activeRepoFilter, showToast, setBranches, setDefaultBranch, setStartModalOpen]);
 
   const sidebarResize = usePanelResize({
     storageKey: "sidebar",
@@ -181,16 +199,7 @@ function MonitorPageInner() {
         atCapacity={atCapacity}
         busy={busy}
         onStop={handleStopClick}
-        onNewRun={() => {
-          if (!activeRepoFilter) {
-            showToast("Select a repo first", "error");
-            return;
-          }
-          fetchBranches(activeRepoFilter)
-            .then(setBranches)
-            .catch((err) => showToast(`Failed to load branches: ${err.message}`, "error"));
-          setStartModalOpen(true);
-        }}
+        onNewRun={openNewRunModal}
         sidebarCollapsed={sidebarCollapsed}
         onToggleSidebar={handleToggleSidebar}
         onUnlock={() => { void toastControlAction("Unlock", unlockAgent); }}
@@ -204,6 +213,7 @@ function MonitorPageInner() {
         onStart={handleStartRun}
         busy={busy}
         branches={branches}
+        defaultBranch={defaultBranch}
         activeRepo={activeRepoFilter}
       />
 
@@ -346,16 +356,7 @@ function MonitorPageInner() {
         repos={repos}
         activeRepo={activeRepoFilter}
         onRepoSelect={handleRepoSwitch}
-        onNewRun={() => {
-          if (!activeRepoFilter) {
-            showToast("Select a repo first", "error");
-            return;
-          }
-          fetchBranches(activeRepoFilter)
-            .then(setBranches)
-            .catch((err) => showToast(`Failed to load branches: ${err.message}`, "error"));
-          setStartModalOpen(true);
-        }}
+        onNewRun={openNewRunModal}
         isConfigured={isConfigured}
       />
 
