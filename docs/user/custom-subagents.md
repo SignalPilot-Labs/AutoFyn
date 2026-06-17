@@ -52,7 +52,7 @@ the explore phase. That's the whole feature.
 | `type` | yes | Its phase — `explore`, `plan`, `build`, or `review`. Decides when it runs. |
 | `description` | yes | *When to call it.* The orchestrator routes on this, so write a clear "call this when…". |
 | `model` | yes | `opus` or `sonnet`. (On a sonnet run everything runs on sonnet to save cost.) |
-| `tools` | yes | Any of: `Bash`, `Edit`, `Glob`, `Grep`, `Read`, `WebFetch`, `WebSearch`, `Write`. |
+| `tools` | yes | The agent's tools. The built-ins are `Bash`, `Edit`, `Glob`, `Grep`, `Read`, `WebFetch`, `WebSearch`, `Write`. You can also list any MCP tool you've wired in for the repo (Settings → MCP servers) by its `mcp__<server>__<tool>` name. The one exception: the session-gate tools (`mcp__session_gate__*`) are reserved for the orchestrator and rejected here. |
 | `prompt_file` | yes | Path (inside your repo) to the agent's prompt. |
 | `needs_run_state` | yes | `true` to let the agent read the run's goal/rules and remember lessons across rounds. Use `true` for most agents. |
 | `needs_verification` | no | Defaults `false`. Set `true` only for a **build** agent that writes code — it adds a "run the typechecker/linter/tests" step. Leave it off (or omit it) for anything that isn't producing code to verify. |
@@ -85,7 +85,9 @@ back to the builder, rethink → back to the planner).
 - The file is validated when AutoFyn reads it, and a bad entry **stops the run
   with a clear error** — so you find out immediately, not mid-way.
 - `prompt_file` must stay inside your repo (no absolute paths, no `..`).
-- `tools` can only be the eight listed above; `model` only `opus`/`sonnet`.
+- `tools` is your agent's allowlist — the built-ins plus any MCP tool you've
+  wired in for the repo — except the reserved `mcp__session_gate__*` tools;
+  `model` only `opus`/`sonnet`.
 - Up to 32 custom agents, and no duplicate names.
 
 ## In the dashboard
