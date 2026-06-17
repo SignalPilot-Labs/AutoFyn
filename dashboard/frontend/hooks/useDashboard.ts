@@ -10,7 +10,7 @@ import {
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import type { AgentHealth } from "@/lib/api";
 import type { DashboardState } from "@/hooks/dashboardTypes";
-import { AGENT_HEALTH_POLL_MS, TERMINAL_STATUSES, isActiveStatus } from "@/lib/constants";
+import { AGENT_HEALTH_POLL_MS, TERMINAL_STATUSES, isActiveStatus, DEFAULT_BASE_BRANCH } from "@/lib/constants";
 import { fetchSettingsStatus } from "@/lib/settings-api";
 import { isAtCapacity } from "@/lib/capacity";
 import { useRuns } from "@/hooks/useRuns";
@@ -31,7 +31,8 @@ export function useDashboard(): DashboardState {
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const [selectedRun, setSelectedRun] = useState<Run | null>(null);
   const [agentHealth, setAgentHealth] = useState<AgentHealth | null>(null);
-  const [branches, setBranches] = useState<string[]>(["main"]);
+  const [branches, setBranches] = useState<string[]>([DEFAULT_BASE_BRANCH]);
+  const [defaultBranch, setDefaultBranch] = useState<string>(DEFAULT_BASE_BRANCH);
   const [settingsStatus, setSettingsStatus] = useState<SettingsStatus | null>(null);
   const initGenRef = useRef(0);
   const skipLastRunRestoreRef = useRef(false);
@@ -146,7 +147,8 @@ export function useDashboard(): DashboardState {
     resetSession();
     setSelectedRunId(null);
     setSelectedRun(null);
-    setBranches(["main"]);
+    setBranches([DEFAULT_BASE_BRANCH]);
+    setDefaultBranch(DEFAULT_BASE_BRANCH);
     if (repo) {
       try { await setActiveRepo(repo); } catch (e) { console.error("Failed to set active repo:", e); }
     }
@@ -211,6 +213,7 @@ export function useDashboard(): DashboardState {
     connectionState,
     historyTruncated,
     branches,
+    defaultBranch,
     isMobile,
     isConfigured,
     atCapacity,
@@ -221,6 +224,7 @@ export function useDashboard(): DashboardState {
     handleRepoSwitch,
     handleSelectRun,
     setBranches,
+    setDefaultBranch,
     setSettingsStatus,
     setRepos,
     ...ui,

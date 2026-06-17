@@ -37,13 +37,18 @@ class TestBranchesHeaderAuth:
         assert res.status_code == 422
 
     def test_header_accepted(self, client: TestClient) -> None:
-        fake = MagicMock()
-        fake.status_code = 200
-        fake.json.return_value = [{"name": "main"}]
+        branches_resp = MagicMock()
+        branches_resp.status_code = 200
+        branches_resp.json.return_value = [{"name": "main"}, {"name": "master"}]
+        repo_resp = MagicMock()
+        repo_resp.status_code = 200
+        repo_resp.json.return_value = {"default_branch": "master"}
         with patch("endpoints.diff.httpx.AsyncClient") as mock_cls:
             ctx = mock_cls.return_value.__aenter__.return_value
-            async def _get(*args, **kwargs):
-                return fake
+            # The endpoint fetches /repos/{repo}/branches and /repos/{repo} in
+            # parallel; route each call by URL.
+            async def _get(url, *args, **kwargs):
+                return branches_resp if url.endswith("/branches") else repo_resp
             ctx.get.side_effect = _get
             res = client.get(
                 "/branches",
@@ -51,6 +56,7 @@ class TestBranchesHeaderAuth:
                 headers={"X-GitHub-Token": "ghp_abc"},
             )
         assert res.status_code == 200
+        assert res.json() == {"branches": ["main", "master"], "default_branch": "master"}
 
 
 class TestDiffRepoHeaderAuth:

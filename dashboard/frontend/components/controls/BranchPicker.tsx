@@ -8,10 +8,11 @@ import { PINNED_BRANCHES } from "@/lib/constants";
 export interface BranchPickerProps {
   branches: string[];
   selected: string;
+  defaultBranch: string;
   onSelect: (b: string) => void;
 }
 
-export function BranchPicker({ branches, selected, onSelect }: BranchPickerProps): React.ReactElement {
+export function BranchPicker({ branches, selected, defaultBranch, onSelect }: BranchPickerProps): React.ReactElement {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [focusedIndex, setFocusedIndex] = useState(-1);
@@ -23,13 +24,18 @@ export function BranchPicker({ branches, selected, onSelect }: BranchPickerProps
     ? branches.filter((b) => b.toLowerCase().includes(query.toLowerCase()))
     : branches;
 
+  // The repo's actual default branch sorts first (older repos use "master",
+  // not "main"), then the statically pinned branches in their display order,
+  // then everything else alphabetically.
+  const rank = (b: string): number => {
+    if (b === defaultBranch) return -1;
+    const pin = PINNED_BRANCHES.indexOf(b);
+    return pin === -1 ? PINNED_BRANCHES.length : pin;
+  };
+
   const sorted = [...filtered].sort((a, b) => {
-    const aPin = PINNED_BRANCHES.indexOf(a);
-    const bPin = PINNED_BRANCHES.indexOf(b);
-    if (aPin !== -1 && bPin !== -1) return aPin - bPin;
-    if (aPin !== -1) return -1;
-    if (bPin !== -1) return 1;
-    return a.localeCompare(b);
+    const diff = rank(a) - rank(b);
+    return diff !== 0 ? diff : a.localeCompare(b);
   });
 
   useEffect(() => {

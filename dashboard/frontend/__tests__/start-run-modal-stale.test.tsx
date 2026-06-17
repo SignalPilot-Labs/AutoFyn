@@ -120,6 +120,7 @@ describe("StartRunModal: behavioural stale-fetch tests", () => {
         onStart={vi.fn()}
         busy={false}
         branches={["main"]}
+        defaultBranch="main"
         activeRepo={null}
       />,
     );
@@ -132,6 +133,7 @@ describe("StartRunModal: behavioural stale-fetch tests", () => {
         onStart={vi.fn()}
         busy={false}
         branches={["main"]}
+        defaultBranch="main"
         activeRepo={null}
       />,
     );
@@ -165,6 +167,7 @@ describe("StartRunModal: behavioural stale-fetch tests", () => {
         onStart={vi.fn()}
         busy={false}
         branches={["main"]}
+        defaultBranch="main"
         activeRepo="my-repo"
       />,
     );
@@ -177,6 +180,7 @@ describe("StartRunModal: behavioural stale-fetch tests", () => {
         onStart={vi.fn()}
         busy={false}
         branches={["main"]}
+        defaultBranch="main"
         activeRepo="my-repo"
       />,
     );
