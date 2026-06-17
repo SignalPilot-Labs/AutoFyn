@@ -73,6 +73,16 @@ class TestRepoSubagentsValidation:
             await load_repo_subagents(sandbox)
 
     @pytest.mark.asyncio
+    async def test_session_gate_end_round_rejected(self) -> None:
+        # end_round and end_session both live on the session_gate server, so the
+        # one prefix check must block both — not just end_session.
+        sandbox = _sandbox_with_json(
+            [_entry(tools=["Read", "mcp__session_gate__end_round"])]
+        )
+        with pytest.raises(RuntimeError, match="session-gate tools"):
+            await load_repo_subagents(sandbox)
+
+    @pytest.mark.asyncio
     async def test_bare_session_gate_name_rejected(self) -> None:
         sandbox = _sandbox_with_json([_entry(tools=["Read", "session_gate"])])
         with pytest.raises(RuntimeError, match="session-gate tools"):
