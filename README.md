@@ -80,7 +80,13 @@ autofyn settings set --claude-token YOUR_KEY --git-token YOUR_TOKEN --github-rep
 
 ## How it works
 
-LLM agents that run in a loop hit three failure modes: context grows until the model loses track, mistakes repeat because nothing is learned between iterations, and the agent can't tell whether it's making progress or going in circles. AutoFyn's round loop addresses each one — it's **expert iteration in context space, not weight space**. Each round the LLM proposes a plan and a build, an *expert* improves on the raw proposal, and the verified outcome is distilled into context (eval history, persistent rules, an approach ranking) that biases the next round. No weights change. The expert isn't search (as in AlphaZero) and isn't the reviewers (they're LLMs too, and fallible) — it's the **objective eval no opinion can move**: tests pass or they don't, the exploit fires or it doesn't, the benchmark moved or it didn't.
+LLM agents that run in a loop hit three failure modes:
+
+- **Context rot** — context grows until the model loses track.
+- **No learning** — mistakes repeat because nothing carries between iterations.
+- **No compass** — the agent can't tell whether it's making progress or going in circles.
+
+AutoFyn's round loop addresses each one — it's **expert iteration in context space, not weight space**. Each round the LLM proposes a plan and a build, an *expert* improves on the raw proposal, and the verified outcome is distilled into context (eval history, persistent rules, an approach ranking) that biases the next round. No weights change. The expert isn't search (as in AlphaZero) and isn't the reviewers (they're LLMs too, and fallible) — it's the **objective eval no opinion can move**: tests pass or they don't, the exploit fires or it doesn't, the benchmark moved or it didn't.
 
 - **State, not context.** Each round gets a clean context window. Cross-round knowledge lives in `/tmp/memory/` — `run_state.md` (goal, eval history, rules) and per-subagent rule files. Context never degrades because it never accumulates.
 - **Dense reward signal.** Every round ends with a real eval: run the benchmark, execute the exploit, check the test suite. The score delta is appended to eval history so the orchestrator can track progress across rounds.
