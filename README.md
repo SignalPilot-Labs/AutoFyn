@@ -4,7 +4,7 @@
 
 **Run Claude in self-improving loops to optimize measurable goals.**
 
-built the [#1 Spider 2.0 DBT agent](https://github.com/SignalPilot-Labs/SignalPilot) · found 203 vulnerabilities across popular OSS · improved Caveman compression from 44% to 54%
+built the [#1 Spider 2.0 DBT agent](https://github.com/SignalPilot-Labs/SignalPilot) · found 197 vulnerabilities across popular OSS · improved Caveman compression from 44% to 54%
 
 <img src="assets/ui.png" width="800" alt="AutoFyn Monitor" />
 
@@ -36,7 +36,6 @@ Each round runs Claude in a sandboxed Docker container with fresh context. A per
 - **[RAGFlow](https://github.com/infiniflow/ragflow)** — 17 vulnerabilities (5 Critical, 11 High, 1 Medium), 5 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#ragflow)
 - **[LiteLLM](https://github.com/BerriAI/litellm)** — 14 vulnerabilities (3 Critical, 4 High, 4 Medium, 3 Low), 2 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#litellm) · [Report](docs/audit_reports/litellm.md)
 - **[Open WebUI](https://github.com/open-webui/open-webui)** — 12 vulnerabilities (4 Critical, 5 High, 3 Medium), 4 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#open-webui) · [Report](docs/audit_reports/open-webui.md)
-- **[uv](https://github.com/astral-sh/uv)** — 6 vulnerabilities (3 High, 2 Medium, 1 Low). Responsibly disclosed via email to Astral.
 - **[Twenty](https://github.com/twentyhq/twenty)** — 2 vulnerabilities (1 High, 1 Low), 1 exploit chain. Responsibly disclosed. [CVEs](docs/cves.md#twenty)
 - **[Supermemory](https://github.com/supermemoryai/supermemory)** — 4 vulnerabilities (1 High, 3 Medium), 4 exploit chains. Responsibly disclosed via email to Supermemory.
 - **[Phantom Connect SDK](https://github.com/phantom/phantom-connect-sdk)** — 8 vulnerabilities (5 Medium, 3 Low), 1 exploit chain. Responsibly disclosed. [CVEs](docs/cves.md#phantom-connect-sdk)
@@ -81,7 +80,13 @@ autofyn settings set --claude-token YOUR_KEY --git-token YOUR_TOKEN --github-rep
 
 ## How it works
 
-LLM agents that run in a loop hit three failure modes: context grows until the model loses track, mistakes repeat because nothing is learned between iterations, and the agent can't tell whether it's making progress or going in circles. AutoFyn's round loop addresses each one. The structure resembles RLHF — subagents generate output, reviewers score it, the orchestrator updates behavior for the next round — but in prompt space, not weight space.
+LLM agents that run in a loop hit three failure modes:
+
+- **Context rot** — context grows until the model loses track.
+- **No learning** — mistakes repeat because nothing carries between iterations.
+- **No compass** — the agent can't tell whether it's making progress or going in circles.
+
+AutoFyn's round loop addresses each one by simulating an [**expert iteration**](https://arxiv.org/abs/1705.08439) in LLM context space, not the weight space. Each round the LLM proposes a plan and a build, and an *expert* grades the raw proposal; the verified outcome and the learnings are distilled into context with a persistent `run_state.md`, and subagent specific memory files. Unlike AlphaZero, the expert isn't a search: it's a metric that reviewer subagents run, such as a test suite or a benchmarking script. And it's **objective** — a test suite passes or it doesn't, a live exploit fires or it doesn't, the benchmark score moves or it doesn't — so the LLM can't talk itself into false progress or spin in a loop. The key components of the system are:
 
 - **State, not context.** Each round gets a clean context window. Cross-round knowledge lives in `/tmp/memory/` — `run_state.md` (goal, eval history, rules) and per-subagent rule files. Context never degrades because it never accumulates.
 - **Dense reward signal.** Every round ends with a real eval: run the benchmark, execute the exploit, check the test suite. The score delta is appended to eval history so the orchestrator can track progress across rounds.
