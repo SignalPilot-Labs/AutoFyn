@@ -86,9 +86,7 @@ LLM agents that run in a loop hit three failure modes:
 - **No learning** — mistakes repeat because nothing carries between iterations.
 - **No compass** — the agent can't tell whether it's making progress or going in circles.
 
-AutoFyn's round loop is **expert iteration in context space**. The LLM proposes a change. An expert grades it. What the expert verified is written back into context to steer the next round. The model improves with no change to its weights.
-
-The expert is an objective eval — tests, a live exploit, a benchmark score. Not the LLM reviewers, which are fallible. Not a search, as in AlphaZero. A signal no opinion can move is what makes the improvement real.
+AutoFyn's round loop addresses each one by simulating an [**expert iteration**](https://arxiv.org/abs/1705.08439) in LLM context space, not the weight space. Each round the LLM proposes a plan and a build, and an *expert* grades the raw proposal; the verified outcome and the learnings are distilled into context with a persistent `run_state.md`, and subagent specific memory files. Unlike AlphaZero, the expert isn't a search: it's a metric that reviewer subagents run, such as a test suite or a benchmarking script. And it's **objective** — a test suite passes or it doesn't, a live exploit fires or it doesn't, the benchmark score moves or it doesn't — so the LLM can't talk itself into false progress or spin in a loop. The key components of the system are:
 
 - **State, not context.** Each round gets a clean context window. Cross-round knowledge lives in `/tmp/memory/` — `run_state.md` (goal, eval history, rules) and per-subagent rule files. Context never degrades because it never accumulates.
 - **Dense reward signal.** Every round ends with a real eval: run the benchmark, execute the exploit, check the test suite. The score delta is appended to eval history so the orchestrator can track progress across rounds.
