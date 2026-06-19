@@ -38,6 +38,7 @@ class SandboxManager:
         cfg = sandbox_config()
         self._docker_local = DockerLocalBackend()
         self._handles: dict[str, SandboxInstance] = {}
+        self._remote_clients: dict[str, SandboxClient] = {}
         self._remote_backends: dict[str, SandboxBackend] = {}
         self._connector_url: str | None = os.environ.get(ENV_KEY_CONNECTOR_URL) or None
         self._connector_secret: str | None = os.environ.get(ENV_KEY_CONNECTOR_SECRET) or None
@@ -72,6 +73,7 @@ class SandboxManager:
             sandbox_secret=handle.sandbox_secret,
             extra_headers=None,
         )
+        self._remote_clients[run_key] = client
         return client, events
 
     async def destroy(self, run_key: str) -> None:
@@ -79,6 +81,7 @@ class SandboxManager:
         handle = self._handles.pop(run_key, None)
         if not handle:
             return
+        self._evict_remote_client(run_key)
         backend = await self._resolve_backend(handle.sandbox_id)
         await backend.destroy(handle)
 
@@ -88,6 +91,7 @@ class SandboxManager:
             handle = self._handles.pop(run_key, None)
             if handle and handle.sandbox_id is not None:
                 try:
+                    self._evict_remote_client(run_key)
                     backend = await self._resolve_backend(handle.sandbox_id)
                     await backend.destroy(handle)
                 except Exception as exc:
@@ -95,8 +99,26 @@ class SandboxManager:
         await self._docker_local.destroy_all()
 
     def get_client(self, run_key: str) -> SandboxClient | None:
-        """Return a cached SandboxClient for a live local sandbox, or None."""
+        """Return a cached SandboxClient for a live sandbox, or None.
+
+        Local sandbox clients are owned by the Docker backend; remote
+        sandbox clients are created and cached here in create(). Both must
+        be reachable so diff/log endpoints work regardless of backend.
+        """
+        remote = self._remote_clients.get(run_key)
+        if remote is not None:
+            return remote
         return self._docker_local.get_client(run_key)
+
+    def _evict_remote_client(self, run_key: str) -> None:
+        """Drop the cached remote client for a run so get_client() stops
+        returning a dead handle.
+
+        The client itself is closed by execute_run's cleanup, which owns
+        the reference create() handed it. The cache only needs to forget
+        it — closing here would double-close the same httpx client.
+        """
+        self._remote_clients.pop(run_key, None)
 
     async def get_self_logs(self, tail: int) -> list[str]:
         """Fetch logs from the agent container itself."""
