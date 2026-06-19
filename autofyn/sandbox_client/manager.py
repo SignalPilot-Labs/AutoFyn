@@ -86,12 +86,18 @@ class SandboxManager:
         await backend.destroy(handle)
 
     async def destroy_all(self) -> None:
-        """Tear down all managed sandboxes — remote first, then local Docker."""
+        """Tear down all managed sandboxes — remote first, then local Docker.
+
+        Called on server shutdown, NOT via execute_run's _cleanup_run, so
+        nothing else closes the remote clients here — this method owns
+        closing them itself (unlike destroy(), which only evicts because
+        _cleanup_run already closed the reference).
+        """
         for run_key in list(self._handles.keys()):
             handle = self._handles.pop(run_key, None)
             if handle and handle.sandbox_id is not None:
                 try:
-                    self._evict_remote_client(run_key)
+                    await self._close_remote_client(run_key)
                     backend = await self._resolve_backend(handle.sandbox_id)
                     await backend.destroy(handle)
                 except Exception as exc:
@@ -112,13 +118,31 @@ class SandboxManager:
 
     def _evict_remote_client(self, run_key: str) -> None:
         """Drop the cached remote client for a run so get_client() stops
-        returning a dead handle.
+        returning a dead handle, WITHOUT closing it.
 
-        The client itself is closed by execute_run's cleanup, which owns
-        the reference create() handed it. The cache only needs to forget
-        it — closing here would double-close the same httpx client.
+        Used by destroy(), which is reached via execute_run's _cleanup_run
+        — that already closed the reference create() handed it. Closing here
+        too would double-close the same httpx client.
         """
         self._remote_clients.pop(run_key, None)
+
+    async def _close_remote_client(self, run_key: str) -> None:
+        """Drop AND close the cached remote client for a run, if any.
+
+        Used by destroy_all() on server shutdown, where no _cleanup_run has
+        run — so this method owns closing the httpx client to avoid leaking
+        its connection pool. Safe to call when nothing is cached.
+
+        A failure to close the client must never block sandbox teardown, so
+        close errors are logged and swallowed rather than propagated.
+        """
+        client = self._remote_clients.pop(run_key, None)
+        if client is None:
+            return
+        try:
+            await client.close()
+        except Exception as exc:
+            log.error("Failed to close remote client for %s: %s", run_key, exc)
 
     async def get_self_logs(self, tail: int) -> list[str]:
         """Fetch logs from the agent container itself."""
