@@ -268,3 +268,129 @@ class TestRemoteSandboxClientCreation:
         )
         assert result_client is mock_client
         assert result_events == []
+
+
+class TestGetClientRemote:
+    """get_client() returns remote clients so diff/log endpoints work.
+
+    Regression: get_client() only consulted the local Docker backend, so
+    for remote sandboxes it returned None and the dashboard diff endpoints
+    failed with 409 — the live diff tree never loaded on remote runs.
+    """
+
+    @pytest.mark.asyncio
+    async def test_get_client_returns_cached_remote_client(self) -> None:
+        pool = _make_pool()
+        pool._connector_url = "http://connector:9400"
+        pool._connector_secret = "secret"
+        pool._docker_local.get_client = MagicMock(return_value=None)
+
+        remote_handle = _remote_handle("run-x", "sandbox-Z")
+        mock_backend = MagicMock()
+        mock_backend.create = AsyncMock(return_value=(remote_handle, []))
+
+        with patch.object(pool, "_resolve_backend", new=AsyncMock(return_value=mock_backend)):
+            with patch("sandbox_client.manager.SandboxClient") as MockClient:
+                mock_client = MagicMock()
+                MockClient.return_value = mock_client
+                created, _ = await pool.create(
+                    run_key="run-x",
+                    sandbox_id="sandbox-Z",
+                    host_mounts=None,
+                    start_cmd="./start.sh",
+                )
+
+        assert pool.get_client("run-x") is created
+        assert created is mock_client
+
+    @pytest.mark.asyncio
+    async def test_destroy_evicts_remote_client(self) -> None:
+        """After destroy(), get_client() no longer returns the dead handle."""
+        pool = _make_pool()
+        pool._docker_local.get_client = MagicMock(return_value=None)
+
+        handle = _remote_handle("run-x", "sandbox-Z")
+        pool._handles["run-x"] = handle
+        pool._remote_clients["run-x"] = MagicMock()
+
+        mock_backend = MagicMock()
+        mock_backend.destroy = AsyncMock()
+
+        with patch.object(pool, "_resolve_backend", new=AsyncMock(return_value=mock_backend)):
+            await pool.destroy("run-x")
+
+        assert pool.get_client("run-x") is None
+
+    @pytest.mark.asyncio
+    async def test_destroy_does_not_close_remote_client(self) -> None:
+        """destroy() only evicts — execute_run owns closing the client.
+
+        Closing here would double-close the same httpx client, since
+        _cleanup_run already closes the reference create() handed back.
+        """
+        pool = _make_pool()
+        pool._docker_local.get_client = MagicMock(return_value=None)
+
+        handle = _remote_handle("run-x", "sandbox-Z")
+        pool._handles["run-x"] = handle
+        client = MagicMock()
+        client.close = AsyncMock()
+        pool._remote_clients["run-x"] = client
+
+        mock_backend = MagicMock()
+        mock_backend.destroy = AsyncMock()
+
+        with patch.object(pool, "_resolve_backend", new=AsyncMock(return_value=mock_backend)):
+            await pool.destroy("run-x")
+
+        client.close.assert_not_awaited()
+
+    @pytest.mark.asyncio
+    async def test_destroy_all_closes_and_evicts_remote_client(self) -> None:
+        """destroy_all() runs on shutdown with no _cleanup_run, so it owns
+        closing the remote client (else its httpx pool leaks)."""
+        pool = _make_pool()
+        pool._connector_url = "http://connector:9400"
+        pool._connector_secret = "secret"
+        pool._docker_local.get_client = MagicMock(return_value=None)
+        pool._docker_local.destroy_all = AsyncMock()
+
+        handle = _remote_handle("run-x", "sandbox-Z")
+        pool._handles["run-x"] = handle
+        client = MagicMock()
+        client.close = AsyncMock()
+        pool._remote_clients["run-x"] = client
+
+        mock_backend = MagicMock()
+        mock_backend.destroy = AsyncMock()
+
+        with patch.object(pool, "_resolve_backend", new=AsyncMock(return_value=mock_backend)):
+            await pool.destroy_all()
+
+        client.close.assert_awaited_once()
+        assert pool.get_client("run-x") is None
+
+    @pytest.mark.asyncio
+    async def test_destroy_all_close_failure_does_not_block_teardown(self) -> None:
+        """A client.close() failure is logged and swallowed — the backend
+        sandbox is still torn down."""
+        pool = _make_pool()
+        pool._connector_url = "http://connector:9400"
+        pool._connector_secret = "secret"
+        pool._docker_local.destroy_all = AsyncMock()
+
+        handle = _remote_handle("run-x", "sandbox-Z")
+        pool._handles["run-x"] = handle
+        client = MagicMock()
+        client.close = AsyncMock(side_effect=RuntimeError("connection already gone"))
+        pool._remote_clients["run-x"] = client
+
+        mock_backend = MagicMock()
+        mock_backend.destroy = AsyncMock()
+
+        with patch.object(pool, "_resolve_backend", new=AsyncMock(return_value=mock_backend)):
+            await pool.destroy_all()
+
+        mock_backend.destroy.assert_awaited_once_with(handle)
+        pool._docker_local.destroy_all.assert_awaited_once()
+        assert "run-x" not in pool._remote_clients

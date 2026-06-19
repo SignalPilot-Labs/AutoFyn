@@ -38,6 +38,7 @@ class SandboxManager:
         cfg = sandbox_config()
         self._docker_local = DockerLocalBackend()
         self._handles: dict[str, SandboxInstance] = {}
+        self._remote_clients: dict[str, SandboxClient] = {}
         self._remote_backends: dict[str, SandboxBackend] = {}
         self._connector_url: str | None = os.environ.get(ENV_KEY_CONNECTOR_URL) or None
         self._connector_secret: str | None = os.environ.get(ENV_KEY_CONNECTOR_SECRET) or None
@@ -72,6 +73,7 @@ class SandboxManager:
             sandbox_secret=handle.sandbox_secret,
             extra_headers=None,
         )
+        self._remote_clients[run_key] = client
         return client, events
 
     async def destroy(self, run_key: str) -> None:
@@ -79,15 +81,23 @@ class SandboxManager:
         handle = self._handles.pop(run_key, None)
         if not handle:
             return
+        self._evict_remote_client(run_key)
         backend = await self._resolve_backend(handle.sandbox_id)
         await backend.destroy(handle)
 
     async def destroy_all(self) -> None:
-        """Tear down all managed sandboxes — remote first, then local Docker."""
+        """Tear down all managed sandboxes — remote first, then local Docker.
+
+        Called on server shutdown, NOT via execute_run's _cleanup_run, so
+        nothing else closes the remote clients here — this method owns
+        closing them itself (unlike destroy(), which only evicts because
+        _cleanup_run already closed the reference).
+        """
         for run_key in list(self._handles.keys()):
             handle = self._handles.pop(run_key, None)
             if handle and handle.sandbox_id is not None:
                 try:
+                    await self._close_remote_client(run_key)
                     backend = await self._resolve_backend(handle.sandbox_id)
                     await backend.destroy(handle)
                 except Exception as exc:
@@ -95,8 +105,44 @@ class SandboxManager:
         await self._docker_local.destroy_all()
 
     def get_client(self, run_key: str) -> SandboxClient | None:
-        """Return a cached SandboxClient for a live local sandbox, or None."""
+        """Return a cached SandboxClient for a live sandbox, or None.
+
+        Local sandbox clients are owned by the Docker backend; remote
+        sandbox clients are created and cached here in create(). Both must
+        be reachable so diff/log endpoints work regardless of backend.
+        """
+        remote = self._remote_clients.get(run_key)
+        if remote is not None:
+            return remote
         return self._docker_local.get_client(run_key)
+
+    def _evict_remote_client(self, run_key: str) -> None:
+        """Drop the cached remote client for a run so get_client() stops
+        returning a dead handle, WITHOUT closing it.
+
+        Used by destroy(), which is reached via execute_run's _cleanup_run
+        — that already closed the reference create() handed it. Closing here
+        too would double-close the same httpx client.
+        """
+        self._remote_clients.pop(run_key, None)
+
+    async def _close_remote_client(self, run_key: str) -> None:
+        """Drop AND close the cached remote client for a run, if any.
+
+        Used by destroy_all() on server shutdown, where no _cleanup_run has
+        run — so this method owns closing the httpx client to avoid leaking
+        its connection pool. Safe to call when nothing is cached.
+
+        A failure to close the client must never block sandbox teardown, so
+        close errors are logged and swallowed rather than propagated.
+        """
+        client = self._remote_clients.pop(run_key, None)
+        if client is None:
+            return
+        try:
+            await client.close()
+        except Exception as exc:
+            log.error("Failed to close remote client for %s: %s", run_key, exc)
 
     async def get_self_logs(self, tail: int) -> list[str]:
         """Fetch logs from the agent container itself."""
