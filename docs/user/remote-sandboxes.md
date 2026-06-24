@@ -32,6 +32,28 @@ ssh user@remote "source /etc/profile && module load apptainer && mkdir -p ~/scra
 
 This creates `~/scratch/autofyn/` with the sandbox image inside. Each run will create a temporary subdirectory under `~/scratch/autofyn/runs/` for its overlay files, and clean it up when done. If a run is killed hard (SIGKILL, node crash), leftover directories in `runs/` can be safely deleted.
 
+#### Updating the sandbox image
+
+The remote SIF does **not** auto-update — it's a file on disk, decoupled from the agent. When you update AutoFyn (or pull a newer agent image), re-pull the SIF so the agent and sandbox stay in sync. A mismatched SIF (older than the agent) causes runs to fail at bootstrap.
+
+> **Important:** `apptainer pull --force` overwrites the `.sif` file but **rebuilds it from apptainer's local layer cache** — so it can silently produce a *stale* image even with `--force`. To get a genuinely fresh image you must clear the cache first:
+
+```bash
+ssh user@remote "source /etc/profile && module load apptainer && \
+  apptainer cache clean -f && \
+  apptainer pull --force ~/scratch/autofyn/sandbox.sif docker://ghcr.io/signalpilot-labs/autofyn-sandbox:stable"
+```
+
+Verify the freshly-pulled SIF actually serves the expected `/health` payload before starting a run (the agent reads `resources` from it at bootstrap; an older SIF omits the field and the run fails):
+
+```bash
+ssh user@remote "apptainer exec ~/scratch/autofyn/sandbox.sif grep -c 'resources' /opt/autofyn/api/health.py"
+```
+
+A non-zero count means the resource-reporting handler is present. If it prints `0`, the cache didn't clear — remove `~/.apptainer/cache` and pull again.
+
+If the pull fails on a login node with `mksquashfs: FATAL ERROR: Failed to create thread`, run it inside an interactive job instead — see Troubleshooting below.
+
 ### 2. Ensure SSH access
 
 You need passwordless SSH to the remote (key-based auth). Test it:
