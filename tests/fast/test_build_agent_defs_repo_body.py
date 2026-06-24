@@ -5,10 +5,14 @@ from local markdown; a shipped agent still loads its markdown from disk. This
 pins the one branch in _resolve_body.
 """
 
-from config.constants import SubagentSpec
+from config.constants import SANDBOX_KIND_DOCKER, SandboxResources, SubagentSpec
 from config.loader import merge_subagents
 from db.constants import SUPPORTED_OPUS
 from prompts.subagent import build_agent_defs
+
+_TEST_RESOURCES = SandboxResources(
+    kind=SANDBOX_KIND_DOCKER, cpu_count=8, mem_limit_bytes=None,
+)
 
 _REPO_SPEC = SubagentSpec(
     name="ml-trainer",
@@ -37,6 +41,7 @@ class TestBuildAgentDefsRepoBody:
             disabled_subagents=None,
             subagent_specs=merged,
             repo_prompt_bodies={"ml-trainer": "ML TRAINER PROMPT BODY"},
+            sandbox_resources=_TEST_RESOURCES,
         )
 
     def test_repo_agent_uses_prefetched_body(self) -> None:

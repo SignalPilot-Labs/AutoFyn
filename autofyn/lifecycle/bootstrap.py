@@ -109,6 +109,9 @@ async def bootstrap_run(
         custom_prompt,
     )
 
+    # Probe the sandbox's compute allocation once — fixed for its lifetime.
+    sandbox_resources = await sandbox.resources()
+
     return BootstrapResult(
         run=run,
         inbox=inbox,
@@ -124,6 +127,7 @@ async def bootstrap_run(
         starting_round=starting_round,
         run_config=run_config,
         subagent_config=subagent_config,
+        sandbox_resources=sandbox_resources,
     )
 
 

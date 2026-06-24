@@ -15,10 +15,15 @@ from fastapi import FastAPI, HTTPException
 from tests.fast.helpers import make_server
 from fastapi.testclient import TestClient
 
+from config.constants import SANDBOX_KIND_DOCKER, SandboxResources
 from endpoints.control import _restart_terminal_run
 from endpoints.registry import register_routes
 from lifecycle.bootstrap import bootstrap_run
 from utils.models_http import ResumeRequest
+
+_TEST_RESOURCES = SandboxResources(
+    kind=SANDBOX_KIND_DOCKER, cpu_count=8, mem_limit_bytes=None,
+)
 
 
 def _mock_run_info(branch_name: str | None) -> dict:
@@ -145,6 +150,7 @@ class TestBootstrapResumesBranch:
         """When DB has a branch name, bootstrap must use it instead of generating a new one."""
         mock_sandbox = MagicMock()
         mock_sandbox.repo.bootstrap = AsyncMock()
+        mock_sandbox.resources = AsyncMock(return_value=_TEST_RESOURCES)
         mock_sandbox.file_system.mkdir = AsyncMock()
         mock_sandbox.file_system.read_dir = AsyncMock(return_value={})
         mock_sandbox.file_system.write_dir = AsyncMock()
@@ -190,6 +196,7 @@ class TestBootstrapResumesBranch:
         """When DB has no branch, bootstrap must generate a new one."""
         mock_sandbox = MagicMock()
         mock_sandbox.repo.bootstrap = AsyncMock()
+        mock_sandbox.resources = AsyncMock(return_value=_TEST_RESOURCES)
         mock_sandbox.file_system.mkdir = AsyncMock()
         mock_sandbox.file_system.read_dir = AsyncMock(return_value={})
         mock_sandbox.file_system.write_dir = AsyncMock()
@@ -226,6 +233,7 @@ class TestBootstrapResumesBranch:
         """The 'pending' placeholder from create_run_starting must not be reused as a real branch."""
         mock_sandbox = MagicMock()
         mock_sandbox.repo.bootstrap = AsyncMock()
+        mock_sandbox.resources = AsyncMock(return_value=_TEST_RESOURCES)
         mock_sandbox.file_system.mkdir = AsyncMock()
         mock_sandbox.file_system.read_dir = AsyncMock(return_value={})
         mock_sandbox.file_system.write_dir = AsyncMock()
@@ -341,6 +349,7 @@ class TestBootstrapPreservesCosts:
         """RunContext must carry forward prior cost and token totals."""
         mock_sandbox = MagicMock()
         mock_sandbox.repo.bootstrap = AsyncMock()
+        mock_sandbox.resources = AsyncMock(return_value=_TEST_RESOURCES)
         mock_sandbox.file_system.mkdir = AsyncMock()
         mock_sandbox.file_system.read_dir = AsyncMock(return_value={})
         mock_sandbox.file_system.write_dir = AsyncMock()
@@ -385,6 +394,7 @@ class TestBootstrapPreservesCosts:
         """Fresh run (no existing branch) must start with zero accumulators."""
         mock_sandbox = MagicMock()
         mock_sandbox.repo.bootstrap = AsyncMock()
+        mock_sandbox.resources = AsyncMock(return_value=_TEST_RESOURCES)
         mock_sandbox.file_system.mkdir = AsyncMock()
         mock_sandbox.file_system.read_dir = AsyncMock(return_value={})
         mock_sandbox.file_system.write_dir = AsyncMock()

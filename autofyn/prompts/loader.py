@@ -6,7 +6,16 @@ values — used by both the orchestrator prompt builder and the subagent
 prompt builder so there is one source of truth for the wording.
 """
 
-from utils.constants import PROMPTS_DIR, PROMPTS_FALLBACK_DIR
+from config.constants import SandboxResources
+from utils.constants import (
+    BYTES_PER_GIB,
+    PROMPTS_DIR,
+    PROMPTS_FALLBACK_DIR,
+    SANDBOX_KIND_DESCRIPTION_FALLBACK,
+    SANDBOX_KIND_DESCRIPTIONS,
+    SANDBOX_MEM_CAP_WARNING,
+    SANDBOX_MEM_UNCAPPED_NOTE,
+)
 
 
 def load_markdown(name: str) -> str:
@@ -67,16 +76,38 @@ def render_environment(
     host_mounts: list[dict[str, str]] | None,
     user_env_keys: list[str],
     base_branch: str,
+    sandbox_resources: SandboxResources,
 ) -> str:
     """Render `query/environment.md` with runtime values and host mounts."""
     template = load_markdown("query/environment")
     return (
         template
+        .replace("{SANDBOX_RESOURCES_BLOCK}", _sandbox_resources_block(sandbox_resources))
         .replace("{ROUND_NUMBER}", str(round_number))
         .replace("{TOOL_CALL_TIMEOUT_MIN}", str(tool_call_timeout_min))
         .replace("{HOST_MOUNTS_BLOCK}", _host_mounts_block(host_mounts))
         .replace("{USER_ENV_BLOCK}", _user_env_block(user_env_keys))
         .replace("{BASE_BRANCH}", base_branch)
+    )
+
+
+def _sandbox_resources_block(resources: SandboxResources) -> str:
+    """Render the sandbox's kind, CPU count, and memory budget.
+
+    Replaces a hardcoded environment description so the prompt is honest
+    for both local Docker and remote Slurm/Apptainer sandboxes, and warns
+    the agent off node-level memory tools when a hard cap exists.
+    """
+    kind = SANDBOX_KIND_DESCRIPTIONS.get(
+        resources.kind, SANDBOX_KIND_DESCRIPTION_FALLBACK,
+    )
+    if resources.mem_limit_bytes is None:
+        memory = SANDBOX_MEM_UNCAPPED_NOTE
+    else:
+        gib = resources.mem_limit_bytes / BYTES_PER_GIB
+        memory = f"Memory: {gib:.0f} GB hard cap. {SANDBOX_MEM_CAP_WARNING}"
+    return (
+        f"You run in {kind}. CPUs: {resources.cpu_count}. {memory}"
     )
 
 

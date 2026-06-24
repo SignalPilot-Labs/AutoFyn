@@ -19,6 +19,7 @@ from sandbox_client.handlers.env import Env
 from sandbox_client.handlers.file_system import FileSystem
 from sandbox_client.handlers.repo import Repo
 from sandbox_client.handlers.session import Session
+from config.constants import SandboxResources
 from utils.constants import ENV_KEY_SANDBOX_SECRET, INTERNAL_SECRET_HEADER
 
 log = logging.getLogger("sandbox_client.client")
@@ -74,6 +75,21 @@ class SandboxClient:
         resp = await self._http.get("/health", timeout=self._health_timeout)
         resp.raise_for_status()
         return resp.json()
+
+    async def resources(self) -> SandboxResources:
+        """Read the sandbox's compute allocation from /health.
+
+        Probed once at bootstrap — the allocation is fixed for the
+        sandbox's lifetime. The agent renders this into the round prompt
+        so parallel work is sized against the cgroup, not the host/node.
+        """
+        data = await self.health()
+        res = data["resources"]
+        return SandboxResources(
+            kind=res["kind"],
+            cpu_count=res["cpu_count"],
+            mem_limit_bytes=res["mem_limit_bytes"],
+        )
 
     async def close(self) -> None:
         """Close the underlying HTTP client."""

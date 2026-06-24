@@ -80,3 +80,26 @@ class SubagentSpec:
 AF_BOUND_MARKER: str = "AF_BOUND"
 AF_READY_MARKER: str = "AF_READY"
 AF_QUEUED_MARKER: str = "AF_QUEUED"
+
+
+# ── Sandbox resource report ──
+# The sandbox probes its own compute allocation and reports it on /health;
+# the agent renders it into the round prompt. Shared so the producer
+# (sandbox) and consumer (agent) agree on the kind values and the shape.
+SANDBOX_KIND_DOCKER: str = "gvisor-docker"
+SANDBOX_KIND_SLURM: str = "apptainer-slurm"
+
+
+@dataclass(frozen=True, slots=True)
+class SandboxResources:
+    """A sandbox's compute allocation, probed at runtime.
+
+    Lets the agent size parallel work against the box it runs in, not the
+    host/node. `mem_limit_bytes` is None when there is no hard cap (a local
+    Docker container with no `mem_limit` set); a real value is a cgroup
+    ceiling (e.g. a Slurm `--mem` allocation on HPC).
+    """
+
+    kind: str
+    cpu_count: int
+    mem_limit_bytes: int | None
