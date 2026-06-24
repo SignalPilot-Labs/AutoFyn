@@ -60,7 +60,7 @@ BRANCH_TO_IMAGE_TAG: dict[str, str] = {
 IMAGE_TAG_FILE: str = str(Path(AUTOFYN_HOME) / ".image-tag")
 
 # ── Remote sandbox image update (`autofyn update --remote`) ──
-# Run on the remote machine itself (after `pip install autofyn-cli`) to
+# Run on the remote machine itself (with the CLI installed there) to
 # pull/refresh only the sandbox image there. No Docker stack, git, or
 # dashboard involved — just the image pull.
 SANDBOX_IMAGE_REPO: str = "ghcr.io/signalpilot-labs/autofyn-sandbox"

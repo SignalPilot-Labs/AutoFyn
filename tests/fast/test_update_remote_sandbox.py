@@ -51,6 +51,12 @@ class TestUpdateRemoteSandbox:
         assert args[1] == "pull"
         assert args[2].endswith(":stable")
 
+    @patch(f"{MODULE}.subprocess.run")
+    def test_docker_pull_failure_exits_nonzero(self, mock_run: MagicMock) -> None:
+        mock_run.return_value = MagicMock(returncode=1)
+        with pytest.raises(typer.Exit):
+            update_remote_sandbox("docker", None, None)
+
     @patch(f"{MODULE}.save_remote_workdir")
     @patch(f"{MODULE}.load_remote_workdir", return_value=None)
     @patch(f"{MODULE}.subprocess.run")
@@ -64,6 +70,19 @@ class TestUpdateRemoteSandbox:
         assert calls[0] == ["apptainer", "cache", "clean", "-f"]
         assert calls[1][:3] == ["apptainer", "pull", "--force"]
         assert calls[1][3].endswith("/sandbox.sif")
+
+    @patch(f"{MODULE}.save_remote_workdir")
+    @patch(f"{MODULE}.load_remote_workdir", return_value="/d")
+    @patch(f"{MODULE}.subprocess.run")
+    def test_slurm_aborts_when_cache_clean_fails(
+        self, mock_run: MagicMock, _load: MagicMock, _save: MagicMock,
+    ) -> None:
+        # cache clean fails — must abort BEFORE pulling, or we'd pull stale.
+        mock_run.return_value = MagicMock(returncode=1, stdout="", stderr="")
+        with pytest.raises(typer.Exit):
+            update_remote_sandbox("slurm", None, None)
+        calls = [c[0][0] for c in mock_run.call_args_list]
+        assert calls == [["apptainer", "cache", "clean", "-f"]]  # no pull attempted
 
     @patch(f"{MODULE}.save_remote_workdir")
     @patch(f"{MODULE}.load_remote_workdir", return_value=None)

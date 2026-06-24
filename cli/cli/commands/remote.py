@@ -1,8 +1,8 @@
 """Remote sandbox image update — `autofyn update --remote <docker|slurm>`.
 
-Runs ON the remote machine itself (after `pip install autofyn-cli` there)
-to pull/refresh only the sandbox image. No Docker stack, git checkout, or
-dashboard is involved — just the image pull.
+Runs ON the remote machine itself (after installing the CLI there with
+`pip install ~/.autofyn/cli`) to pull/refresh only the sandbox image. No
+Docker stack, git checkout, or dashboard is involved — just the image pull.
 
 - docker: `docker pull <repo>:<tag>` into the local docker store.
 - slurm:  clear apptainer's layer cache (so `--force` can't reuse a stale
@@ -84,9 +84,10 @@ def _pull_docker(tag: str) -> None:
     """Pull the sandbox image into the local docker store."""
     ref = f"{SANDBOX_IMAGE_REPO}:{tag}"
     console.print(f"[dim]→ docker pull {ref}[/dim]")
+    # docker streams its own progress/errors to the terminal — inherit them.
     result = subprocess.run(["docker", "pull", ref])
     if result.returncode != 0:
-        console.print("[red]docker pull failed[/red]")
+        console.print("[red]docker pull failed (see output above)[/red]")
         raise typer.Exit(code=result.returncode)
     console.print(f"[green]✓[/green] Sandbox image updated (tag: {tag})")
 
@@ -96,8 +97,14 @@ def _pull_slurm(image_ref: str, workdir_override: str | None) -> None:
     workdir = _resolve_workdir(workdir_override)
     sif_path = str(Path(workdir).expanduser() / REMOTE_SIF_NAME)
 
+    # Clearing the cache is the whole point — without it `--force` reuses a
+    # stale layer and silently pulls an old image. If it fails, stop: a pull
+    # now would defeat the command.
     console.print("[dim]→ apptainer cache clean -f[/dim]")
-    subprocess.run(["apptainer", "cache", "clean", "-f"])
+    clean = subprocess.run(["apptainer", "cache", "clean", "-f"])
+    if clean.returncode != 0:
+        console.print("[red]apptainer cache clean failed — aborting to avoid a stale pull[/red]")
+        raise typer.Exit(code=clean.returncode)
 
     console.print(f"[dim]→ apptainer pull --force {sif_path} {image_ref}[/dim]")
     result = subprocess.run(

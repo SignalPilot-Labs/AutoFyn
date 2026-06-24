@@ -81,7 +81,7 @@ def update(
     branch: Optional[str] = typer.Option(None, "--branch", metavar="<branch>", help="Switch to branch before updating (e.g. main, production)"),
     image_tag: Optional[str] = typer.Option(None, "--image-tag", metavar="<tag>", help="Override image tag (e.g. stable, nightly, abc1234)"),
     build: bool = typer.Option(False, "--build", help="Force local image build, skip pulling pre-built images"),
-    remote: Optional[str] = typer.Option(None, "--remote", metavar="<docker|slurm>", help="Update only the sandbox image on THIS remote machine (run on the remote after `pip install autofyn-cli`)"),
+    remote: Optional[str] = typer.Option(None, "--remote", metavar="<docker|slurm>", help="Update only the sandbox image on THIS remote machine (run on the remote, where the CLI is installed)"),
     workdir: Optional[str] = typer.Option(None, "--workdir", metavar="<dir>", help="Slurm only: dir holding the SIF (default ~/scratch/autofyn; remembered after first use)"),
 ) -> None:
     """Pull latest code and Docker images. Builds locally if no pre-built image exists.
