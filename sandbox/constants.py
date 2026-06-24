@@ -82,6 +82,14 @@ RETRY_TRANSIENT_PATTERNS: tuple[str, ...] = (
     "could not resolve",
 )
 
+# Signature of a vanished sandbox filesystem. On remote (Slurm/Apptainer)
+# sandboxes a network drop can kill the job and remove its overlay, leaving
+# the repo dir's inode stale (ESTALE). This is NOT transient — the mount is
+# gone — so it is classified as a distinct "sandbox lost" failure rather than
+# retried. Matched case-insensitively against command stderr.
+SANDBOX_LOST_PATTERN: str = "stale file handle"
+SANDBOX_LOST_MSG: str = "remote sandbox lost (filesystem gone) - resume to reallocate"
+
 # ── Secret Redaction ──
 SECRET_REDACT_MASK: str = "***REDACTED***"
 
