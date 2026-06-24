@@ -17,6 +17,8 @@ from constants import (
     RETRY_BASE_DELAY_SEC,
     RETRY_MAX_ATTEMPTS,
     RETRY_TRANSIENT_PATTERNS,
+    SANDBOX_LOST_MSG,
+    SANDBOX_LOST_PATTERN,
     SECRET_REDACT_MASK,
     STDERR_DISPLAY_LIMIT,
 )
@@ -42,7 +44,14 @@ def scrub_secrets(text: str) -> str:
 
 
 async def run_cmd(args: list[str], cwd: str, timeout: int) -> CmdResult:
-    """Run a subprocess inheriting the sandbox process env."""
+    """Run a subprocess inheriting the sandbox process env.
+
+    A spawn-time OSError (e.g. ESTALE — a stale handle on `cwd` after a
+    remote sandbox's overlay vanished) is turned into a failed CmdResult
+    rather than propagated, so the OS message lands in stderr and the
+    fail() handler can classify it into a clean error instead of crashing
+    the request with a raw traceback.
+    """
     proc: asyncio.subprocess.Process | None = None
     try:
         proc = await asyncio.create_subprocess_exec(
@@ -60,6 +69,8 @@ async def run_cmd(args: list[str], cwd: str, timeout: int) -> CmdResult:
             proc.kill()
             await proc.wait()
         return CmdResult(stdout="", stderr="timed out", exit_code=-1)
+    except OSError as exc:
+        return CmdResult(stdout="", stderr=str(exc), exit_code=-1)
 
 
 async def run_with_retry(cmd: list[str], cwd: str, timeout: int) -> CmdResult:
@@ -91,21 +102,44 @@ async def gh(args: list[str], timeout: int, cwd: str) -> CmdResult:
     return await run_with_retry(["gh"] + args, cwd, timeout)
 
 
-def fail(result: CmdResult, label: str) -> None:
-    """Raise HTTP 500 if the command failed.
+def _raise_sandbox_lost(label: str, stderr: str) -> None:
+    """Raise a distinct 503 when the sandbox filesystem has vanished.
 
-    Stderr goes into the JSON body (not the HTTP reason header) because
-    aiohttp rejects reason values containing newlines.
+    A stale-handle failure means the remote sandbox's overlay is gone (the
+    Slurm job died, e.g. on a network drop), so retrying or reporting a
+    generic command error is misleading. Surface a clear, actionable cause
+    that maps to "resume to reallocate" instead of a raw OSError traceback.
     """
-    if result.exit_code != 0:
-        stderr = scrub_secrets(result.stderr.strip())[:STDERR_DISPLAY_LIMIT]
-        log.error("%s failed (exit=%d): %s", label, result.exit_code, stderr)
-        body = json.dumps({
-            "error": f"{label} failed",
-            "exit_code": result.exit_code,
-            "stderr": stderr,
-        })
-        raise web.HTTPInternalServerError(
-            text=body,
-            content_type="application/json",
-        )
+    log.error("%s failed — sandbox lost: %s", label, stderr)
+    body = json.dumps({
+        "error": SANDBOX_LOST_MSG,
+        "sandbox_lost": True,
+        "label": label,
+        "stderr": stderr,
+    })
+    raise web.HTTPServiceUnavailable(text=body, content_type="application/json")
+
+
+def fail(result: CmdResult, label: str) -> None:
+    """Raise an HTTP error if the command failed.
+
+    A vanished sandbox filesystem (stale handle) raises a distinct 503 with
+    a clear cause; every other failure raises 500. Stderr goes into the JSON
+    body (not the HTTP reason header) because aiohttp rejects reason values
+    containing newlines.
+    """
+    if result.exit_code == 0:
+        return
+    stderr = scrub_secrets(result.stderr.strip())[:STDERR_DISPLAY_LIMIT]
+    if SANDBOX_LOST_PATTERN in stderr.lower():
+        _raise_sandbox_lost(label, stderr)
+    log.error("%s failed (exit=%d): %s", label, result.exit_code, stderr)
+    body = json.dumps({
+        "error": f"{label} failed",
+        "exit_code": result.exit_code,
+        "stderr": stderr,
+    })
+    raise web.HTTPInternalServerError(
+        text=body,
+        content_type="application/json",
+    )

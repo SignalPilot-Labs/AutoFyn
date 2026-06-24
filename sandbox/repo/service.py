@@ -278,6 +278,7 @@ class RepoService:
         current = await git(
             ["branch", "--show-current"], CMD_TIMEOUT, cwd=REPO_WORK_DIR,
         )
+        fail(current, "git branch --show-current")
         head = current.stdout.strip()
         if head != s.working_branch:
             raise web.HTTPConflict(
