@@ -59,6 +59,27 @@ BRANCH_TO_IMAGE_TAG: dict[str, str] = {
 }
 IMAGE_TAG_FILE: str = str(Path(AUTOFYN_HOME) / ".image-tag")
 
+# ── Remote sandbox image update (`autofyn update --remote`) ──
+# Run on the remote machine itself (with the CLI installed there) to
+# pull/refresh only the sandbox image there. No Docker stack, git, or
+# dashboard involved — just the image pull.
+SANDBOX_IMAGE_REPO: str = "ghcr.io/signalpilot-labs/autofyn-sandbox"
+# Users run stable; the author selects nightly with `--branch main`,
+# reusing the same branch→tag mapping (BRANCH_TO_IMAGE_TAG) as the local
+# `update`. No --branch → stable.
+REMOTE_DEFAULT_IMAGE_TAG: str = "stable"
+REMOTE_TYPE_DOCKER: str = "docker"
+REMOTE_TYPE_SLURM: str = "slurm"
+REMOTE_TYPES: frozenset[str] = frozenset({REMOTE_TYPE_DOCKER, REMOTE_TYPE_SLURM})
+# Slurm SIF lives in the work dir, next to per-run overlays under runs/.
+REMOTE_DEFAULT_WORKDIR: str = "~/scratch/autofyn"
+REMOTE_SIF_NAME: str = "sandbox.sif"
+# Persisted in ~/.autofyn/config.json on the remote so the work dir is
+# remembered after the first run and need not be re-passed.
+REMOTE_WORKDIR_CONFIG_KEY: str = "remote_workdir"
+# Login nodes have a low thread limit; mksquashfs fails there with this.
+MKSQUASHFS_THREAD_ERROR: str = "Failed to create thread"
+
 # Docker exec
 DOCKER_EXEC_TIMEOUT_SECONDS: int = 5
 

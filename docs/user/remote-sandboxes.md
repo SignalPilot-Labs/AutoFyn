@@ -1,163 +1,36 @@
 # Remote Sandboxes
 
-By default, AutoFyn runs each sandbox in a local Docker container. Remote sandboxes let you run on HPC clusters, GPU servers, or any machine you can SSH into.
-
-## How it works
-
-1. AutoFyn SSH-tunnels to the remote machine via the **connector** (a local process started automatically by `autofyn start`)
-2. Your **start command** runs on the remote — it launches the sandbox container/process
-3. The sandbox binds a free port and prints `AF_BOUND port=<port>`
-4. Once healthy, it prints `AF_READY host=<compute-node> port=<port>`
-5. The connector establishes a reverse tunnel and proxies all traffic
-
-The agent talks to the remote sandbox exactly like a local one — same HTTP API, same security.
+Run sandboxes on HPC clusters, GPU servers, or any SSH-reachable machine instead of local Docker. The agent talks to them over the same HTTP API via the **connector** (a local process `autofyn start` launches).
 
 ## Setup
 
-### 1. Create the AutoFyn work directory and install the sandbox image
-
-Pick a directory with enough storage for the sandbox image and agent work (cloned repos, installed packages, build artifacts). Use fast, high-capacity storage your cluster provides (scratch, local SSD, etc.). Avoid home directories — they're usually small and backed up.
-
-**Docker remote:**
+### 1. Install the sandbox image on the remote
 
 ```bash
-docker pull ghcr.io/signalpilot-labs/autofyn-sandbox:stable
+git clone https://github.com/SignalPilot-Labs/AutoFyn.git ~/.autofyn
+pip install ~/.autofyn/cli
+autofyn update --remote slurm    # HPC; SIF → ~/scratch/autofyn/sandbox.sif
+autofyn update --remote docker   # remote Docker host
 ```
 
-**Slurm / Apptainer (HPC):**
+Re-run to update. `--workdir <dir>` sets the SIF location (remembered); use scratch/SSD, not home. `--branch main` pulls nightly.
 
-```bash
-ssh user@remote "source /etc/profile && module load apptainer && mkdir -p ~/scratch/autofyn && apptainer pull ~/scratch/autofyn/sandbox.sif docker://ghcr.io/signalpilot-labs/autofyn-sandbox:stable"
-```
+### 2. SSH access
 
-This creates `~/scratch/autofyn/` with the sandbox image inside. Each run will create a temporary subdirectory under `~/scratch/autofyn/runs/` for its overlay files, and clean it up when done. If a run is killed hard (SIGKILL, node crash), leftover directories in `runs/` can be safely deleted.
-
-#### Updating the sandbox image
-
-The remote SIF does **not** auto-update — it's a file on disk, decoupled from the agent. When you update AutoFyn (or pull a newer agent image), re-pull the SIF so the agent and sandbox stay in sync. A mismatched SIF (older than the agent) causes runs to fail at bootstrap.
-
-> **Important:** `apptainer pull --force` overwrites the `.sif` file but **rebuilds it from apptainer's local layer cache** — so it can silently produce a *stale* image even with `--force`. To get a genuinely fresh image you must clear the cache first:
-
-```bash
-ssh user@remote "source /etc/profile && module load apptainer && \
-  apptainer cache clean -f && \
-  apptainer pull --force ~/scratch/autofyn/sandbox.sif docker://ghcr.io/signalpilot-labs/autofyn-sandbox:stable"
-```
-
-Verify the freshly-pulled SIF actually serves the expected `/health` payload before starting a run (the agent reads `resources` from it at bootstrap; an older SIF omits the field and the run fails):
-
-```bash
-ssh user@remote "apptainer exec ~/scratch/autofyn/sandbox.sif grep -c 'resources' /opt/autofyn/api/health.py"
-```
-
-A non-zero count means the resource-reporting handler is present. If it prints `0`, the cache didn't clear — remove `~/.apptainer/cache` and pull again.
-
-If the pull fails on a login node with `mksquashfs: FATAL ERROR: Failed to create thread`, run it inside an interactive job instead — see Troubleshooting below.
-
-### 2. Ensure SSH access
-
-You need passwordless SSH to the remote (key-based auth). Test it:
-
-```bash
-ssh user@remote-host "echo ok"
-```
-
-You can use an SSH config alias (e.g. `Host mycluster` in `~/.ssh/config`).
+Passwordless key-based SSH. Test: `ssh user@host "echo ok"`. An SSH config alias works.
 
 ### 3. Add the sandbox in the dashboard
 
-Go to **Settings → Remote Sandboxes → Add Sandbox**.
+**Settings → Remote Sandboxes → Add Sandbox.** Slurm sandboxes get structured fields (partition, CPUs, memory, GPU, work dir) that auto-generate the start command; you can also edit it directly. Set **Type**, **SSH Target**, **Work Directory** (from step 1), and timeouts (default 1800s).
 
-For **Slurm** sandboxes, the form provides structured fields (partition, CPUs, memory, GPU, work directory) that auto-generate the start command. You can also edit the command directly for custom flags.
+### 4. Start a run
 
-| Field | Description |
-|-------|-------------|
-| **Name** | Display name (e.g. "GPU Server", "HPC Cluster") |
-| **Type** | `Docker` or `Slurm` |
-| **SSH Target** | `user@host` or SSH config alias |
-| **AutoFyn Work Directory** | The directory from step 1 (e.g. `~/scratch/autofyn`) |
-| **Partition** | Slurm partition name (e.g. `gpu`, `normal`) |
-| **CPUs** | CPU cores per task |
-| **Memory** | Memory per node (e.g. `16G`, `32G`) |
-| **GPU** | GPU GRES (e.g. `a100:1`, `h100:2`). Leave empty for no GPU |
-| **Start Command** | Auto-generated from fields above, or edit directly |
-| **Startup Timeout** | Max seconds to wait for `AF_READY` (default: 1800 for Slurm queues) |
-| **Inactivity Timeout** | Sandbox self-terminates after this many seconds idle (default: 1800) |
-
-### 4. Start a run using the remote sandbox
-
-In the **New Run** modal, expand the **Sandbox** section and select your remote sandbox instead of "Docker (local)". AutoFyn remembers your last choice per repo.
-
-## Start command examples
-
-### Docker remote
-
-```bash
-source /etc/profile && docker run --rm --network=host -e AF_SANDBOX_PORT=0 ghcr.io/signalpilot-labs/autofyn-sandbox:stable
-```
-
-### Slurm / Apptainer
-
-```bash
-source /etc/profile && module load apptainer && srun --job-name=autofyn -p my_partition -n 1 --cpus-per-task=4 --mem=16G bash -c 'W=~/scratch/autofyn/runs/$AF_RUN_KEY && mkdir -p $W && apptainer exec --overlay $W --pwd /opt/autofyn -B $HOME $AF_HOST_MOUNTS ~/scratch/autofyn/sandbox.sif python3 -m server; rm -rf $W'
-```
-
-With GPU access:
-
-```bash
-source /etc/profile && module load apptainer && srun --job-name=autofyn -p gpu -n 1 --cpus-per-task=4 --mem=16G --gres=gpu:1 bash -c 'W=~/scratch/autofyn/runs/$AF_RUN_KEY && mkdir -p $W && apptainer exec --nv --overlay $W --pwd /opt/autofyn -B $HOME $AF_HOST_MOUNTS ~/scratch/autofyn/sandbox.sif python3 -m server; rm -rf $W'
-```
-
-> **Note:** The sandbox generates its own authentication secret at startup and transmits it back to the connector over the encrypted SSH stdout pipe. All secrets (tokens, env vars from the New Run modal) are passed securely over the SSH tunnel after startup — they never appear in the start command, SSH command-line arguments, or Slurm job metadata.
-
-Key flags:
-
-- `source /etc/profile` — non-interactive SSH doesn't source profile, so `docker`, `module`, and other commands in `/usr/local/bin` or module paths may not be found. Always include this for both Docker and Slurm commands
-- `-n 1` — only one task. `-n > 1` would spawn > 1 processes trying to bind the same port and **fail**.
-- `--cpus-per-task=4` — request 4 CPU cores (adjust to your needs)
-- `--mem=16G` — memory limit per node
-- `--gres=gpu:1` — request 1 GPU (Slurm generic resource)
-- `--nv` — Apptainer flag to expose NVIDIA GPUs inside the container
-- `--overlay $W` — uses a scratch directory as the writable layer on top of the read-only SIF image. Each run gets its own overlay via `$AF_RUN_KEY` (set automatically by the connector). Cleaned up after the run ends.
-- `-B $HOME` — binds your home directory for git config, SSH keys, etc.
-
-## Timeline events
-
-When a remote sandbox starts, you'll see these milestones in the dashboard feed:
-
-1. **Run Starting** — run created
-2. **Sandbox Queued** — job submitted (shows Slurm job ID)
-3. **Sandbox Allocated** — resources allocated (Slurm only)
-4. **Sandbox Started** — sandbox is healthy and ready
-
-Startup log lines (srun output, server boot, etc.) are stored in the audit log but not shown in the feed.
+In the **New Run** modal → **Sandbox** section, pick your remote sandbox. Remembered per repo.
 
 ## Troubleshooting
 
-**Sandbox start failed / timeout:**
-- Check `autofyn logs` for connector errors
-- SSH into the remote and run the start command manually to see output
-- For Slurm: check `squeue -u $USER` to see if the job is stuck in queue
-- Increase the **Startup Timeout** in sandbox settings (Slurm queues can take minutes)
-
-**"Start command exited without AF_READY":**
-- The process exited before printing `AF_READY`. Run the command manually on the remote to see errors
-- Common causes: wrong module name, missing SIF file, port already in use
-
-**"No space left on device":**
-- The scratch overlay directory ran out of space. Check your scratch quota.
-- Do NOT use `--writable-tmpfs` — it gives only 64MB of writable space. Use `--overlay` with a scratch directory instead.
-
-**Docker: permission denied / cannot connect to daemon:**
-- Your SSH user must have access to the Docker socket. Either add the user to the `docker` group (`sudo usermod -aG docker $USER`, then re-login) or run with `sudo` in the start command
-- Verify with: `ssh user@remote "source /etc/profile && docker info"`
-- If the socket exists but isn't writable, check permissions: `ls -la /var/run/docker.sock`
-
-**Connection drops during run:**
-- The connector auto-reconnects. If it can't, the run status changes to `connector_lost`
-- Check `~/.autofyn/.connector.log` for details
-
-**`mksquashfs: FATAL ERROR: Failed to create thread` during `apptainer pull`:**
-- The login node has a low thread/process limit (`ulimit -u`). `mksquashfs` cannot create worker threads even with `MKSQUASHFS_PROCS=1`.
-- Run the pull inside an interactive job instead: `srun --pty --mem=8G --time=00:30:00 bash -c 'source /etc/profile && module load apptainer && MKSQUASHFS_PROCS=1 apptainer pull --force ~/scratch/autofyn/sandbox.sif docker://ghcr.io/signalpilot-labs/autofyn-sandbox:stable'`
-- Compute nodes have higher thread limits than login nodes
+- **Start failed / no `AF_READY`:** run the start command manually on the remote; check `autofyn logs`, `squeue -u $USER`, module name, SIF path, port. Bump **Startup Timeout** for slow queues.
+- **No space left:** scratch overlay full — check quota. Don't use `--writable-tmpfs` (64MB only).
+- **Docker permission denied:** SSH user needs Docker socket access (`usermod -aG docker $USER` or `sudo`).
+- **Connection drops:** connector auto-reconnects; else status → `connector_lost`, see `~/.autofyn/.connector.log`.
+- **`mksquashfs: Failed to create thread`:** login-node thread limit — run on a compute node: `srun --pty --mem=8G --time=00:30:00 autofyn update --remote slurm`.

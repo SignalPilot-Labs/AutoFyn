@@ -8,7 +8,14 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
-from cli.constants import API_KEY_CONTAINER_PATH, AUTOFYN_HOME, DASHBOARD_CONTAINER, DEFAULT_API_URL, DOCKER_EXEC_TIMEOUT_SECONDS
+from cli.constants import (
+    API_KEY_CONTAINER_PATH,
+    AUTOFYN_HOME,
+    DASHBOARD_CONTAINER,
+    DEFAULT_API_URL,
+    DOCKER_EXEC_TIMEOUT_SECONDS,
+    REMOTE_WORKDIR_CONFIG_KEY,
+)
 
 CONFIG_PATH = Path(AUTOFYN_HOME) / "config.json"
 
@@ -75,6 +82,19 @@ def resolve_api_url() -> str:
     if cfg:
         return str(cfg).rstrip("/")
     return DEFAULT_API_URL
+
+
+def load_remote_workdir() -> str | None:
+    """Return the remembered remote sandbox work dir, or None if unset."""
+    value = _load_config().get(REMOTE_WORKDIR_CONFIG_KEY)
+    return str(value) if value else None
+
+
+def save_remote_workdir(workdir: str) -> None:
+    """Persist the remote sandbox work dir to ~/.autofyn/config.json."""
+    cfg = _load_config()
+    cfg[REMOTE_WORKDIR_CONFIG_KEY] = workdir
+    _save_config(cfg)
 
 
 def resolve_api_key() -> str | None:
