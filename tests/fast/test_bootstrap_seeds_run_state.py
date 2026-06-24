@@ -8,8 +8,13 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from config.constants import SANDBOX_KIND_DOCKER, SandboxResources
 from lifecycle.bootstrap import bootstrap_run
 from utils.constants import MEMORY_DIR, RUN_STATE_PATH, RUN_STATE_TEMPLATE
+
+_TEST_RESOURCES = SandboxResources(
+    kind=SANDBOX_KIND_DOCKER, cpu_count=8, mem_limit_bytes=None,
+)
 
 
 def _mock_sandbox() -> MagicMock:
@@ -19,6 +24,7 @@ def _mock_sandbox() -> MagicMock:
     sandbox.file_system.mkdir = AsyncMock()
     sandbox.file_system.write = AsyncMock()
     sandbox.file_system.read = AsyncMock(return_value=None)
+    sandbox.resources = AsyncMock(return_value=_TEST_RESOURCES)
     return sandbox
 
 

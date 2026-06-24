@@ -8,6 +8,7 @@ load() call, so repeated access is a dict lookup — not YAML I/O.
 import logging
 from pathlib import Path
 
+from config.constants import SANDBOX_KIND_DOCKER, SANDBOX_KIND_SLURM
 from config.loader import agent_config
 
 _cached_agent_cfg: dict | None = None
@@ -119,6 +120,24 @@ LOG_PREVIEW_LIMIT = 200  # One-line log preview of assistant messages
 WORK_DIR = "/home/agentuser/repo"
 PROMPTS_DIR = Path("/workspace/autofyn/prompts")
 PROMPTS_FALLBACK_DIR = Path(__file__).parent.parent / "prompts"
+
+# ── Sandbox resource block (rendered into query/environment.md) ──
+# Maps SandboxResources.kind (defined in config.constants, the shared
+# producer/consumer contract) to the human description shown in the prompt.
+SANDBOX_KIND_DESCRIPTIONS: dict[str, str] = {
+    SANDBOX_KIND_DOCKER: "a gVisor-sandboxed Docker container",
+    SANDBOX_KIND_SLURM: "an Apptainer container inside a Slurm allocation",
+}
+SANDBOX_KIND_DESCRIPTION_FALLBACK = "a sandboxed container"
+BYTES_PER_GIB = 1024 ** 3
+# Warning appended when a hard memory cap exists — the cap is a cgroup
+# ceiling, and node-level tools over-report on shared HPC nodes.
+SANDBOX_MEM_CAP_WARNING = (
+    "This is a cgroup ceiling, NOT the node's total RAM. "
+    "Do not size parallel work off `free` or `/proc/meminfo` — they "
+    "report the whole node, not your allocation."
+)
+SANDBOX_MEM_UNCAPPED_NOTE = "Memory is not hard-capped (shares the host)."
 
 # ── Git ──
 BRANCH_NAME_PATTERN = r"^[a-zA-Z0-9][a-zA-Z0-9\-_./]*$"

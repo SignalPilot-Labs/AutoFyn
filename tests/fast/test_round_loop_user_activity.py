@@ -16,6 +16,11 @@ from utils.models import RunContext, BootstrapResult, RoundsMetadata
 from utils.run_config import RunAgentConfig
 from utils.run_subagents import SubagentConfig
 from config.loader import merge_subagents
+from config.constants import SANDBOX_KIND_DOCKER, SandboxResources
+
+_TEST_RESOURCES = SandboxResources(
+    kind=SANDBOX_KIND_DOCKER, cpu_count=8, mem_limit_bytes=None,
+)
 
 
 def _make_run() -> RunContext:
@@ -76,6 +81,7 @@ def _make_bootstrap(run: RunContext, run_config: RunAgentConfig) -> BootstrapRes
         starting_round=0,
         run_config=run_config,
         subagent_config=SubagentConfig(specs=merge_subagents(None), bodies={}),
+        sandbox_resources=_TEST_RESOURCES,
     )
 
 

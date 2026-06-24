@@ -27,7 +27,7 @@ def get_fallback_model(model: str) -> str | None:
 
 
 if TYPE_CHECKING:
-    from config.constants import SubagentSpec
+    from config.constants import SandboxResources, SubagentSpec
     from memory.archiver import RoundArchiver
     from memory.metadata import MetadataStore
     from memory.report import ReportStore
@@ -187,6 +187,7 @@ class RoundContext:
     disabled_subagents: list[str]
     subagent_specs: tuple[SubagentSpec, ...]
     repo_prompt_bodies: dict[str, str]
+    sandbox_resources: SandboxResources
 
 
 # ── Bootstrap ───────────────────────────────────────────────────────
@@ -212,6 +213,7 @@ class BootstrapResult:
     starting_round: int
     run_config: RunAgentConfig
     subagent_config: SubagentConfig
+    sandbox_resources: SandboxResources
 
 
 # ── User events ─────────────────────────────────────────────────

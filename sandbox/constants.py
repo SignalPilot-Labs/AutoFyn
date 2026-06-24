@@ -35,6 +35,18 @@ SANDBOX_HEARTBEAT_CHECK_INTERVAL_SEC: int = 10
 SANDBOX_PROTOCOL_VERSION: int = 1
 SANDBOX_IMAGE_TAG: str = os.environ.get("AF_IMAGE_TAG", "unknown")
 
+# ── Resource probe (reported on /health) ──
+# The sandbox reports its own compute allocation so the agent sizes
+# parallel work against its cgroup, not the host/node it sits on. The
+# kind values and report shape are shared in config.constants; these are
+# the probe-only sources read on this side.
+# Env keys whose presence proves we're inside a Slurm/Apptainer job.
+SLURM_JOB_ID_ENV_VAR: str = "SLURM_JOB_ID"
+APPTAINER_MARKER_ENV_VAR: str = "APPTAINER_CONTAINER"
+# cgroup v2 memory ceiling; holds the literal "max" when uncapped.
+CGROUP_MEMORY_MAX_PATH: str = "/sys/fs/cgroup/memory.max"
+CGROUP_UNLIMITED_SENTINEL: str = "max"
+
 CREDENTIAL_PATTERNS: list[str] = _security_cfg["credential_patterns"]
 SECRET_ENV_VARS: str = _security_cfg["secret_env_vars"]
 

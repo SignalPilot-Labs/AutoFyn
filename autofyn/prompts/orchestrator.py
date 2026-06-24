@@ -29,6 +29,7 @@ def build_round_system_prompt(
         host_mounts=context.host_mounts,
         user_env_keys=context.user_env_keys,
         base_branch=context.base_branch,
+        sandbox_resources=context.sandbox_resources,
     )
     sections: list[str] = [body, env_block, load_markdown("query/git-rules")]
 
