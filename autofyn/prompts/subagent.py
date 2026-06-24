@@ -10,7 +10,7 @@ sandbox session endpoint expects under `options.agents`.
 The orchestrator calls these subagents by name via the SDK's Agent tool.
 """
 
-from config.constants import SubagentSpec
+from config.constants import SandboxResources, SubagentSpec
 from prompts.loader import load_markdown, render_environment
 from db.constants import SUPPORTED_SONNET
 from utils.constants import TIER_OPUS
@@ -61,6 +61,7 @@ def build_agent_defs(
     disabled_subagents: list[str] | None,
     subagent_specs: tuple[SubagentSpec, ...],
     repo_prompt_bodies: dict[str, str],
+    sandbox_resources: SandboxResources,
 ) -> dict[str, dict]:
     """Build subagent definitions for a single round.
 
@@ -79,6 +80,7 @@ def build_agent_defs(
         host_mounts=host_mounts,
         user_env_keys=user_env_keys,
         base_branch=base_branch,
+        sandbox_resources=sandbox_resources,
     )
     git_rules = load_markdown("query/git-rules")
     dispatch_rules = load_markdown("query/dispatch-rules")

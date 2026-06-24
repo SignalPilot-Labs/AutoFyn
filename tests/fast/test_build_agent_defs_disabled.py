@@ -4,9 +4,14 @@ A disabled agent must not appear in the SDK `options.agents` dict, so the
 orchestrator has no way to dispatch it. Enabled agents are unaffected.
 """
 
+from config.constants import SANDBOX_KIND_DOCKER, SandboxResources
 from config.loader import merge_subagents
 from db.constants import SUPPORTED_OPUS
 from prompts.subagent import build_agent_defs
+
+_TEST_RESOURCES = SandboxResources(
+    kind=SANDBOX_KIND_DOCKER, cpu_count=8, mem_limit_bytes=None,
+)
 
 
 def _defs(disabled: list[str] | None) -> dict[str, dict]:
@@ -20,6 +25,7 @@ def _defs(disabled: list[str] | None) -> dict[str, dict]:
         disabled_subagents=disabled,
         subagent_specs=merge_subagents(None),
         repo_prompt_bodies={},
+        sandbox_resources=_TEST_RESOURCES,
     )
 
 

@@ -88,6 +88,7 @@ async def _build_round_context(
         disabled_subagents=disabled_subagents,
         subagent_specs=bootstrap.subagent_config.specs,
         repo_prompt_bodies=bootstrap.subagent_config.bodies,
+        sandbox_resources=bootstrap.sandbox_resources,
     )
     return round_context, prior_reports
 
@@ -116,6 +117,7 @@ def _build_round_options(
         disabled_subagents=disabled_subagents,
         subagent_specs=round_context.subagent_specs,
         repo_prompt_bodies=round_context.repo_prompt_bodies,
+        sandbox_resources=round_context.sandbox_resources,
     )
     options["system_prompt"] = {
         "type": system_prompt["type"],
