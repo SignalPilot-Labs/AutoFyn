@@ -14,45 +14,39 @@ The agent talks to the remote sandbox exactly like a local one — same HTTP API
 
 ## Setup
 
-### 1. Create the AutoFyn work directory and install the sandbox image
+### 1. Install the sandbox image on the remote
 
-Pick a directory with enough storage for the sandbox image and agent work (cloned repos, installed packages, build artifacts). Use fast, high-capacity storage your cluster provides (scratch, local SSD, etc.). Avoid home directories — they're usually small and backed up.
-
-**Docker remote:**
+Install the AutoFyn CLI **on the remote machine** and let it pull the sandbox image for you. This is the recommended path — it handles the apptainer cache correctly (see the warning below) so you don't get a silently stale image.
 
 ```bash
-docker pull ghcr.io/signalpilot-labs/autofyn-sandbox:stable
+# On the remote machine — install the CLI (same as the local quick start):
+git clone https://github.com/SignalPilot-Labs/AutoFyn.git ~/.autofyn
+pip install ~/.autofyn/cli
+
+# HPC (Slurm / Apptainer):
+autofyn update --remote slurm --workdir <dir>  # choose where the SIF lives
+
+# Remote Docker host:
+autofyn update --remote docker                 # pulls into the local docker store
 ```
 
-**Slurm / Apptainer (HPC):**
+`--remote slurm` writes the SIF to `<workdir>/sandbox.sif` (default `~/scratch/autofyn`, remembered after the first run so you can omit `--workdir` next time). Each run creates a temporary overlay under `<workdir>/autofyn/runs/` and cleans it up when done; leftover `runs/` directories after a hard kill (SIGKILL, node crash) can be safely deleted.
+
+Pick a work dir on fast, high-capacity storage your cluster provides (scratch, local SSD). Avoid home directories — they're usually small, backed up, and may not mount on compute nodes.
+
+By default `--remote` installs the **stable** image. The author/testers can pull the nightly image with `--branch main`:
 
 ```bash
-ssh user@remote "source /etc/profile && module load apptainer && mkdir -p ~/scratch/autofyn && apptainer pull ~/scratch/autofyn/sandbox.sif docker://ghcr.io/signalpilot-labs/autofyn-sandbox:stable"
+autofyn update --remote slurm --branch main    # nightly sandbox image
 ```
-
-This creates `~/scratch/autofyn/` with the sandbox image inside. Each run will create a temporary subdirectory under `~/scratch/autofyn/runs/` for its overlay files, and clean it up when done. If a run is killed hard (SIGKILL, node crash), leftover directories in `runs/` can be safely deleted.
 
 #### Updating the sandbox image
 
-The remote SIF does **not** auto-update — it's a file on disk, decoupled from the agent. When you update AutoFyn (or pull a newer agent image), re-pull the SIF so the agent and sandbox stay in sync. A mismatched SIF (older than the agent) causes runs to fail at bootstrap.
+The remote sandbox image does **not** auto-update — it's decoupled from the agent. When you update AutoFyn, re-run the same `autofyn update --remote ...` command so the agent and sandbox stay in sync. A sandbox image older than the agent causes runs to fail at bootstrap.
 
-> **Important:** `apptainer pull --force` overwrites the `.sif` file but **rebuilds it from apptainer's local layer cache** — so it can silently produce a *stale* image even with `--force`. To get a genuinely fresh image you must clear the cache first:
+> **Why use the CLI:** `apptainer pull --force` overwrites the `.sif` file but **rebuilds it from apptainer's local layer cache**, so a manual pull can silently produce a *stale* image even with `--force`. `autofyn update --remote slurm` runs `apptainer cache clean -f` first, every time, so you always get a genuinely fresh image.
 
-```bash
-ssh user@remote "source /etc/profile && module load apptainer && \
-  apptainer cache clean -f && \
-  apptainer pull --force ~/scratch/autofyn/sandbox.sif docker://ghcr.io/signalpilot-labs/autofyn-sandbox:stable"
-```
-
-Verify the freshly-pulled SIF actually serves the expected `/health` payload before starting a run (the agent reads `resources` from it at bootstrap; an older SIF omits the field and the run fails):
-
-```bash
-ssh user@remote "apptainer exec ~/scratch/autofyn/sandbox.sif grep -c 'resources' /opt/autofyn/api/health.py"
-```
-
-A non-zero count means the resource-reporting handler is present. If it prints `0`, the cache didn't clear — remove `~/.apptainer/cache` and pull again.
-
-If the pull fails on a login node with `mksquashfs: FATAL ERROR: Failed to create thread`, run it inside an interactive job instead — see Troubleshooting below.
+If the pull fails on a login node with `mksquashfs: FATAL ERROR: Failed to create thread`, run it inside an interactive job instead — the CLI prints this hint, and see Troubleshooting below.
 
 ### 2. Ensure SSH access
 
@@ -159,5 +153,5 @@ Startup log lines (srun output, server boot, etc.) are stored in the audit log b
 
 **`mksquashfs: FATAL ERROR: Failed to create thread` during `apptainer pull`:**
 - The login node has a low thread/process limit (`ulimit -u`). `mksquashfs` cannot create worker threads even with `MKSQUASHFS_PROCS=1`.
-- Run the pull inside an interactive job instead: `srun --pty --mem=8G --time=00:30:00 bash -c 'source /etc/profile && module load apptainer && MKSQUASHFS_PROCS=1 apptainer pull --force ~/scratch/autofyn/sandbox.sif docker://ghcr.io/signalpilot-labs/autofyn-sandbox:stable'`
+- Run the update inside an interactive job instead: `srun --pty --mem=8G --time=00:30:00 autofyn update --remote slurm`
 - Compute nodes have higher thread limits than login nodes

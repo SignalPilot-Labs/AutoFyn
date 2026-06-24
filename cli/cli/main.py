@@ -6,7 +6,7 @@ from typing import Optional
 
 import typer
 
-from cli.commands import agent, config, repos, run, services, settings
+from cli.commands import agent, config, remote as remote_cmd, repos, run, services, settings
 from cli.config import state
 from cli.constants import DEFAULT_LOG_TAIL_LINES
 
@@ -81,6 +81,8 @@ def update(
     branch: Optional[str] = typer.Option(None, "--branch", metavar="<branch>", help="Switch to branch before updating (e.g. main, production)"),
     image_tag: Optional[str] = typer.Option(None, "--image-tag", metavar="<tag>", help="Override image tag (e.g. stable, nightly, abc1234)"),
     build: bool = typer.Option(False, "--build", help="Force local image build, skip pulling pre-built images"),
+    remote: Optional[str] = typer.Option(None, "--remote", metavar="<docker|slurm>", help="Update only the sandbox image on THIS remote machine (run on the remote after `pip install autofyn-cli`)"),
+    workdir: Optional[str] = typer.Option(None, "--workdir", metavar="<dir>", help="Slurm only: dir holding the SIF (default ~/scratch/autofyn; remembered after first use)"),
 ) -> None:
     """Pull latest code and Docker images. Builds locally if no pre-built image exists.
 
@@ -91,12 +93,25 @@ def update(
       other      → builds locally
 
     \b
+    With --remote, runs on the remote machine and updates ONLY its sandbox
+    image (no git, no Docker stack). --branch main selects the nightly
+    image; otherwise stable. The Slurm SIF goes to <workdir>/sandbox.sif.
+
+    \b
     Examples:
-      autofyn update                        # Update current branch
+      autofyn update                        # Update local stack (current branch)
       autofyn update --branch main          # Switch to main, pull nightly images
       autofyn update --image-tag abc1234    # Pin to specific image version
       autofyn update --build                # Force local build
+      autofyn update --remote slurm         # On HPC: refresh the sandbox SIF
+      autofyn update --remote docker        # On a remote docker host: pull image
     """
+    if remote is not None:
+        if image_tag is not None or build:
+            typer.echo("Error: --remote cannot be combined with --image-tag or --build", err=True)
+            raise typer.Exit(code=1)
+        remote_cmd.update_remote_sandbox(remote, branch, workdir)
+        return
     if build and image_tag is not None:
         typer.echo("Error: --build and --image-tag are mutually exclusive", err=True)
         raise typer.Exit(code=1)
