@@ -73,13 +73,21 @@ class SubagentTracker:
             self._tool_started_at[key] = now
 
     def record_tool_done(self, agent_id: str | None) -> None:
-        """Mark one tool finished.
+        """Mark one tool finished and reset the idle clock.
+
+        The idle clock (_last_tool_at) is refreshed on completion, not only
+        on start, so a single tool that runs longer than
+        subagent_idle_kill_sec is not flagged stuck the instant it returns.
+        "Idle" must mean time since the last tool finished — genuine
+        idleness — not time since it started.
 
         When agent_id is None the tool belongs to the orchestrator itself.
         """
         key = agent_id if agent_id and agent_id in self._started_at else ORCHESTRATOR_ID
         if key not in self._tools_in_flight:
             return
+        if key != ORCHESTRATOR_ID:
+            self._last_tool_at[key] = time.time()
         self._tools_in_flight[key] = max(0, self._tools_in_flight[key] - 1)
         if self._tools_in_flight[key] == 0:
             self._tool_started_at.pop(key, None)
