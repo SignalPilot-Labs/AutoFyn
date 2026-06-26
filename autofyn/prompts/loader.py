@@ -70,6 +70,25 @@ def render_time_status(
     )
 
 
+def render_subagent_budget(
+    budget_min: int,
+    round_number: int,
+) -> str:
+    """Render `query/subagent-budget.md` — a subagent is one tool call for the
+    orchestrator, so its wall-clock budget is the tool-call timeout.
+
+    No timestamp is baked in: the prompt is built once at round-start, long
+    before the subagent spawns, so any absolute time would be stale. Instead
+    the subagent stamps its own start with `date -u` (it always has Bash).
+    """
+    template = load_markdown("query/subagent-budget")
+    return (
+        template
+        .replace("{BUDGET_MIN}", str(budget_min))
+        .replace("{ROUND_NUMBER}", str(round_number))
+    )
+
+
 def render_environment(
     round_number: int,
     tool_call_timeout_min: int,
