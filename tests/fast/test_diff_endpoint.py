@@ -6,6 +6,8 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from fastapi import HTTPException
 
+from db.constants import RUN_STATUS_COMPLETED, RUN_STATUS_RUNNING
+
 
 SAMPLE_DIFF_STATS = [
     {"path": "src/main.py", "added": 10, "removed": 2, "status": "modified"},
@@ -81,6 +83,7 @@ def run_record() -> MagicMock:
     """Minimal Run model stand-in — only the fields get_run_diff reads."""
     r = MagicMock()
     r.diff_stats = None
+    r.status = RUN_STATUS_RUNNING
     return r
 
 
@@ -99,13 +102,17 @@ def db_session(monkeypatch: pytest.MonkeyPatch, run_record: MagicMock):
 
 
 class TestGetRunDiffLivePath:
-    """get_run_diff must translate agent /diff/repo/stats outcomes cleanly."""
+    """get_run_diff returns a source marker only — the file list and line
+    counts are parsed from the /diff/repo blob by the frontend, never fetched
+    as a second, drift-prone stat set. So this endpoint must NEVER call the
+    agent for live runs; it reads the run status from the DB and nothing more.
+    """
 
     @pytest.mark.asyncio
     async def test_stored_stats_short_circuit(
         self, monkeypatch: pytest.MonkeyPatch, db_session, run_record: MagicMock,
     ) -> None:
-        # If DB has stored stats, we never call the agent.
+        # If DB has stored stats, those authoritative counts win.
         run_record.diff_stats = SAMPLE_DIFF_STATS
         agent = AsyncMock()
         monkeypatch.setattr(runs, "agent_request", agent)
@@ -115,41 +122,34 @@ class TestGetRunDiffLivePath:
         assert result["total_files"] == 2
 
     @pytest.mark.asyncio
-    async def test_live_path_returns_source_live(
+    async def test_active_run_returns_source_live_no_files(
         self, monkeypatch: pytest.MonkeyPatch, db_session, run_record: MagicMock,
     ) -> None:
+        # Active run, no stored stats: source is "live" with an empty file
+        # list. Membership comes from the diff blob, not this endpoint.
         run_record.diff_stats = None
-        agent = AsyncMock(return_value={"files": SAMPLE_DIFF_STATS})
+        run_record.status = RUN_STATUS_RUNNING
+        agent = AsyncMock()
         monkeypatch.setattr(runs, "agent_request", agent)
         result = await runs.get_run_diff("run-1")
+        agent.assert_not_called()
         assert result["source"] == "live"
-        assert result["total_files"] == 2
-        assert result["total_added"] == 35
-        assert result["total_removed"] == 2
-
-    @pytest.mark.asyncio
-    async def test_agent_409_maps_to_unavailable(
-        self, monkeypatch: pytest.MonkeyPatch, db_session, run_record: MagicMock,
-    ) -> None:
-        # 409 == no live sandbox. Dashboard must NOT surface this as an error.
-        run_record.diff_stats = None
-        agent = AsyncMock(side_effect=HTTPException(status_code=409, detail="No active sandbox for run"))
-        monkeypatch.setattr(runs, "agent_request", agent)
-        result = await runs.get_run_diff("run-1")
-        assert result["source"] == "unavailable"
+        assert result["files"] == []
         assert result["total_files"] == 0
 
     @pytest.mark.asyncio
-    async def test_agent_502_propagates(
+    async def test_terminal_run_without_stats_is_unavailable(
         self, monkeypatch: pytest.MonkeyPatch, db_session, run_record: MagicMock,
     ) -> None:
-        # Agent-down must NOT be collapsed into 'unavailable' — distinct signal.
+        # Terminal run with no stored stats: sandbox is gone, so "unavailable".
         run_record.diff_stats = None
-        agent = AsyncMock(side_effect=HTTPException(status_code=502, detail="Agent service unavailable"))
+        run_record.status = RUN_STATUS_COMPLETED
+        agent = AsyncMock()
         monkeypatch.setattr(runs, "agent_request", agent)
-        with pytest.raises(HTTPException) as exc_info:
-            await runs.get_run_diff("run-1")
-        assert exc_info.value.status_code == 502
+        result = await runs.get_run_diff("run-1")
+        agent.assert_not_called()
+        assert result["source"] == "unavailable"
+        assert result["total_files"] == 0
 
 
 class TestGetDiffRepoBranchGating:

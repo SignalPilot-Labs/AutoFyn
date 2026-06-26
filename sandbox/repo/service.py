@@ -42,7 +42,6 @@ class RepoService:
         save(message)        → dict
         teardown(body)       → dict
         diff()               → str
-        diff_stats()         → list[dict]
     """
 
     def __init__(self) -> None:
@@ -154,11 +153,6 @@ class RepoService:
                 content_type="application/json",
             )
         return result.stdout
-
-    async def diff_stats(self) -> list[dict]:
-        """Per-file diff stats including uncommitted working tree changes."""
-        s = self.state
-        return await self._worktree_diff(s.base_sha)
 
     # ── Private: bootstrap helpers ────────────────────────────────────
 
@@ -360,10 +354,6 @@ class RepoService:
     async def _branch_diff(self) -> list[dict]:
         """File-level diff stats between working branch and base SHA."""
         return await self._diff_stats(self.state.base_sha, self.state.working_branch)
-
-    async def _worktree_diff(self, base_sha: str) -> list[dict]:
-        """File-level diff stats including uncommitted working tree changes."""
-        return await self._diff_stats(base_sha, None)
 
     async def _create_or_update_pr(
         self, title: str, description: str, base: str,

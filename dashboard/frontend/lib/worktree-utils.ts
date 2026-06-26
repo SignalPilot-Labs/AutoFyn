@@ -226,28 +226,55 @@ export function parseTmpDiffStats(
   return out;
 }
 
+/* ── Parse a repo unified diff into per-file stats ──
+ *
+ * Single source of truth for the live Changes panel: the file list and the
+ * per-file patch bodies are derived from the SAME diff string. Walking the
+ * sections here exactly mirrors `extractFilePatch` in diff-utils, so every
+ * path this returns is guaranteed to resolve to a patch when clicked — they
+ * can never drift, because there is no second source to drift from.
+ *
+ * Status is read from the section body markers ("new file"/"deleted file"/
+ * "rename to"), defaulting to "modified". Line counts come from the body's
+ * +/- lines, ignoring the +++/--- file headers.
+ */
+export function parseRepoDiffStats(fullDiff: string): DiffFile[] {
+  const out: DiffFile[] = [];
+  const sections = fullDiff.split("\ndiff --git ");
+  for (let i = 0; i < sections.length; i++) {
+    let s = sections[i];
+    if (i === 0 && s.startsWith("diff --git ")) s = s.slice("diff --git ".length);
+    else if (i === 0) continue;
+    const nl = s.indexOf("\n");
+    if (nl === -1) continue;
+    const header = s.slice(0, nl);
+    const bIdx = header.lastIndexOf(" b/");
+    if (bIdx === -1) continue;
+    const path = header.slice(bIdx + 3);
+    if (path.startsWith("tmp/")) continue;
+    const body = s.slice(nl + 1);
+    let added = 0;
+    let removed = 0;
+    for (const line of body.split("\n")) {
+      if (line.startsWith("+") && !line.startsWith("+++")) added++;
+      else if (line.startsWith("-") && !line.startsWith("---")) removed++;
+    }
+    out.push({ path, added, removed, status: _statusFromSection(body) });
+  }
+  return out;
+}
+
+/* ── Classify a diff section by its body markers ── */
+function _statusFromSection(body: string): DiffFile["status"] {
+  if (body.startsWith("new file")) return "added";
+  if (body.startsWith("deleted file")) return "deleted";
+  if (body.startsWith("rename ") || body.includes("\nrename to ")) return "renamed";
+  return "modified";
+}
+
 /* ── Merge two trees — session wins on path conflict ── */
 export function mergeTrees(git: TreeNode, session: TreeNode): TreeNode {
   return _mergeDir(git, session);
-}
-
-/* ── Resolve the session-side tree for the Changes panel ──
- *
- * liveTree (from Write tool-call events) marks everything "modified".
- * tmpTree (from the tmp/round-N patch sections) marks round files
- * "added". For files that appear in both, tmpTree wins so the user
- * sees the correct `A` classification — otherwise the live event
- * would clobber it. When only one side is populated, return that side.
- */
-export function resolveSessionTree(
-  liveTree: TreeNode,
-  tmpTree: TreeNode | null,
-): TreeNode | null {
-  const hasLive = liveTree.children.size > 0;
-  if (tmpTree && hasLive) return mergeTrees(liveTree, tmpTree);
-  if (tmpTree) return tmpTree;
-  if (hasLive) return liveTree;
-  return null;
 }
 
 function _mergeDir(git: TreeNode, session: TreeNode): TreeNode {
