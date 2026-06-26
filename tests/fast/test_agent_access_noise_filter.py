@@ -43,11 +43,6 @@ class TestAgentAccessNoiseFilter:
         record = self._make_record('GET /diff/tmp?run_id=abc HTTP/1.1" 200 OK')
         assert f.filter(record) is False
 
-    def test_blocks_diff_stats(self) -> None:
-        f = AccessNoiseFilter()
-        record = self._make_record('GET /diff/repo/stats?run_id=abc HTTP/1.1" 200 OK')
-        assert f.filter(record) is False
-
     def test_allows_other_requests(self) -> None:
         f = AccessNoiseFilter()
         record = self._make_record('POST /start HTTP/1.1" 200 OK')

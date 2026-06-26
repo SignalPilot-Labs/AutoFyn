@@ -12,7 +12,7 @@ import {
   buildTreeFromChanges,
   mergeTrees,
   parseTmpDiffStats,
-  resolveSessionTree,
+  parseRepoDiffStats,
 } from "@/lib/worktree-utils";
 import type { TreeNode } from "@/lib/worktree-utils";
 import {
@@ -158,13 +158,11 @@ function NodeItem({
 }
 
 /* ── Source Badge ── */
-// Only two meaningful states now that the sandbox's /diff/repo/stats diffs
-// the working tree (so uncommitted edits are visible immediately): "live"
-// for anything coming out of an active sandbox session, and "git" for the
-// stored diff persisted at teardown. The previous "session" fallback —
-// triggered when we had content from the event stream but not yet from
-// git — is dead: worktree diff makes that a race that resolves in <poll
-// interval. Keeping only the two real states.
+// Two states: "live" for content from an active sandbox session (the working
+// -tree diff blob, which includes uncommitted edits immediately), and "git"
+// for the diff persisted in the DB at teardown. The file list is parsed from
+// the same blob the viewer reads, so there's no separate "session" fallback
+// state — the tree and the bodies are one source.
 type DisplaySource = "diff-live" | "diff-stored" | null;
 
 function SourceBadge({ source }: { source: DisplaySource }) {
@@ -342,20 +340,25 @@ export function WorkTree({ events, runId, runStatus }: WorkTreeProps) {
     return () => clearTimeout(t);
   }, [runId, isRefreshSource, liveWriteCount, refetchDiff]);
 
-  const liveTree = useMemo(() => {
-    const tmpLive = liveChanges.filter(c => c.path.startsWith("tmp/"));
-    const repoLive = liveChanges.filter(c => !c.path.startsWith("tmp/"));
-    return mergeTrees(
-      buildTreeFromChanges(repoLive, null),
-      buildTreeFromChanges(tmpLive, "added"),
-    );
-  }, [liveChanges]);
+  // Repo diff stats — parsed from the SAME blob the file viewer searches.
+  // For stored (terminal) runs the blob comes from GitHub and diffData
+  // carries the authoritative DB stats; for live runs the blob is the git
+  // working-tree diff and is the single source of truth. Either way, every
+  // path here is guaranteed to resolve in `repoDiff` when clicked.
+  const repoStats = useMemo(
+    () => (repoDiff ? parseRepoDiffStats(repoDiff) : []),
+    [repoDiff],
+  );
 
-  // Git diff tree (from stats endpoint)
-  const diffTree = useMemo(() => diffData?.files ? buildTreeFromDiff(diffData.files) : null, [diffData]);
+  // Git diff tree, built from the parsed blob stats. Replaces the old
+  // separate-endpoint tree so list and body can never drift.
+  const diffTree = useMemo(
+    () => (repoStats.length > 0 ? buildTreeFromDiff(repoStats) : null),
+    [repoStats],
+  );
 
-  // Tmp tree: parsed from the dedicated /diff/tmp source. Authoritative
-  // for line counts (liveTree only knows what Write events reported).
+  // Tmp tree: parsed from the dedicated /diff/tmp source — the same blob
+  // routed to the file viewer for tmp/ paths, so it too cannot drift.
   const tmpTree = useMemo(() => {
     if (!tmpDiff) return null;
     const tmpChanges = parseTmpDiffStats(tmpDiff);
@@ -370,21 +373,23 @@ export function WorkTree({ events, runId, runStatus }: WorkTreeProps) {
     );
   }, [tmpDiff]);
 
-  const hasGitDiff = diffData !== null && diffData.files.length > 0;
+  const hasGitDiff = diffTree !== null;
+  // writeChanges (SSE events) still gate the empty-state and refresh, but
+  // they no longer feed the clickable tree — a file becomes clickable only
+  // once its patch is in a blob we hold.
   const hasLiveChanges = writeChanges.length > 0;
   const hasTmpFiles = tmpTree !== null;
-  const hasContent = hasGitDiff || hasLiveChanges || hasTmpFiles;
+  const hasContent = hasGitDiff || hasTmpFiles;
 
-  // Merged tree: git diff + session (liveTree ⊕ tmpTree). Session wins
-  // over git on conflict; resolveSessionTree handles the internal
-  // liveTree-vs-tmpTree conflict so round-N files keep their 'added' status.
+  // Merged tree: repo diff ⊕ tmp diff. Both sides are derived from the diff
+  // blobs the file viewer reads, so every node resolves to a patch. Event-
+  // derived files are intentionally excluded — they have no patch body yet.
   const mergedTree = useMemo(() => {
-    const sessionTree = resolveSessionTree(liveTree, tmpTree);
-    if (!diffTree && !sessionTree) return null;
-    if (!diffTree) return sessionTree;
-    if (!sessionTree) return diffTree;
-    return mergeTrees(diffTree, sessionTree);
-  }, [diffTree, liveTree, tmpTree]);
+    if (!diffTree && !tmpTree) return null;
+    if (!diffTree) return tmpTree;
+    if (!tmpTree) return diffTree;
+    return mergeTrees(diffTree, tmpTree);
+  }, [diffTree, tmpTree]);
 
   const mergedRoots = useMemo(() => {
     if (!mergedTree) return [];
@@ -412,8 +417,14 @@ export function WorkTree({ events, runId, runStatus }: WorkTreeProps) {
     return count;
   }, [mergedTree]);
 
-  // Stats bar (git diff stats when available)
-  const showDiffStats = hasGitDiff && diffData && (diffData.total_added > 0 || diffData.total_removed > 0);
+  // Stats bar totals, summed from the parsed repo blob so the numbers match
+  // the tree exactly (same source). Tmp files are "new file" additions with
+  // no removals; they're counted in headerFileCount, not the +/- bar.
+  const diffTotals = useMemo(() => ({
+    added: repoStats.reduce((n, f) => n + f.added, 0),
+    removed: repoStats.reduce((n, f) => n + f.removed, 0),
+  }), [repoStats]);
+  const showDiffStats = hasGitDiff && (diffTotals.added > 0 || diffTotals.removed > 0);
 
   // Empty state reason
   const emptyReason: EmptyReason = (() => {
@@ -437,10 +448,10 @@ export function WorkTree({ events, runId, runStatus }: WorkTreeProps) {
   const isFileSourceTooLarge = (path: string): boolean =>
     path.startsWith("tmp/") ? tmpTooLarge : repoTooLarge;
 
-  // Always allow clicking files when the tree has content. Diff bodies
-  // load async and may arrive after the tree renders — gating clicks on
-  // body availability caused files to appear unclickable on first load.
-  // FileDiffViewer handles the missing-body case with a loading state.
+  // Every tree node was parsed from the blob `diffForPath` returns, so a
+  // click is guaranteed to resolve to a patch — there is no separate file
+  // list that can name a path the blob lacks. Clickable whenever the tree
+  // has content.
   const onFileClick = hasContent
     ? (path: string, status: string) => setSelectedFile({ path, status })
     : null;
@@ -462,11 +473,11 @@ export function WorkTree({ events, runId, runStatus }: WorkTreeProps) {
       </div>
 
       {/* Diff stats bar */}
-      {showDiffStats && diffData && (
+      {showDiffStats && (
         <div className="flex items-center gap-3 px-3 py-1.5 border-b border-border/60 text-meta text-text-secondary">
-          <span>{diffData.total_files} files changed</span>
-          {diffData.total_added > 0 && <span className="text-[#00ff88]/70">+{diffData.total_added}</span>}
-          {diffData.total_removed > 0 && <span className="text-[#ff4444]/70">-{diffData.total_removed}</span>}
+          <span>{headerFileCount} files changed</span>
+          {diffTotals.added > 0 && <span className="text-[#00ff88]/70">+{diffTotals.added}</span>}
+          {diffTotals.removed > 0 && <span className="text-[#ff4444]/70">-{diffTotals.removed}</span>}
         </div>
       )}
 

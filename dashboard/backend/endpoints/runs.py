@@ -299,38 +299,32 @@ def _stats_response(files: list, source: str) -> dict:
 
 @router.get("/runs/{run_id}/diff")
 async def get_run_diff(run_id: str = RunId) -> dict:
-    """Diff stats for a run.
+    """Source marker (+ stored stats) for a run's Changes panel.
 
-    Stored (post-teardown) `run.diff_stats` wins when present. For live
-    runs mid-execution, teardown hasn't fired yet — call the agent's
-    cheap `/diff/repo/stats` endpoint instead (counts only, no diff body
-    transfer) and return `source: "live"`.
+    Stored (post-teardown) `run.diff_stats` wins when present — those are
+    the authoritative DB-persisted counts for a completed run.
+
+    For live runs the frontend derives the file list and line counts by
+    parsing the full diff blob from `/runs/{id}/diff/repo` — the SAME bytes
+    the file viewer searches — so the list and bodies can never drift. This
+    endpoint therefore returns only the `source` marker (and an empty file
+    list) for live runs, never a second, independently-fetched stat set.
+
+    `source` values: "stored" (terminal, DB stats), "live" (active sandbox),
+    "unavailable" (active but sandbox gone / not yet bootstrapped).
     """
     async with session() as s:
         run = await s.get(Run, run_id)
         if not run:
             raise HTTPException(status_code=404, detail="Run not found")
         diff_stats = run.diff_stats
+        run_status = run.status
 
     if diff_stats:
         return _stats_response(diff_stats, "stored")
 
-    # Live-run path: pull stats-only from the agent. Agent errors raise
-    # HTTPException (distinct failure mode from "no diff yet"); 409 means
-    # the sandbox is gone and there's nothing to fetch.
-    try:
-        result: dict = await agent_request(
-            "GET", "/diff/repo/stats", AGENT_TIMEOUT_SHORT,
-            None,
-            {"run_id": run_id},
-            None,  # no fallback: agent errors must surface, not masquerade as empty
-            extra_headers=None,
-        )
-    except HTTPException as exc:
-        if exc.status_code == 409:
-            return _stats_response([], "unavailable")
-        raise
-    return _stats_response(list(result["files"]), "live")
+    source = "live" if run_status in ACTIVE_RUN_STATUSES else "unavailable"
+    return _stats_response([], source)
 
 
 @router.get("/runs/{run_id}/diff/repo")

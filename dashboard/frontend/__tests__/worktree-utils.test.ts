@@ -6,8 +6,9 @@ import {
   buildTreeFromChanges,
   mergeTrees,
   parseTmpDiffStats,
-  resolveSessionTree,
+  parseRepoDiffStats,
 } from "@/lib/worktree-utils";
+import { extractFilePatch } from "@/lib/diff-utils";
 
 describe("norm", () => {
   it("strips /home/agentuser/repo/ prefix", () => {
@@ -238,96 +239,34 @@ describe("mergeTrees", () => {
   });
 });
 
-describe("mergeTrees tmpTree vs liveTree status preservation", () => {
-  // Regression for the bug where Write tool-call events populated liveTree
-  // with status "modified" for tmp/round-N files and clobbered the "added"
-  // classification that tmpTree assigned via forcedStatus.
-  it("preserves 'added' status from tmpTree when liveTree has same path as 'modified'", () => {
-    const liveTree = buildTreeFromChanges([
-      { path: "tmp/round-1/architect.md", action: "write", linesAdded: 10, linesRemoved: 0, timestamp: "t1", toolCallId: 1, toolName: "Write" },
-    ], null);
+describe("mergeTrees diffTree ⊕ tmpTree", () => {
+  // WorkTree merges the repo diff tree with the tmp tree. The tmp side (status
+  // "added" via forcedStatus) must win on a path conflict so round files keep
+  // their 'A' badge.
+  it("preserves 'added' status from tmpTree on a path conflict", () => {
+    const diffTree = buildTreeFromDiff([
+      { path: "tmp/round-1/architect.md", added: 10, removed: 0, status: "modified" },
+    ]);
     const tmpTree = buildTreeFromChanges([
       { path: "tmp/round-1/architect.md", action: "edit", linesAdded: 10, linesRemoved: 0, timestamp: "t", toolCallId: 0, toolName: "Archive" },
     ], "added");
 
-    const merged = mergeTrees(liveTree, tmpTree);
+    const merged = mergeTrees(diffTree, tmpTree);
     const leaf = merged.children.get("tmp")!.children.get("round-1")!.children.get("architect.md")!;
     expect(leaf.status).toBe("added");
   });
 
-  it("keeps liveTree entries that are not in tmpTree", () => {
-    const liveTree = buildTreeFromChanges([
-      { path: "src/code.ts", action: "edit", linesAdded: 3, linesRemoved: 1, timestamp: "t1", toolCallId: 1, toolName: "Edit" },
-    ], null);
+  it("keeps repo entries that are not in tmpTree", () => {
+    const diffTree = buildTreeFromDiff([
+      { path: "src/code.ts", added: 3, removed: 1, status: "modified" },
+    ]);
     const tmpTree = buildTreeFromChanges([
       { path: "tmp/round-1/plan.md", action: "edit", linesAdded: 5, linesRemoved: 0, timestamp: "t", toolCallId: 0, toolName: "Archive" },
     ], "added");
 
-    const merged = mergeTrees(liveTree, tmpTree);
+    const merged = mergeTrees(diffTree, tmpTree);
     expect(merged.children.has("src")).toBe(true);
     expect(merged.children.has("tmp")).toBe(true);
-  });
-});
-
-describe("liveTree + tmpTree forced-status partitioning", () => {
-  // Mirrors the partition WorkTree.tsx does: tmp/round-N changes go into a
-  // tree forced to "added", everything else into a tree with default status.
-  // Pins that if /diff/tmp fetch is racing, the user still sees 'A' on tmp
-  // files because the liveTree half already classified them correctly.
-  it("forces 'added' on tmp/round-N live writes even without tmpTree", () => {
-    const changes = [
-      { path: "src/main.ts", action: "edit" as const, linesAdded: 1, linesRemoved: 0, timestamp: "t1", toolCallId: 1, toolName: "Edit" },
-      { path: "tmp/round-1/plan.md", action: "write" as const, linesAdded: 5, linesRemoved: 0, timestamp: "t2", toolCallId: 2, toolName: "Write" },
-    ];
-    const tmpLive = changes.filter(c => c.path.startsWith("tmp/round-"));
-    const repoLive = changes.filter(c => !c.path.startsWith("tmp/round-"));
-    const liveTree = mergeTrees(
-      buildTreeFromChanges(repoLive, null),
-      buildTreeFromChanges(tmpLive, "added"),
-    );
-    const srcLeaf = liveTree.children.get("src")!.children.get("main.ts")!;
-    const tmpLeaf = liveTree.children.get("tmp")!.children.get("round-1")!.children.get("plan.md")!;
-    expect(srcLeaf.status).toBe("modified");
-    expect(tmpLeaf.status).toBe("added");
-  });
-});
-
-describe("resolveSessionTree", () => {
-  const emptyRoot = () =>
-    buildTreeFromChanges([], null);
-
-  const singleLive = () =>
-    buildTreeFromChanges([
-      { path: "src/a.ts", action: "edit", linesAdded: 1, linesRemoved: 0, timestamp: "t", toolCallId: 1, toolName: "Edit" },
-    ], null);
-
-  const singleTmp = () =>
-    buildTreeFromChanges([
-      { path: "tmp/round-1/plan.md", action: "edit", linesAdded: 2, linesRemoved: 0, timestamp: "t", toolCallId: 0, toolName: "Archive" },
-    ], "added");
-
-  it("returns null when both sides empty", () => {
-    expect(resolveSessionTree(emptyRoot(), null)).toBeNull();
-  });
-
-  it("returns liveTree when tmpTree is null", () => {
-    const live = singleLive();
-    expect(resolveSessionTree(live, null)).toBe(live);
-  });
-
-  it("returns tmpTree when liveTree has no children", () => {
-    const tmp = singleTmp();
-    expect(resolveSessionTree(emptyRoot(), tmp)).toBe(tmp);
-  });
-
-  it("merges so tmpTree wins on path conflict", () => {
-    const live = buildTreeFromChanges([
-      { path: "tmp/round-1/plan.md", action: "write", linesAdded: 2, linesRemoved: 0, timestamp: "t1", toolCallId: 1, toolName: "Write" },
-    ], null);
-    const tmp = singleTmp();
-    const merged = resolveSessionTree(live, tmp);
-    const leaf = merged!.children.get("tmp")!.children.get("round-1")!.children.get("plan.md")!;
-    expect(leaf.status).toBe("added");
   });
 });
 
@@ -412,29 +351,90 @@ describe("parseTmpDiffStats", () => {
   });
 });
 
-describe("tmp/ partition logic (mirrors WorkTree.tsx liveTree split)", () => {
-  it("tmp/ files (including run_state.md) partition into tmpLive, not repoLive", () => {
-    const changes = [
-      { path: "tmp/run_state.md", action: "write" as const, linesAdded: 5, linesRemoved: 0, timestamp: "t1", toolCallId: 1, toolName: "Write" },
-      { path: "tmp/round-1/plan.md", action: "write" as const, linesAdded: 3, linesRemoved: 0, timestamp: "t2", toolCallId: 2, toolName: "Write" },
-      { path: "src/main.ts", action: "edit" as const, linesAdded: 1, linesRemoved: 0, timestamp: "t3", toolCallId: 3, toolName: "Edit" },
-    ];
-    const tmpLive = changes.filter(c => c.path.startsWith("tmp/"));
-    const repoLive = changes.filter(c => !c.path.startsWith("tmp/"));
-    expect(tmpLive.map(c => c.path)).toContain("tmp/run_state.md");
-    expect(tmpLive.map(c => c.path)).toContain("tmp/round-1/plan.md");
-    expect(repoLive.map(c => c.path)).toContain("src/main.ts");
-    expect(repoLive.map(c => c.path)).not.toContain("tmp/run_state.md");
+describe("parseRepoDiffStats", () => {
+  // A realistic working-tree diff: one modified, one new, one deleted file.
+  const SAMPLE_DIFF = [
+    "diff --git a/src/main.py b/src/main.py",
+    "index 1111111..2222222 100644",
+    "--- a/src/main.py",
+    "+++ b/src/main.py",
+    "@@ -1,3 +1,4 @@",
+    " import os",
+    "-old_line",
+    "+new_line_one",
+    "+new_line_two",
+    "diff --git a/src/new.py b/src/new.py",
+    "new file mode 100644",
+    "index 0000000..3333333",
+    "--- /dev/null",
+    "+++ b/src/new.py",
+    "@@ -0,0 +1,2 @@",
+    "+brand new",
+    "+second line",
+    "diff --git a/src/gone.py b/src/gone.py",
+    "deleted file mode 100644",
+    "index 4444444..0000000",
+    "--- a/src/gone.py",
+    "+++ /dev/null",
+    "@@ -1,1 +0,0 @@",
+    "-was here",
+  ].join("\n");
 
-    const liveTree = mergeTrees(
-      buildTreeFromChanges(repoLive, null),
-      buildTreeFromChanges(tmpLive, "added"),
-    );
-    const runStateLeaf = liveTree.children.get("tmp")!.children.get("run_state.md")!;
-    const plan = liveTree.children.get("tmp")!.children.get("round-1")!.children.get("plan.md")!;
-    const src = liveTree.children.get("src")!.children.get("main.ts")!;
-    expect(runStateLeaf.status).toBe("added");
-    expect(plan.status).toBe("added");
-    expect(src.status).toBe("modified");
+  it("returns empty for an empty diff", () => {
+    expect(parseRepoDiffStats("")).toEqual([]);
+  });
+
+  it("parses path, status, and +/- counts for every file", () => {
+    expect(parseRepoDiffStats(SAMPLE_DIFF)).toEqual([
+      { path: "src/main.py", added: 2, removed: 1, status: "modified" },
+      { path: "src/new.py", added: 2, removed: 0, status: "added" },
+      { path: "src/gone.py", added: 0, removed: 1, status: "deleted" },
+    ]);
+  });
+
+  it("does not count the +++/--- file headers as added/removed lines", () => {
+    const [main] = parseRepoDiffStats(SAMPLE_DIFF);
+    // body has -old_line / +new_line_one / +new_line_two only
+    expect(main.added).toBe(2);
+    expect(main.removed).toBe(1);
+  });
+
+  it("excludes tmp/ paths (those come from the dedicated tmp source)", () => {
+    const diff = [
+      "diff --git a/tmp/round-1/plan.md b/tmp/round-1/plan.md",
+      "new file mode 100644",
+      "+++ b/tmp/round-1/plan.md",
+      "@@ -0,0 +1,1 @@",
+      "+note",
+    ].join("\n");
+    expect(parseRepoDiffStats(diff)).toEqual([]);
+  });
+
+  // The whole reason this design exists: the file list the user clicks on is
+  // PARSED FROM the exact blob the viewer searches. So for every path the
+  // parser surfaces, extractFilePatch on the SAME blob must return a patch.
+  // They can never drift because there is only one source.
+  it("single-source invariant: every parsed path resolves via extractFilePatch", () => {
+    const stats = parseRepoDiffStats(SAMPLE_DIFF);
+    expect(stats.length).toBeGreaterThan(0);
+    for (const f of stats) {
+      const patch = extractFilePatch(SAMPLE_DIFF, f.path);
+      expect(patch, `no patch for ${f.path}`).not.toBeNull();
+    }
+  });
+
+  it("single-source invariant holds for the merged tree the panel renders", () => {
+    const diffTree = buildTreeFromDiff(parseRepoDiffStats(SAMPLE_DIFF));
+    // Walk every leaf path and confirm it resolves in the blob.
+    const paths: string[] = [];
+    const walk = (node: typeof diffTree) => {
+      if (!node.isDir && node.fullPath) paths.push(node.fullPath);
+      node.children.forEach(walk);
+    };
+    diffTree.children.forEach(walk);
+    expect(paths.sort()).toEqual(["src/gone.py", "src/main.py", "src/new.py"]);
+    for (const p of paths) {
+      expect(extractFilePatch(SAMPLE_DIFF, p), `no patch for ${p}`).not.toBeNull();
+    }
   });
 });

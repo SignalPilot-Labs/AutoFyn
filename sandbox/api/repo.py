@@ -8,7 +8,6 @@ Endpoints:
     POST /repo/save        commit + push per-round changes
     POST /repo/teardown    commit leftovers + push + PR + diff stats
     POST /repo/diff        full unified diff
-    POST /repo/diff/stats  per-file diff stats
 """
 
 from aiohttp import web
@@ -56,17 +55,9 @@ async def handle_diff(request: web.Request) -> web.Response:
     return web.json_response({"diff": diff_text})
 
 
-async def handle_diff_stats(request: web.Request) -> web.Response:
-    """Return per-file diff stats without the full diff body."""
-    service = _get_service(request)
-    files = await service.diff_stats()
-    return web.json_response({"files": files})
-
-
 def register(app: web.Application) -> None:
     """Attach /repo/* routes."""
     app.router.add_post("/repo/bootstrap", handle_bootstrap)
     app.router.add_post("/repo/save", handle_save)
     app.router.add_post("/repo/teardown", handle_teardown)
     app.router.add_post("/repo/diff", handle_diff)
-    app.router.add_post("/repo/diff/stats", handle_diff_stats)
