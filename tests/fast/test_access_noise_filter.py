@@ -44,13 +44,6 @@ class TestAccessNoiseFilter:
         )
         assert f.filter(record) is False
 
-    def test_blocks_diff_stats(self) -> None:
-        f = AccessNoiseFilter()
-        record = self._make_record(
-            'POST /repo/diff/stats "HTTP/1.1 200 OK"',
-        )
-        assert f.filter(record) is False
-
     def test_allows_other_requests(self) -> None:
         f = AccessNoiseFilter()
         record = self._make_record(

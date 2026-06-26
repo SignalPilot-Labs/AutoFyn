@@ -137,19 +137,6 @@ async def _diff_via_sandbox(server: "AgentServer", run_id: str) -> dict:
         raise HTTPException(status_code=502, detail=f"Sandbox unreachable: {exc}")
 
 
-async def _stats_via_sandbox(server: "AgentServer", run_id: str) -> dict:
-    """Return per-file diff stats from the live sandbox for an active run."""
-    client = server.pool().get_client(run_id)
-    if not client:
-        raise HTTPException(status_code=409, detail="No active sandbox for run")
-    try:
-        files = await client.repo.diff_stats()
-    except Exception as exc:
-        log.warning("Sandbox diff_stats failed for %s: %s", run_id, exc, exc_info=True)
-        raise HTTPException(status_code=502, detail=f"Sandbox unreachable: {exc}")
-    return {"files": files}
-
-
 async def _list_github_branches(repo: str, token: str) -> dict:
     """Proxy a branch listing request to the GitHub API.
 
@@ -215,16 +202,6 @@ def register_diff_routes(app: FastAPI, server: "AgentServer") -> None:
         if source == "github":
             return await _diff_via_github(run_id, repo, branch, base, token)
         return await _diff_via_sandbox(server, run_id)
-
-    @app.get("/diff/repo/stats")
-    async def diff_repo_stats(run_id: str) -> dict:
-        """Per-file diff stats without transferring the full diff body.
-
-        Intended for the dashboard Changes-panel header poll. Only handles
-        live runs — completed-run stats live in the dashboard DB (written
-        at teardown) and the dashboard short-circuits before calling this.
-        """
-        return await _stats_via_sandbox(server, run_id)
 
     @app.get("/diff/tmp")
     async def diff_tmp(run_id: str) -> dict:
