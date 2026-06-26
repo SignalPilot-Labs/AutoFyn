@@ -234,8 +234,8 @@ export function WorkTree({ events, runId, runStatus }: WorkTreeProps) {
   // Fetch diff bodies (repo + tmp). Called only via refetchDiff so every
   // refresh path fetches stats and bodies together. The `gen` parameter
   // guards against stale results from a prior run overwriting current state.
-  const fetchDiffBodies = useCallback((id: string, gen: number) => {
-    Promise.all([
+  const fetchDiffBodies = useCallback((id: string, gen: number): Promise<void> => {
+    return Promise.all([
       fetchDiffRepo(id).then(d => d.diff).catch(() => ""),
       fetchDiffTmp(id).then(d => d.diff).catch(() => ""),
     ]).then(([repo, tmp]) => {
@@ -260,14 +260,20 @@ export function WorkTree({ events, runId, runStatus }: WorkTreeProps) {
   // so an early-run failure (sandbox/branch not ready -> 409) keeps the run
   // refreshable instead of stalling on an unavailable source.
   const refetchDiff = useCallback((id: string, gen: number): Promise<void> => {
-    fetchDiffBodies(id, gen);
-    return fetchRunDiff(id)
+    // The tree renders from the diff bodies (single source), so the loading
+    // gate must await BOTH the source marker and the bodies — otherwise the
+    // marker (a fast DB read) resolves first and clears the spinner while the
+    // body blob (slow, e.g. GitHub for stored runs) is still in flight,
+    // flashing an empty state before the tree appears.
+    const bodies = fetchDiffBodies(id, gen);
+    const marker = fetchRunDiff(id)
       .then(d => { if (gen === diffGenRef.current) setDiffData(d); })
       .catch(err => {
         if (gen !== diffGenRef.current) return;
         console.warn("WorkTree: diff stats fetch failed, enabling refetch retry:", err);
         setDiffData({ source: "live", files: [], total_files: 0, total_added: 0, total_removed: 0 });
       });
+    return Promise.all([bodies, marker]).then(() => undefined);
   }, [fetchDiffBodies]);
 
   // Initial fetch when the run changes. Resets per-run state, bumps the
