@@ -171,24 +171,30 @@ describe("WorkTree: diff fetch retry on failure (behavioral)", () => {
   });
 });
 
-function fileDiff(path: string, added: number): DiffStats {
+// Build a one-file unified diff blob — the SAME source the tree is parsed
+// from, so the file renders exactly when its patch is present.
+function diffBlob(path: string): { diff: string } {
   return {
-    files: [{ path, status: "modified", added, removed: 0 }],
-    total_files: 1,
-    total_added: added,
-    total_removed: 0,
-    source: "live",
+    diff: [
+      `diff --git a/${path} b/${path}`,
+      "index 1111111..2222222 100644",
+      `--- a/${path}`,
+      `+++ b/${path}`,
+      "@@ -0,0 +1,1 @@",
+      "+added line",
+    ].join("\n"),
   };
 }
 
 describe("WorkTree: stale result discarding (behavioral)", () => {
   it("a slow fetch from a prior run does not overwrite the current run's diff", async () => {
-    // run-1's stats fetch hangs; the user switches to run-2 which resolves
-    // with distinguishable data.
-    let resolveRun1!: (d: DiffStats) => void;
-    mockFetchRunDiff.mockImplementation((id: string) => {
-      if (id === "run-1") return new Promise<DiffStats>((res) => { resolveRun1 = res; });
-      return Promise.resolve(fileDiff("run2-file.ts", 22));
+    // The tree is parsed from the /diff/repo blob. run-1's blob hangs; the
+    // user switches to run-2, whose blob resolves with distinguishable data.
+    mockFetchRunDiff.mockResolvedValue(diffStats("live"));
+    let resolveRun1!: (d: { diff: string }) => void;
+    mockFetchDiffRepo.mockImplementation((id: string) => {
+      if (id === "run-1") return new Promise<{ diff: string }>((res) => { resolveRun1 = res; });
+      return Promise.resolve(diffBlob("run2-file.ts"));
     });
 
     const { rerender, queryByText } = render(
@@ -201,10 +207,10 @@ describe("WorkTree: stale result discarding (behavioral)", () => {
     await act(async () => { await Promise.resolve(); });
     expect(queryByText("run2-file.ts")).toBeInTheDocument();
 
-    // Now run-1's stale fetch resolves with different data — it must be
+    // Now run-1's stale blob resolves with different data — it must be
     // discarded by the generation guard, not overwrite run-2's tree.
     await act(async () => {
-      resolveRun1(fileDiff("run1-stale.ts", 99));
+      resolveRun1(diffBlob("run1-stale.ts"));
       await Promise.resolve();
     });
 
