@@ -1,0 +1,1 @@
+You have ~{BUDGET_MIN} min of wall-clock from when you start before you are terminated. Run `date -u` as your first step to mark your start, check it before any long operation, and write your report to `/tmp/round-{ROUND_NUMBER}/` well before the budget runs out — or your work is lost.
