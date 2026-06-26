@@ -138,6 +138,14 @@ See [docs/user/remote-sandboxes.md](docs/user/remote-sandboxes.md) for setup, st
 
 All vulnerabilities were privately disclosed to maintainers before any public mention. Full reports are withheld until patches are available.
 
+## License
+
+AutoFyn is source-available under the [Business Source License 1.1](LICENSE). You may copy, modify, and make non-production use of the code freely; **any production or commercial use requires a commercial license**. Each released version automatically converts to the [Apache License 2.0](LICENSE-APACHE-2.0) three years after its release.
+
+The Licensor is SignalPilot Inc. For commercial licensing, contact info@signalpilot.ai.
+
+> Note: BSL is not an OSI-approved open-source license until it converts. Until then, AutoFyn is "source-available."
+
 ---
 
-Built with the [Claude Agent SDK](https://docs.anthropic.com/en/docs/claude-code/sdk). Apache 2.0 License.
+Built with the [Claude Agent SDK](https://docs.anthropic.com/en/docs/claude-code/sdk). Licensed under the [Business Source License 1.1](LICENSE).
