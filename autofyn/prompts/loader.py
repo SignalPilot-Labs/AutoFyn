@@ -70,6 +70,25 @@ def render_time_status(
     )
 
 
+def render_subagent_budget(
+    budget_min: int,
+    start_time_utc: str,
+    round_number: int,
+) -> str:
+    """Render `query/subagent-budget.md` — a subagent is one tool call for the
+    orchestrator, so its wall-clock budget is the tool-call timeout.
+
+    `start_time_utc` MUST be a UTC timestamp string; the prompt labels it "UTC".
+    """
+    template = load_markdown("query/subagent-budget")
+    return (
+        template
+        .replace("{BUDGET_MIN}", str(budget_min))
+        .replace("{START_TIME_UTC}", start_time_utc)
+        .replace("{ROUND_NUMBER}", str(round_number))
+    )
+
+
 def render_environment(
     round_number: int,
     tool_call_timeout_min: int,

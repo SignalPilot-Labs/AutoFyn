@@ -10,8 +10,10 @@ sandbox session endpoint expects under `options.agents`.
 The orchestrator calls these subagents by name via the SDK's Agent tool.
 """
 
+from datetime import datetime, timezone
+
 from config.constants import SandboxResources, SubagentSpec
-from prompts.loader import load_markdown, render_environment
+from prompts.loader import load_markdown, render_environment, render_subagent_budget
 from db.constants import SUPPORTED_SONNET
 from utils.constants import TIER_OPUS
 
@@ -70,8 +72,10 @@ def build_agent_defs(
     locally for shipped agents, from `repo_prompt_bodies` for repo agents — and
     appends the shared fragments. Placeholders (`{ROUND_NUMBER}`,
     `{PRIOR_ROUND_NUMBER}`) are substituted with live values. Verification and
-    run-state fragments are appended per the agent's `needs_*` flags. Subagents
-    never receive `query/time-status` — only the orchestrator acts on time.
+    run-state fragments are appended per the agent's `needs_*` flags. Every
+    subagent gets a budget line (it is one orchestrator tool call, so its
+    wall-clock cap is `tool_call_timeout_sec`); they never receive the
+    orchestrator's `query/time-status` run-duration query.
     """
     prior_round_number = max(round_number - 1, 0)
     env_block = render_environment(
@@ -81,6 +85,11 @@ def build_agent_defs(
         user_env_keys=user_env_keys,
         base_branch=base_branch,
         sandbox_resources=sandbox_resources,
+    )
+    budget_block = render_subagent_budget(
+        budget_min=tool_call_timeout_sec // 60,
+        start_time_utc=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"),
+        round_number=round_number,
     )
     git_rules = load_markdown("query/git-rules")
     dispatch_rules = load_markdown("query/dispatch-rules")
@@ -97,7 +106,7 @@ def build_agent_defs(
             prior_round_number,
             base_branch,
         )
-        prompt_parts = [agent_body, env_block, git_rules, dispatch_rules]
+        prompt_parts = [agent_body, env_block, budget_block, git_rules, dispatch_rules]
         if spec.needs_verification:
             prompt_parts.append(verification_rules)
         if run_state_context and spec.needs_run_state:
