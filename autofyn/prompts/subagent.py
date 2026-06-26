@@ -10,8 +10,6 @@ sandbox session endpoint expects under `options.agents`.
 The orchestrator calls these subagents by name via the SDK's Agent tool.
 """
 
-from datetime import datetime, timezone
-
 from config.constants import SandboxResources, SubagentSpec
 from prompts.loader import load_markdown, render_environment, render_subagent_budget
 from db.constants import SUPPORTED_SONNET
@@ -88,7 +86,6 @@ def build_agent_defs(
     )
     budget_block = render_subagent_budget(
         budget_min=tool_call_timeout_sec // 60,
-        start_time_utc=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"),
         round_number=round_number,
     )
     git_rules = load_markdown("query/git-rules")
