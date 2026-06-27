@@ -6,10 +6,50 @@ git output.
 """
 
 from repo.parsers import (
+    is_binary_diff_body,
     normalize_rename_path,
     parse_name_status,
     parse_numstat,
 )
+
+
+class TestIsBinaryDiffBody:
+    """Detects git's binary marker so a binary file reports a null body."""
+
+    def test_binary_new_file_is_binary(self) -> None:
+        body = (
+            "diff --git a/img.png b/img.png\n"
+            "new file mode 100644\n"
+            "index 0000000..2c4e118\n"
+            "Binary files /dev/null and b/img.png differ\n"
+        )
+        assert is_binary_diff_body(body) is True
+
+    def test_text_patch_is_not_binary(self) -> None:
+        body = (
+            "diff --git a/a.py b/a.py\n"
+            "--- a/a.py\n"
+            "+++ b/a.py\n"
+            "@@ -1 +1,2 @@\n"
+            " x\n"
+            "+y\n"
+        )
+        assert is_binary_diff_body(body) is False
+
+    def test_added_line_starting_with_binary_word_is_not_binary(self) -> None:
+        # A real +/- line whose content merely starts with "Binary files" must
+        # not be misread — only the marker BEFORE the first hunk counts.
+        body = (
+            "diff --git a/a.txt b/a.txt\n"
+            "--- a/a.txt\n"
+            "+++ b/a.txt\n"
+            "@@ -0,0 +1 @@\n"
+            "+Binary files are great but this is differ\n"
+        )
+        assert is_binary_diff_body(body) is False
+
+    def test_empty_body_is_not_binary(self) -> None:
+        assert is_binary_diff_body("") is False
 
 
 class TestNormalizeRenamePath:

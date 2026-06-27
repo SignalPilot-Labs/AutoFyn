@@ -229,6 +229,9 @@ export function WorkTree({ events, runId, runStatus }: WorkTreeProps) {
   const [expanded, setExpanded] = useState<{ path: string; body: string | null } | null>(null);
   const [expandLoading, setExpandLoading] = useState(false);
   const [expandTooLarge, setExpandTooLarge] = useState(false);
+  // True when the expand FETCH failed (network/server error) — distinct from
+  // a successful fetch returning a null body, which means the file is binary.
+  const [expandError, setExpandError] = useState(false);
 
   // Refetch the file LISTS (repo + tmp) for the current generation. Bodies
   // are NOT fetched here — only on expand. The `gen` guard discards stale
@@ -282,6 +285,7 @@ export function WorkTree({ events, runId, runStatus }: WorkTreeProps) {
       setExpanded(null);
       setExpandLoading(false);
       setExpandTooLarge(false);
+      setExpandError(false);
       return;
     }
     const path = selectedFile.path;
@@ -289,6 +293,7 @@ export function WorkTree({ events, runId, runStatus }: WorkTreeProps) {
     let cancelled = false;
     setExpanded(null);
     setExpandTooLarge(false);
+    setExpandError(false);
     setExpandLoading(true);
     const fetcher = path.startsWith("tmp/") ? fetchDiffTmp : fetchDiffRepo;
     fetcher(runId, path)
@@ -300,13 +305,16 @@ export function WorkTree({ events, runId, runStatus }: WorkTreeProps) {
           setExpandTooLarge(true);
           setExpanded({ path, body: null });
         } else {
+          // A null body here is a genuine binary file (server classified it).
           setExpanded({ path, body });
         }
       })
       .catch(err => {
         if (cancelled || gen !== diffGenRef.current) return;
+        // Fetch/server error — NOT a binary file. Flag it distinctly so the
+        // viewer shows an error, not a misleading "binary file" message.
         console.warn("WorkTree: expand fetch failed:", err);
-        setExpanded({ path, body: null });
+        setExpandError(true);
       })
       .finally(() => {
         if (!cancelled && gen === diffGenRef.current) setExpandLoading(false);
@@ -485,6 +493,10 @@ export function WorkTree({ events, runId, runStatus }: WorkTreeProps) {
             {expandTooLarge ? (
               <div className="text-meta text-text-dim px-3 py-6 text-center" role="status" aria-label="Diff too large">
                 Diff too large to display — open the PR on GitHub instead
+              </div>
+            ) : expandError ? (
+              <div className="text-meta text-[#ff4444]/80 px-3 py-6 text-center" role="status" aria-label="Diff load failed">
+                Failed to load this file&apos;s diff — try again
               </div>
             ) : (
               <div className="flex items-center justify-center py-8" role="status" aria-label="Loading diff">

@@ -48,4 +48,12 @@ describe("WorkTree: per-file expand oversize handling", () => {
     const block = SRC.slice(start, start + 200);
     expect(block).toContain("setExpandTooLarge(false)");
   });
+
+  it("distinguishes a failed fetch from a binary file", () => {
+    // A fetch error must set expandError (→ error message), NOT leave a null
+    // body that the viewer would mislabel as "binary file".
+    expect(SRC).toContain("setExpandError(true)");
+    expect(SRC).toContain("expandError ? (");
+    expect(SRC).toContain('aria-label="Diff load failed"');
+  });
 });
