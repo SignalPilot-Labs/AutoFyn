@@ -200,8 +200,22 @@ class StreamDispatcher:
     # ── Core handlers (called by _on_* dispatch wrappers above) ────────
 
     async def _handle_assistant_message(self, data: dict) -> None:
-        """Log text/thinking blocks and accumulate token usage."""
+        """Log text/thinking blocks and accumulate token usage.
+
+        Assistant messages from a subagent carry a non-null
+        parent_tool_use_id (the parent Agent/SendMessage tool call they run
+        inside). Their prose is intermediate narration that never belongs in
+        the main feed — the subagent's result is captured separately by the
+        SubagentStop hook (subagent_complete.final_text) and rendered as the
+        Agent Summary. So we suppress llm_text/llm_thinking for subagent
+        messages and only accumulate their token usage; orchestrator messages
+        (parent_tool_use_id is None) are logged as before.
+        """
         run_id = self._run.run_id
+        # serialize_message always sets this key; subscript (not .get) so a
+        # serializer regression that drops it fails loud rather than silently
+        # mislabeling subagent text as orchestrator text and re-leaking it.
+        is_subagent = data["parent_tool_use_id"] is not None
         for block in data.get("content", []):
             block_type = block.get("type", "")
             if block_type == "text":
@@ -209,7 +223,7 @@ class StreamDispatcher:
                 log.info(
                     "[%s] %s", self._rid, text[:LOG_PREVIEW_LIMIT].replace("\n", " ")
                 )
-                if text.strip():
+                if text.strip() and not is_subagent:
                     await log_audit(
                         run_id,
                         "llm_text",
@@ -221,7 +235,7 @@ class StreamDispatcher:
             elif block_type == "thinking":
                 thinking = block.get("thinking", "")
                 log.info("[%s] [thinking] %s...", self._rid, thinking[:100])
-                if thinking.strip():
+                if thinking.strip() and not is_subagent:
                     await log_audit(
                         run_id,
                         "llm_thinking",

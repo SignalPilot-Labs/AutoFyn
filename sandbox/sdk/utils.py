@@ -85,7 +85,11 @@ def serialize_message(message: object) -> dict | None:
                 )
         return {
             "event": "assistant_message",
-            "data": {"content": blocks, "usage": message.usage},
+            "data": {
+                "content": blocks,
+                "usage": message.usage,
+                "parent_tool_use_id": message.parent_tool_use_id,
+            },
         }
     if isinstance(message, RateLimitEvent):
         info = message.rate_limit_info

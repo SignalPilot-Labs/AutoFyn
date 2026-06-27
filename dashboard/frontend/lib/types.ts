@@ -200,6 +200,7 @@ export type ToolCategory =
   | "task"
   | "tool_search"
   | "skill"
+  | "message"
   | "playwright_navigate"
   | "playwright_screenshot"
   | "playwright_snapshot"
@@ -229,6 +230,9 @@ export function getToolCategory(toolName: string): ToolCategory {
   }
   if (name === "toolsearch") return "tool_search";
   if (name === "skill") return "skill";
+  // SendMessage — orchestrator messaging a subagent (incl. resuming a
+  // backgrounded one). Rendered as a dedicated "message" card, not raw JSON.
+  if (name === "sendmessage") return "message";
   // MCP Playwright tools
   if (name.includes("browser_navigate")) return "playwright_navigate";
   if (name.includes("browser_take_screenshot")) return "playwright_screenshot";
@@ -263,6 +267,7 @@ export const TOOL_COLORS: Record<ToolCategory, ToolMeta> = {
   task:                  { label: "Task",          border: "border-l-[#aabb44]",  bg: "bg-[#aabb44]/[0.03]",  text: "text-[#aabb44]",  iconColor: "#aabb44" },
   tool_search:           { label: "ToolSearch",    border: "border-l-[#aa88ff]",  bg: "bg-[#aa88ff]/[0.03]",  text: "text-[#aa88ff]",  iconColor: "#aa88ff" },
   skill:                 { label: "Skill",         border: "border-l-[#ff66cc]",  bg: "bg-[#ff66cc]/[0.03]",  text: "text-[#ff66cc]",  iconColor: "#ff66cc" },
+  message:               { label: "Message",       border: "border-l-[#44ccdd]",  bg: "bg-[#44ccdd]/[0.03]",  text: "text-[#44ccdd]",  iconColor: "#44ccdd" },
   playwright_navigate:   { label: "Navigate",      border: "border-l-[#66bbff]",  bg: "bg-[#66bbff]/[0.03]",  text: "text-[#66bbff]",  iconColor: "#66bbff" },
   playwright_screenshot: { label: "Screenshot",    border: "border-l-[#ff99aa]",  bg: "bg-[#ff99aa]/[0.03]",  text: "text-[#ff99aa]",  iconColor: "#ff99aa" },
   playwright_snapshot:   { label: "Snapshot",      border: "border-l-[#ddaa66]",  bg: "bg-[#ddaa66]/[0.03]",  text: "text-[#ddaa66]",  iconColor: "#ddaa66" },
