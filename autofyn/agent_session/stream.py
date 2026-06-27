@@ -212,7 +212,10 @@ class StreamDispatcher:
         (parent_tool_use_id is None) are logged as before.
         """
         run_id = self._run.run_id
-        is_subagent = data.get("parent_tool_use_id") is not None
+        # serialize_message always sets this key; subscript (not .get) so a
+        # serializer regression that drops it fails loud rather than silently
+        # mislabeling subagent text as orchestrator text and re-leaking it.
+        is_subagent = data["parent_tool_use_id"] is not None
         for block in data.get("content", []):
             block_type = block.get("type", "")
             if block_type == "text":

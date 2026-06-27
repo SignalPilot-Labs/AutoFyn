@@ -106,6 +106,24 @@ class TestSubagentTextNotLogged:
         )
 
     @pytest.mark.asyncio
+    async def test_missing_parent_tool_use_id_fails_loud(self) -> None:
+        """A missing parent_tool_use_id key must raise, not silently re-leak.
+
+        serialize_message always sets the key; if a regression drops it we
+        want a loud KeyError rather than a silent default that mislabels
+        subagent text as orchestrator text.
+        """
+        dispatcher = _make_dispatcher()
+        event = {
+            "event": "assistant_message",
+            "data": {"content": [{"type": "text", "text": "x"}], "usage": None},
+        }
+
+        with patch("agent_session.stream.log_audit", new_callable=AsyncMock):
+            with pytest.raises(KeyError):
+                await dispatcher.dispatch(event)
+
+    @pytest.mark.asyncio
     async def test_subagent_thinking_is_not_logged(self) -> None:
         """Subagent thinking blocks are suppressed like text blocks."""
         dispatcher = _make_dispatcher()
