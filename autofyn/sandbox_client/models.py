@@ -25,3 +25,17 @@ class SandboxStartError(Exception):
         """Initialize with message and the NDJSON startup logs for debugging."""
         self.startup_logs = startup_logs
         super().__init__(message)
+
+
+class SandboxHTTPError(Exception):
+    """Raised when a sandbox HTTP call returns a 4xx/5xx.
+
+    Carries the upstream `status_code` so callers can map a sandbox
+    response (e.g. a 404 for an unknown diff-expand path) to the same
+    status instead of collapsing every failure into a generic 502.
+    """
+
+    def __init__(self, status_code: int, message: str) -> None:
+        """Initialize with the upstream status code and error message."""
+        self.status_code = status_code
+        super().__init__(message)

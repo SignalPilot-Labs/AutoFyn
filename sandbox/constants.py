@@ -120,6 +120,20 @@ GIT_CREDENTIAL_HELPER: str = (
 GIT_CLONE_DEPTH: int = 50
 CLONE_TMP_DIR: str = "/tmp/repo-clone"
 
+# Throwaway index for the live diff: `git add -A` stages the working tree
+# (including untracked files) into THIS index, never the repo's real one,
+# so `git diff --cached` shows new files without mutating repo state.
+DIFF_TMP_INDEX: str = "/tmp/diff-index"
+
+# Untracked working-tree files surface in the live diff via the throwaway
+# index as additions; git reports them as status "A" → "added".
+DIFF_STATUS_ADDED: str = "added"
+
+# Per-file body cap for the live diff expand path. A single generated file
+# (lockfile, build artifact) can be enormous; cap the returned patch so one
+# file can't blow up the response. Counts characters of the unified body.
+DIFF_FILE_BODY_MAX_CHARS: int = 400_000
+
 # PR bodies are passed to `gh` via --body-file (not --body): a large body as a
 # single argv element trips the kernel's 128KB per-arg limit (E2BIG) at exec.
 PR_BODY_FILE: str = "/tmp/pr-body.md"

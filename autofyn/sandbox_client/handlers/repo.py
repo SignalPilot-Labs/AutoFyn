@@ -15,6 +15,7 @@ import logging
 
 import httpx
 
+from sandbox_client.models import SandboxHTTPError
 from utils.models import SaveResult, TeardownResult
 
 log = logging.getLogger("sandbox_client.repo")
@@ -81,9 +82,14 @@ class Repo:
             diff_stats=list(data["diff_stats"]),
         )
 
-    async def diff(self) -> dict:
-        """Get the full unified diff from the sandbox."""
-        return await self._post("/repo/diff", {})
+    async def diff(self, expand: str | None) -> dict:
+        """Get the working-tree file list from the sandbox.
+
+        `expand` is None for the list (all bodies null) or a file path to
+        also fetch that one file's unified diff body. Returns
+        {"files": [{path, status, added, removed, body}]}.
+        """
+        return await self._post("/repo/diff", {"expand": expand})
 
     # ── Private ────────────────────────────────────────────────────────
 
@@ -91,7 +97,8 @@ class Repo:
         """Send a POST and return the JSON response dict."""
         resp = await self._http.post(path, json=body)
         if resp.status_code >= 400:
-            raise RuntimeError(
-                f"sandbox {path} -> {resp.status_code}: {resp.text[:1000]}"
+            raise SandboxHTTPError(
+                resp.status_code,
+                f"sandbox {path} -> {resp.status_code}: {resp.text[:1000]}",
             )
         return resp.json()

@@ -5,6 +5,59 @@ import httpx
 GITHUB_API_TIMEOUT = 15
 
 
+def _status_from_section(body: str) -> str:
+    """Classify a diff section by its leading markers (mirror of the FE)."""
+    if body.startswith("new file"):
+        return "added"
+    if body.startswith("deleted file"):
+        return "deleted"
+    if body.startswith("rename ") or "\nrename to " in body:
+        return "renamed"
+    return "modified"
+
+
+def parse_diff_blob_to_files(full_diff: str) -> list[dict]:
+    """Parse a full unified diff blob into [{path, status, added, removed}].
+
+    Produces the SAME file-list shape the sandbox temp-index path returns,
+    so completed-run (GitHub blob) and live-run diffs share one contract.
+    Line counts come from the body's +/- lines, ignoring the +++/--- file
+    headers; status comes from the section's leading markers.
+    """
+    files: list[dict] = []
+    sections = full_diff.split("\ndiff --git ")
+    for i, raw in enumerate(sections):
+        section = raw
+        if i == 0:
+            if section.startswith("diff --git "):
+                section = section[len("diff --git "):]
+            else:
+                continue
+        nl = section.find("\n")
+        if nl == -1:
+            continue
+        header = section[:nl]
+        b_idx = header.rfind(" b/")
+        if b_idx == -1:
+            continue
+        path = header[b_idx + 3:]
+        body = section[nl + 1:]
+        added = 0
+        removed = 0
+        for line in body.split("\n"):
+            if line.startswith("+") and not line.startswith("+++"):
+                added += 1
+            elif line.startswith("-") and not line.startswith("---"):
+                removed += 1
+        files.append({
+            "path": path,
+            "status": _status_from_section(body),
+            "added": added,
+            "removed": removed,
+        })
+    return files
+
+
 def extract_file_patch(full_diff: str, target_path: str) -> str | None:
     """Extract the unified diff patch for a single file from a full diff.
 
