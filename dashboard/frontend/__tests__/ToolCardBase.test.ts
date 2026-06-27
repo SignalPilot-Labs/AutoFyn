@@ -98,6 +98,34 @@ describe("buildSummary", () => {
     expect(summary("Skill", { skill: "commit" })).toBe("commit");
   });
 
+  it("SendMessage maps to the message category", () => {
+    expect(getToolCategory("SendMessage")).toBe("message");
+  });
+
+  it("message: returns → shortId · content preview", () => {
+    const result = summary("SendMessage", {
+      to: "a5076623d97d2aa0f",
+      type: "message",
+      content: "The plan is ready, please continue.",
+    });
+    expect(result).toBe("→ a5076623 · The plan is ready, please continue.");
+  });
+
+  it("message: collapses whitespace and truncates long content", () => {
+    const result = summary("SendMessage", {
+      to: "abc12345xyz",
+      content: "x".repeat(200),
+    });
+    // "→ abc12345 · " prefix (12 chars) + 80 content chars
+    expect(result.startsWith("→ abc12345 · ")).toBe(true);
+    expect(result).toContain("x".repeat(80));
+    expect(result).not.toContain("x".repeat(81));
+  });
+
+  it("message: shows only target when content is absent", () => {
+    expect(summary("SendMessage", { to: "abc12345xyz" })).toBe("→ abc12345");
+  });
+
   it("web_search: returns query", () => {
     expect(summary("WebSearch", { query: "vitest docs" })).toBe("vitest docs");
   });

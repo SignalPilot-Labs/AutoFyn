@@ -57,6 +57,15 @@ export function buildSummary(tool: ToolCall, cat: ToolCategory): string {
     }
     case "skill":
       return (input.skill as string) || "";
+    case "message": {
+      // SendMessage input: { to, type, content }. Show the target agent id
+      // (shortened) and a preview of the message content.
+      const to = (input.to as string) || "";
+      const shortTo = to.slice(0, 8);
+      const content = ((input.content as string) || "").replace(/\s+/g, " ").slice(0, 80);
+      if (shortTo && content) return `→ ${shortTo} · ${content}`;
+      return shortTo ? `→ ${shortTo}` : content;
+    }
     case "tool_search":
     case "web_search":
       return (input.query as string) || "";
