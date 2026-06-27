@@ -336,6 +336,8 @@ export interface DiffFile {
   added: number;
   removed: number;
   status: "added" | "modified" | "deleted" | "renamed";
+  /** Unified diff body for this file. Null in list mode; filled on expand. */
+  body?: string | null;
 }
 
 export interface DiffStats {
@@ -409,12 +411,22 @@ export async function fetchNetworkInfo(): Promise<NetworkInfo> {
 
 // ── Branches ─────────────────────────────────────────────────────────────────
 
-export interface DiffRepoResponse {
-  diff: string;
+/** Unified diff response: file list, each body null unless expanded. */
+export interface DiffFilesResponse {
+  files: DiffFile[];
 }
 
-export async function fetchDiffRepo(runId: string): Promise<DiffRepoResponse> {
-  const res = await apiFetch(`/api/runs/${runId}/diff/repo`);
+/**
+ * Fetch the repo working-tree file list (bodies null), or — when `expand`
+ * is a path — that one file's body filled. Both repo and tmp share this
+ * shape so the UI consumes them identically.
+ */
+export async function fetchDiffRepo(
+  runId: string,
+  expand: string | null,
+): Promise<DiffFilesResponse> {
+  const qs = expand !== null ? `?expand=${encodeURIComponent(expand)}` : "";
+  const res = await apiFetch(`/api/runs/${runId}/diff/repo${qs}`);
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: `HTTP ${res.status}` }));
     throw new Error(err.detail || `HTTP ${res.status}`);
@@ -422,9 +434,13 @@ export async function fetchDiffRepo(runId: string): Promise<DiffRepoResponse> {
   return res.json();
 }
 
-export async function fetchDiffTmp(runId: string): Promise<DiffRepoResponse> {
-  const res = await apiFetch(`/api/runs/${runId}/diff/tmp`);
-  if (!res.ok) return { diff: "" };
+export async function fetchDiffTmp(
+  runId: string,
+  expand: string | null,
+): Promise<DiffFilesResponse> {
+  const qs = expand !== null ? `?expand=${encodeURIComponent(expand)}` : "";
+  const res = await apiFetch(`/api/runs/${runId}/diff/tmp${qs}`);
+  if (!res.ok) return { files: [] };
   return res.json();
 }
 

@@ -7,7 +7,7 @@ Endpoints:
     POST /repo/bootstrap   clone + verify base + create working branch
     POST /repo/save        commit + push per-round changes
     POST /repo/teardown    commit leftovers + push + PR + diff stats
-    POST /repo/diff        full unified diff
+    POST /repo/diff        file list (+ one file's body when expand is set)
 """
 
 from aiohttp import web
@@ -49,10 +49,16 @@ async def handle_teardown(request: web.Request) -> web.Response:
 
 
 async def handle_diff(request: web.Request) -> web.Response:
-    """Return the full unified diff of the working tree against base."""
+    """Return the working-tree file list; one file's body when expand is set.
+
+    Request body: {} for the list (all bodies null), or {"expand": "<path>"}
+    to also fill that file's body. A 404 is returned if the expand path is
+    not in the list.
+    """
     service = _get_service(request)
-    diff_text = await service.diff()
-    return web.json_response({"diff": diff_text})
+    body = await request.json()
+    expand = body.get("expand")
+    return web.json_response(await service.diff_response(expand))
 
 
 def register(app: web.Application) -> None:

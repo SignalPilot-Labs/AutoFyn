@@ -187,7 +187,7 @@ class TestGetDiffRepoBranchGating:
         run_record.github_repo = "owner/repo"
         run_record.status = "running"
 
-        agent = AsyncMock(return_value={"diff": "diff --git a/x b/x\n"})
+        agent = AsyncMock(return_value={"files": []})
         monkeypatch.setattr(runs, "agent_request", agent)
         monkeypatch.setattr(runs, "read_credentials", AsyncMock(return_value={"git_token": "tok"}))
 
@@ -197,7 +197,27 @@ class TestGetDiffRepoBranchGating:
         # agent_request(method, path, timeout, json_body, params, ...)
         call_params = agent.call_args[0][4]
         assert call_params["source"] == "sandbox"
-        assert result["diff"].startswith("diff --git")
+        # No expand requested → param omitted; response is the file-list shape.
+        assert "expand" not in call_params
+        assert result == {"files": []}
+
+    @pytest.mark.asyncio
+    async def test_expand_param_is_passed_through(
+        self, monkeypatch: pytest.MonkeyPatch, db_session, run_record: MagicMock,
+    ) -> None:
+        run_record.branch_name = "autofyn/real-branch"
+        run_record.base_branch = "main"
+        run_record.github_repo = "owner/repo"
+        run_record.status = "running"
+
+        agent = AsyncMock(return_value={"files": []})
+        monkeypatch.setattr(runs, "agent_request", agent)
+        monkeypatch.setattr(runs, "read_credentials", AsyncMock(return_value={"git_token": "tok"}))
+
+        await runs.get_diff_repo("run-1", expand="src/main.py")
+
+        call_params = agent.call_args[0][4]
+        assert call_params["expand"] == "src/main.py"
 
     @pytest.mark.asyncio
     async def test_terminal_run_passes_source_github(
@@ -208,7 +228,7 @@ class TestGetDiffRepoBranchGating:
         run_record.github_repo = "owner/repo"
         run_record.status = "completed"
 
-        agent = AsyncMock(return_value={"diff": "diff --git a/x b/x\n"})
+        agent = AsyncMock(return_value={"files": []})
         monkeypatch.setattr(runs, "agent_request", agent)
         monkeypatch.setattr(runs, "read_credentials", AsyncMock(return_value={"git_token": "tok"}))
 

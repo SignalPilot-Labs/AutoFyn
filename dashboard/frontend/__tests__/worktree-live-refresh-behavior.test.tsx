@@ -28,6 +28,7 @@ vi.mock("@/lib/api", () => ({
 }));
 
 import { fetchRunDiff, fetchDiffRepo, fetchDiffTmp } from "@/lib/api";
+import type { DiffFile } from "@/lib/api";
 import { WorkTree } from "@/components/worktree/WorkTree";
 
 const mockFetchRunDiff = vi.mocked(fetchRunDiff);
@@ -60,8 +61,8 @@ function writeEvent(id: number, filePath: string): FeedEvent {
 
 beforeEach(() => {
   vi.useFakeTimers({ shouldAdvanceTime: true });
-  mockFetchDiffRepo.mockResolvedValue({ diff: "" });
-  mockFetchDiffTmp.mockResolvedValue({ diff: "" });
+  mockFetchDiffRepo.mockResolvedValue({ files: [] });
+  mockFetchDiffTmp.mockResolvedValue({ files: [] });
 });
 
 afterEach(() => {
@@ -171,30 +172,23 @@ describe("WorkTree: diff fetch retry on failure (behavioral)", () => {
   });
 });
 
-// Build a one-file unified diff blob — the SAME source the tree is parsed
-// from, so the file renders exactly when its patch is present.
-function diffBlob(path: string): { diff: string } {
+// Build a one-file diff list — the SAME source the tree is built from, so
+// the file renders exactly when the server's list contains it.
+function diffFiles(path: string): { files: DiffFile[] } {
   return {
-    diff: [
-      `diff --git a/${path} b/${path}`,
-      "index 1111111..2222222 100644",
-      `--- a/${path}`,
-      `+++ b/${path}`,
-      "@@ -0,0 +1,1 @@",
-      "+added line",
-    ].join("\n"),
+    files: [{ path, status: "added", added: 1, removed: 0, body: null }],
   };
 }
 
 describe("WorkTree: stale result discarding (behavioral)", () => {
   it("a slow fetch from a prior run does not overwrite the current run's diff", async () => {
-    // The tree is parsed from the /diff/repo blob. run-1's blob hangs; the
-    // user switches to run-2, whose blob resolves with distinguishable data.
+    // The tree is built from the /diff/repo file list. run-1's list hangs;
+    // the user switches to run-2, whose list resolves with distinguishable data.
     mockFetchRunDiff.mockResolvedValue(diffStats("live"));
-    let resolveRun1!: (d: { diff: string }) => void;
+    let resolveRun1!: (d: { files: DiffFile[] }) => void;
     mockFetchDiffRepo.mockImplementation((id: string) => {
-      if (id === "run-1") return new Promise<{ diff: string }>((res) => { resolveRun1 = res; });
-      return Promise.resolve(diffBlob("run2-file.ts"));
+      if (id === "run-1") return new Promise<{ files: DiffFile[] }>((res) => { resolveRun1 = res; });
+      return Promise.resolve(diffFiles("run2-file.ts"));
     });
 
     const { rerender, queryByText } = render(
@@ -207,10 +201,10 @@ describe("WorkTree: stale result discarding (behavioral)", () => {
     await act(async () => { await Promise.resolve(); });
     expect(queryByText("run2-file.ts")).toBeInTheDocument();
 
-    // Now run-1's stale blob resolves with different data — it must be
+    // Now run-1's stale list resolves with different data — it must be
     // discarded by the generation guard, not overwrite run-2's tree.
     await act(async () => {
-      resolveRun1(diffBlob("run1-stale.ts"));
+      resolveRun1(diffFiles("run1-stale.ts"));
       await Promise.resolve();
     });
 

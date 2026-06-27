@@ -20,6 +20,23 @@ def normalize_rename_path(path: str) -> str:
     return _RENAME_RE.sub(r"\1", path)
 
 
+def is_binary_diff_body(body: str) -> bool:
+    """True if a single-file diff body is git's binary marker, not a text patch.
+
+    git renders a binary file as a "Binary files A and B differ" line (after
+    the `diff --git`/`index` header lines) instead of `@@` hunks. Such a body
+    has no renderable diff, so it is reported as binary (null body) — matching
+    the agent's extract_file_patch contract so the frontend's single
+    `body === null` binary check is correct for both diff sources.
+    """
+    for line in body.split("\n"):
+        if line.startswith("Binary files") and line.endswith("differ"):
+            return True
+        if line.startswith("@@"):
+            return False
+    return False
+
+
 def parse_name_status(raw: str) -> dict[str, str]:
     """Parse ``git diff --name-status`` output into a path->status map."""
     result: dict[str, str] = {}

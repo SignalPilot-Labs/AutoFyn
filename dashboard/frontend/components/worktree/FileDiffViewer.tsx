@@ -5,10 +5,11 @@ import { clsx } from "clsx";
 import type { ThemedToken } from "shiki";
 import { parseDiffLines, langFromPath } from "@/lib/diff-utils";
 import type { DiffLine } from "@/lib/diff-utils";
-import { extractFilePatch } from "@/lib/diff-utils";
 
 export interface FileDiffViewerProps {
-  fullDiff: string;
+  /** This file's unified diff body, pre-extracted by the server (expand).
+   *  Null means binary (server returned no text body for it). */
+  body: string | null;
   filePath: string;
   fileStatus: string;
   onBack: () => void;
@@ -149,7 +150,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 /* ── Main component ── */
-export function FileDiffViewer({ fullDiff, filePath, fileStatus, onBack }: FileDiffViewerProps) {
+export function FileDiffViewer({ body, filePath, fileStatus, onBack }: FileDiffViewerProps) {
   const [highlighter, setHighlighter] = useState<ShikiHighlighter | null>(null);
   const mountedRef = useRef(true);
 
@@ -163,10 +164,13 @@ export function FileDiffViewer({ fullDiff, filePath, fileStatus, onBack }: FileD
     return () => { mountedRef.current = false; };
   }, []);
 
-  const patch = useMemo(() => extractFilePatch(fullDiff, filePath), [fullDiff, filePath]);
-  const isBinary = patch === null && fullDiff.includes(`b/${filePath}`);
+  // The server pre-extracts this file's body (expand). A null body means
+  // the server classified it as binary (no text patch). The leading
+  // `diff --git`/`index`/`---`/`+++` header lines are parsed as meta and
+  // rendered harmlessly, so the whole body can be fed straight in.
+  const isBinary = body === null;
   const lang = langFromPath(filePath);
-  const diffLines = patch ? parseDiffLines(patch) : [];
+  const diffLines = useMemo(() => (body ? parseDiffLines(body) : []), [body]);
 
   return (
     <div className="flex flex-col bg-sidebar h-full w-full">
