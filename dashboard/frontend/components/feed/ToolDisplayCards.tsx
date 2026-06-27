@@ -340,6 +340,37 @@ export function TodoDisplay({
   );
 }
 
+/* ── MessageDisplay ──
+ * Renders a SendMessage tool call: the message content sent to a subagent,
+ * plus the dispatch result (e.g. "resumed in background, will notify when
+ * done"). Replaces the raw-JSON default for the "message" category.
+ */
+export function MessageDisplay({ tool }: { tool: ToolCall }) {
+  const input = tool.input_data || {};
+  const output = (tool.output_data || {}) as Record<string, unknown>;
+  const to = String(input.to || "");
+  const content = String(input.content || "");
+  const resultMsg = String(output.message || "");
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-1.5 text-meta">
+        <span className="text-text-dim">to</span>
+        <span className="text-[#44ccdd] font-mono">{to || "—"}</span>
+      </div>
+      {content && (
+        <div className="rounded border border-border bg-black/30 p-2.5 text-meta text-text-secondary whitespace-pre-wrap break-words leading-relaxed max-h-[200px] overflow-y-auto">
+          {content}
+        </div>
+      )}
+      {resultMsg && (
+        <div className="text-meta text-text-dim italic whitespace-pre-wrap break-words">
+          {resultMsg}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── TaskDisplay ──
  * Renders the SDK's relational task tools (TaskCreate/TaskUpdate/TaskGet/
  * TaskList) using the same status-row look as TodoDisplay. Each tool reports

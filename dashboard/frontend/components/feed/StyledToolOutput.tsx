@@ -10,6 +10,7 @@ import {
   GlobResults,
   TodoDisplay,
   TaskDisplay,
+  MessageDisplay,
 } from "@/components/feed/ToolDisplayCards";
 
 export function StyledToolOutput({ tool }: { tool: ToolCall }) {
@@ -117,6 +118,10 @@ export function StyledToolOutput({ tool }: { tool: ToolCall }) {
         output={tool.output_data || null}
       />
     );
+  }
+
+  if (cat === "message") {
+    return <MessageDisplay tool={tool} />;
   }
 
   if ((cat === "web_search" || cat === "web_fetch") && tool.output_data) {

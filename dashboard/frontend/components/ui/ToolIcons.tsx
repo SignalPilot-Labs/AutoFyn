@@ -132,6 +132,15 @@ export function SkillIcon({ color }: { color?: string }) {
   );
 }
 
+export function MessageIcon({ color }: { color?: string }) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke={color || "currentColor"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1.5" y="3" width="11" height="8" rx="1" />
+      <path d="M2 4l5 4 5-4" />
+    </svg>
+  );
+}
+
 export function PlaywrightNavigateIcon({ color }: { color?: string }) {
   return (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke={color || "currentColor"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -347,6 +356,7 @@ export function getToolIcon(category: ToolCategory, color?: string) {
     case "task": return <TodoIcon color={color} />;
     case "tool_search": return <ToolSearchIcon color={color} />;
     case "skill": return <SkillIcon color={color} />;
+    case "message": return <MessageIcon color={color} />;
     case "playwright_navigate": return <PlaywrightNavigateIcon color={color} />;
     case "playwright_screenshot": return <PlaywrightScreenshotIcon color={color} />;
     case "playwright_snapshot": return <PlaywrightSnapshotIcon color={color} />;
