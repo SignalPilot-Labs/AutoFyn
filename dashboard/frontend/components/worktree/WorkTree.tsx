@@ -4,15 +4,11 @@ import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { clsx } from "clsx";
 import type { FeedEvent, RunStatus } from "@/lib/types";
-import type { DiffStats } from "@/lib/api";
+import type { DiffStats, DiffFile } from "@/lib/api";
 import { fetchRunDiff, fetchDiffRepo, fetchDiffTmp } from "@/lib/api";
 import {
   extractFileChanges,
   buildTreeFromDiff,
-  buildTreeFromChanges,
-  mergeTrees,
-  parseTmpDiffStats,
-  parseRepoDiffStats,
 } from "@/lib/worktree-utils";
 import type { TreeNode } from "@/lib/worktree-utils";
 import {
@@ -220,52 +216,34 @@ export function WorkTree({ events, runId, runStatus }: WorkTreeProps) {
   // Generation counter: incremented on each new runId mount so stale async
   // fetches from a prior run are discarded when they resolve.
   const diffGenRef = useRef(0);
-  // Repo and tmp diffs are separate sources — one is git working-branch-vs-base,
-  // the other is sandbox filesystem reads of `/tmp/round-*`. Keeping them as
-  // distinct state avoids a combined blob that's awkward to size-cap, parse,
-  // and route file-click lookups through.
-  const [repoDiff, setRepoDiff] = useState<string | null>(null);
-  const [tmpDiff, setTmpDiff] = useState<string | null>(null);
-  const [diffTooLarge, setDiffTooLarge] = useState(false);
-  const [repoTooLarge, setRepoTooLarge] = useState(false);
-  const [tmpTooLarge, setTmpTooLarge] = useState(false);
+  // The file LIST (no bodies). repo = git working-tree (tracked+untracked
+  // via the sandbox temp-index diff), tmp = /tmp/round-* report files. Both
+  // arrive in the SAME {path,status,added,removed,body:null} shape, so they
+  // concat into one tree and route through one viewer — no second format.
+  const [repoFiles, setRepoFiles] = useState<DiffFile[]>([]);
+  const [tmpFiles, setTmpFiles] = useState<DiffFile[]>([]);
   const [selectedFile, setSelectedFile] = useState<{ path: string; status: string } | null>(null);
+  // The expanded file's body, fetched on click. {path, body} where body is
+  // null for a binary file (server returned no text). Kept separate from the
+  // list so a poll refreshing the list never clobbers an open file's body.
+  const [expanded, setExpanded] = useState<{ path: string; body: string | null } | null>(null);
+  const [expandLoading, setExpandLoading] = useState(false);
+  const [expandTooLarge, setExpandTooLarge] = useState(false);
 
-  // Fetch diff bodies (repo + tmp). Called only via refetchDiff so every
-  // refresh path fetches stats and bodies together. The `gen` parameter
-  // guards against stale results from a prior run overwriting current state.
-  const fetchDiffBodies = useCallback((id: string, gen: number): Promise<void> => {
-    return Promise.all([
-      fetchDiffRepo(id).then(d => d.diff).catch(() => ""),
-      fetchDiffTmp(id).then(d => d.diff).catch(() => ""),
+  // Refetch the file LISTS (repo + tmp) for the current generation. Bodies
+  // are NOT fetched here — only on expand. The `gen` guard discards stale
+  // results from a prior run. The source marker drives badge + refresh
+  // gating; on failure it falls back to "live" so an early-run 409 keeps the
+  // run refreshable instead of stalling.
+  const refetchDiff = useCallback((id: string, gen: number): Promise<void> => {
+    const lists = Promise.all([
+      fetchDiffRepo(id, null).then(d => d.files).catch(() => [] as DiffFile[]),
+      fetchDiffTmp(id, null).then(d => d.files).catch(() => [] as DiffFile[]),
     ]).then(([repo, tmp]) => {
       if (gen !== diffGenRef.current) return;
-      const repoOversize = repo.length > DIFF_MAX_BYTES;
-      const tmpOversize = tmp.length > DIFF_MAX_BYTES;
-      const repoSafe = repoOversize ? null : (repo || null);
-      const tmpSafe = tmpOversize ? null : (tmp || null);
-      setRepoDiff(repoSafe);
-      setTmpDiff(tmpSafe);
-      setRepoTooLarge(repoOversize);
-      setTmpTooLarge(tmpOversize);
-      // diffTooLarge: true when at least one source is oversize (for empty-state warning)
-      setDiffTooLarge(repoOversize || tmpOversize);
+      setRepoFiles(repo);
+      setTmpFiles(tmp);
     });
-  }, []);
-
-  // Refetch stats + bodies for the current generation. The single fetch path
-  // shared by the mount effect, the interval poll, and the event-driven
-  // refetch, so all three behave identically. Returns the stats promise so
-  // callers can chain loading state. The stats `.catch` sets a "live" sentinel
-  // so an early-run failure (sandbox/branch not ready -> 409) keeps the run
-  // refreshable instead of stalling on an unavailable source.
-  const refetchDiff = useCallback((id: string, gen: number): Promise<void> => {
-    // The tree renders from the diff bodies (single source), so the loading
-    // gate must await BOTH the source marker and the bodies — otherwise the
-    // marker (a fast DB read) resolves first and clears the spinner while the
-    // body blob (slow, e.g. GitHub for stored runs) is still in flight,
-    // flashing an empty state before the tree appears.
-    const bodies = fetchDiffBodies(id, gen);
     const marker = fetchRunDiff(id)
       .then(d => { if (gen === diffGenRef.current) setDiffData(d); })
       .catch(err => {
@@ -273,8 +251,8 @@ export function WorkTree({ events, runId, runStatus }: WorkTreeProps) {
         console.warn("WorkTree: diff stats fetch failed, enabling refetch retry:", err);
         setDiffData({ source: "live", files: [], total_files: 0, total_added: 0, total_removed: 0 });
       });
-    return Promise.all([bodies, marker]).then(() => undefined);
-  }, [fetchDiffBodies]);
+    return Promise.all([lists, marker]).then(() => undefined);
+  }, []);
 
   // Initial fetch when the run changes. Resets per-run state, bumps the
   // generation so stale in-flight fetches from the prior run are discarded,
@@ -282,24 +260,59 @@ export function WorkTree({ events, runId, runStatus }: WorkTreeProps) {
   useEffect(() => {
     if (!runId) {
       setDiffData(null);
-      setRepoDiff(null);
-      setTmpDiff(null);
-      setDiffTooLarge(false);
-      setRepoTooLarge(false);
-      setTmpTooLarge(false);
+      setRepoFiles([]);
+      setTmpFiles([]);
       return;
     }
     const gen = ++diffGenRef.current;
     setSelectedFile(null);
-    setDiffTooLarge(false);
-    setRepoTooLarge(false);
-    setTmpTooLarge(false);
+    setExpanded(null);
     setDiffLoading(true);
     refetchDiff(runId, gen).finally(() => {
       if (gen === diffGenRef.current) setDiffLoading(false);
     });
     return () => { diffGenRef.current++; };
   }, [runId, refetchDiff]);
+
+  // Fetch the selected file's body (expand). Routes to repo vs tmp by the
+  // tmp/ prefix — same endpoint family the list came from, so the path is
+  // guaranteed present (the server 404s otherwise, surfaced as an error).
+  useEffect(() => {
+    if (!runId || selectedFile === null) {
+      setExpanded(null);
+      setExpandLoading(false);
+      setExpandTooLarge(false);
+      return;
+    }
+    const path = selectedFile.path;
+    const gen = diffGenRef.current;
+    let cancelled = false;
+    setExpanded(null);
+    setExpandTooLarge(false);
+    setExpandLoading(true);
+    const fetcher = path.startsWith("tmp/") ? fetchDiffTmp : fetchDiffRepo;
+    fetcher(runId, path)
+      .then(d => {
+        if (cancelled || gen !== diffGenRef.current) return;
+        const file = d.files.find(f => f.path === path);
+        const body = file?.body ?? null;
+        if (body !== null && body.length > DIFF_MAX_BYTES) {
+          setExpandTooLarge(true);
+          setExpanded({ path, body: null });
+        } else {
+          setExpanded({ path, body });
+        }
+      })
+      .catch(err => {
+        if (cancelled || gen !== diffGenRef.current) return;
+        console.warn("WorkTree: expand fetch failed:", err);
+        setExpanded({ path, body: null });
+      })
+      .finally(() => {
+        if (!cancelled && gen === diffGenRef.current) setExpandLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [runId, selectedFile]);
 
   // Live changes from event stream. Split tmp/round-N writes off from the
   // rest: those are always new files (correctly 'added'), while other
@@ -346,56 +359,25 @@ export function WorkTree({ events, runId, runStatus }: WorkTreeProps) {
     return () => clearTimeout(t);
   }, [runId, isRefreshSource, liveWriteCount, refetchDiff]);
 
-  // Repo diff stats — parsed from the SAME blob the file viewer searches.
-  // For stored (terminal) runs the blob comes from GitHub and diffData
-  // carries the authoritative DB stats; for live runs the blob is the git
-  // working-tree diff and is the single source of truth. Either way, every
-  // path here is guaranteed to resolve in `repoDiff` when clicked.
-  const repoStats = useMemo(
-    () => (repoDiff ? parseRepoDiffStats(repoDiff) : []),
-    [repoDiff],
+  // One unified file list: repo (git working tree) + tmp (round files),
+  // both already in the same DiffFile shape from the server. Concatenated
+  // into a single tree — no blob parsing, no per-source tree merge. Every
+  // node names a path the server's list returned, so a click always
+  // resolves (the server 404s on an unknown expand path).
+  const allFiles = useMemo(() => [...repoFiles, ...tmpFiles], [repoFiles, tmpFiles]);
+
+  const mergedTree = useMemo(
+    () => (allFiles.length > 0 ? buildTreeFromDiff(allFiles) : null),
+    [allFiles],
   );
 
-  // Git diff tree, built from the parsed blob stats. Replaces the old
-  // separate-endpoint tree so list and body can never drift.
-  const diffTree = useMemo(
-    () => (repoStats.length > 0 ? buildTreeFromDiff(repoStats) : null),
-    [repoStats],
-  );
-
-  // Tmp tree: parsed from the dedicated /diff/tmp source — the same blob
-  // routed to the file viewer for tmp/ paths, so it too cannot drift.
-  const tmpTree = useMemo(() => {
-    if (!tmpDiff) return null;
-    const tmpChanges = parseTmpDiffStats(tmpDiff);
-    if (tmpChanges.length === 0) return null;
-    return buildTreeFromChanges(
-      tmpChanges.map(c => ({
-        path: c.path, action: "edit" as const,
-        linesAdded: c.linesAdded, linesRemoved: 0,
-        timestamp: "", toolCallId: 0, toolName: "Archive",
-      })),
-      "added",
-    );
-  }, [tmpDiff]);
-
-  const hasGitDiff = diffTree !== null;
+  const hasGitDiff = repoFiles.length > 0;
   // writeChanges (SSE events) still gate the empty-state and refresh, but
   // they no longer feed the clickable tree — a file becomes clickable only
-  // once its patch is in a blob we hold.
+  // once it is in a list the server returned.
   const hasLiveChanges = writeChanges.length > 0;
-  const hasTmpFiles = tmpTree !== null;
+  const hasTmpFiles = tmpFiles.length > 0;
   const hasContent = hasGitDiff || hasTmpFiles;
-
-  // Merged tree: repo diff ⊕ tmp diff. Both sides are derived from the diff
-  // blobs the file viewer reads, so every node resolves to a patch. Event-
-  // derived files are intentionally excluded — they have no patch body yet.
-  const mergedTree = useMemo(() => {
-    if (!diffTree && !tmpTree) return null;
-    if (!diffTree) return tmpTree;
-    if (!tmpTree) return diffTree;
-    return mergeTrees(diffTree, tmpTree);
-  }, [diffTree, tmpTree]);
 
   const mergedRoots = useMemo(() => {
     if (!mergedTree) return [];
@@ -423,36 +405,23 @@ export function WorkTree({ events, runId, runStatus }: WorkTreeProps) {
     return count;
   }, [mergedTree]);
 
-  // Stats bar totals, summed from the parsed repo blob so the numbers match
+  // Stats bar totals, summed from the repo file list so the numbers match
   // the tree exactly (same source). Tmp files are "new file" additions with
   // no removals; they're counted in headerFileCount, not the +/- bar.
   const diffTotals = useMemo(() => ({
-    added: repoStats.reduce((n, f) => n + f.added, 0),
-    removed: repoStats.reduce((n, f) => n + f.removed, 0),
-  }), [repoStats]);
+    added: repoFiles.reduce((n, f) => n + f.added, 0),
+    removed: repoFiles.reduce((n, f) => n + f.removed, 0),
+  }), [repoFiles]);
   const showDiffStats = hasGitDiff && (diffTotals.added > 0 || diffTotals.removed > 0);
 
   // Empty state reason
   const emptyReason: EmptyReason = (() => {
     if (!runId) return "no-run";
     if (diffLoading && !diffData) return "loading";
-    if (diffTooLarge && !hasLiveChanges && !hasTmpFiles) return "too-large";
     if (diffData?.source === "unavailable" && !hasLiveChanges && !hasTmpFiles) return "unavailable";
     const isTerminal = runStatus !== null && TERMINAL_STATUSES.has(runStatus);
     return isTerminal ? "completed-no-changes" : "active-no-changes";
   })();
-
-  // Each clicked path is backed by one of two diff sources: tmp/round-N
-  // files come from the tmp diff, everything else from the repo diff.
-  // Pick the right source here so FileDiffViewer is simple.
-  const diffForPath = (path: string): string | null =>
-    path.startsWith("tmp/") ? tmpDiff : repoDiff;
-
-  // Returns true when the diff source for this path was truncated because
-  // it exceeded DIFF_MAX_BYTES — callers should show a "too large" message
-  // instead of a loading spinner (the diff will never arrive).
-  const isFileSourceTooLarge = (path: string): boolean =>
-    path.startsWith("tmp/") ? tmpTooLarge : repoTooLarge;
 
   // Every tree node was parsed from the blob `diffForPath` returns, so a
   // click is guaranteed to resolve to a patch — there is no separate file
@@ -489,15 +458,15 @@ export function WorkTree({ events, runId, runStatus }: WorkTreeProps) {
 
       {/* Content */}
       <div className={clsx("flex-1 overflow-y-auto", selectedFile === null && "py-1")}>
-        {selectedFile !== null && diffForPath(selectedFile.path) !== null ? (
+        {selectedFile !== null && expanded?.path === selectedFile.path && !expandLoading && !expandTooLarge ? (
           <FileDiffViewer
-            fullDiff={diffForPath(selectedFile.path)!}
+            body={expanded.body}
             filePath={selectedFile.path}
             fileStatus={selectedFile.status}
             onBack={() => setSelectedFile(null)}
           />
         ) : selectedFile !== null ? (
-          /* File selected but diff body still loading — or source is oversize */
+          /* File selected but its body is still loading — or it is oversize */
           <div>
             <div className="flex items-center gap-2 px-2 py-2 border-b border-border shrink-0">
               <button
@@ -513,7 +482,7 @@ export function WorkTree({ events, runId, runStatus }: WorkTreeProps) {
                 {selectedFile.path}
               </span>
             </div>
-            {isFileSourceTooLarge(selectedFile.path) ? (
+            {expandTooLarge ? (
               <div className="text-meta text-text-dim px-3 py-6 text-center" role="status" aria-label="Diff too large">
                 Diff too large to display — open the PR on GitHub instead
               </div>

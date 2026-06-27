@@ -11,33 +11,67 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
+from fastapi import HTTPException
+
 from endpoints.diff import (
-    _build_tmp_diff,
     _collect_tmp_from_archive,
     _collect_tmp_from_sandbox,
+    _new_file_block,
+    _tmp_files_response,
 )
 
 
-class TestBuildTmpDiff:
-    """Renders entries into a unified 'new file' diff."""
+class TestTmpFilesResponse:
+    """Shapes tmp entries into the unified {files:[...]} contract."""
 
-    def test_empty_entries_returns_empty_string(self) -> None:
-        assert _build_tmp_diff([]) == ""
+    def test_empty_entries_returns_empty_file_list(self) -> None:
+        assert _tmp_files_response([], None) == {"files": []}
 
-    def test_single_file_renders_correct_header_and_body(self) -> None:
-        out = _build_tmp_diff([("tmp/round-1/a.md", "line1\nline2")])
-        assert "diff --git a/tmp/round-1/a.md b/tmp/round-1/a.md" in out
-        assert "new file mode 100644" in out
+    def test_list_mode_has_null_bodies_and_added_status(self) -> None:
+        out = _tmp_files_response([("tmp/round-1/a.md", "line1\nline2")], None)
+        assert out["files"] == [{
+            "path": "tmp/round-1/a.md",
+            "status": "added",
+            "added": 2,
+            "removed": 0,
+            "body": None,
+        }]
+
+    def test_multiple_files_all_listed_bodies_null(self) -> None:
+        out = _tmp_files_response([
+            ("tmp/round-1/a.md", "x"),
+            ("tmp/round-2/b.md", "y"),
+        ], None)
+        assert len(out["files"]) == 2
+        assert all(f["body"] is None for f in out["files"])
+
+    def test_expand_fills_only_the_matching_body(self) -> None:
+        out = _tmp_files_response([
+            ("tmp/round-1/a.md", "line1\nline2"),
+            ("tmp/round-2/b.md", "other"),
+        ], "tmp/round-1/a.md")
+        by_path = {f["path"]: f for f in out["files"]}
+        body = by_path["tmp/round-1/a.md"]["body"]
+        assert "diff --git a/tmp/round-1/a.md b/tmp/round-1/a.md" in body
+        assert "new file mode 100644" in body
+        assert "+line1" in body
+        assert by_path["tmp/round-2/b.md"]["body"] is None
+
+    def test_expand_unknown_path_raises_404(self) -> None:
+        with pytest.raises(HTTPException) as exc:
+            _tmp_files_response([("tmp/round-1/a.md", "x")], "tmp/nope.md")
+        assert exc.value.status_code == 404
+
+
+class TestNewFileBlock:
+    """Renders one file's content as a unified 'new file' diff block."""
+
+    def test_header_and_body(self) -> None:
+        out = _new_file_block("tmp/round-1/a.md", "line1\nline2")
+        assert out.startswith("diff --git a/tmp/round-1/a.md b/tmp/round-1/a.md")
         assert "@@ -0,0 +1,2 @@" in out
         assert "+line1" in out
         assert "+line2" in out
-
-    def test_multiple_files_are_separated(self) -> None:
-        out = _build_tmp_diff([
-            ("tmp/round-1/a.md", "x"),
-            ("tmp/round-2/b.md", "y"),
-        ])
-        assert out.count("diff --git") == 2
 
 
 class TestCollectTmpFromSandbox:

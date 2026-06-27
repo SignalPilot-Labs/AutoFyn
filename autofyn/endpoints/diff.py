@@ -47,21 +47,44 @@ _github_diff_cache: OrderedDict[str, str] = OrderedDict()
 _ROUND_DIR_NAME = re.compile(ROUND_DIR_NAME_RE)
 
 
-def _build_tmp_diff(entries: list[tuple[str, str]]) -> str:
-    """Render a list of (rel_path, content) tuples as a unified 'new file' diff."""
-    parts: list[str] = []
+def _new_file_block(rel: str, content: str) -> str:
+    """Render one (rel_path, content) pair as a unified 'new file' diff block."""
+    lines = content.splitlines()
+    header = (
+        f"diff --git a/{rel} b/{rel}\n"
+        f"new file mode 100644\n"
+        f"--- /dev/null\n"
+        f"+++ b/{rel}\n"
+        f"@@ -0,0 +1,{len(lines)} @@"
+    )
+    body = "\n".join(f"+{line}" for line in lines)
+    return f"{header}\n{body}"
+
+
+def _tmp_files_response(entries: list[tuple[str, str]], expand: str | None) -> dict:
+    """Shape tmp round files into the unified {files:[...]} diff response.
+
+    Every tmp file is a new file (status "added"); `added` is its line count.
+    Bodies are null unless `expand=<path>` matches an entry, in which case
+    that one body is rendered. Fail-fast 404 if the expand path is absent,
+    mirroring the repo contract so the frontend consumes both identically.
+    """
+    files: list[dict] = []
     for rel, content in entries:
-        lines = content.splitlines()
-        header = (
-            f"diff --git a/{rel} b/{rel}\n"
-            f"new file mode 100644\n"
-            f"--- /dev/null\n"
-            f"+++ b/{rel}\n"
-            f"@@ -0,0 +1,{len(lines)} @@"
-        )
-        body = "\n".join(f"+{line}" for line in lines)
-        parts.append(f"{header}\n{body}")
-    return "\n".join(parts)
+        files.append({
+            "path": rel,
+            "status": "added",
+            "added": len(content.splitlines()),
+            "removed": 0,
+            "body": None,
+        })
+    if expand is not None:
+        match = next((e for e in entries if e[0] == expand), None)
+        if match is None:
+            raise HTTPException(status_code=404, detail=f"expand path not in tmp list: {expand}")
+        target = next(f for f in files if f["path"] == expand)
+        target["body"] = _new_file_block(match[0], match[1])
+    return {"files": files}
 
 
 async def _collect_tmp_from_sandbox(
@@ -245,8 +268,11 @@ def register_diff_routes(app: FastAPI, server: "AgentServer") -> None:
         return await _diff_via_sandbox(server, run_id, expand)
 
     @app.get("/diff/tmp")
-    async def diff_tmp(run_id: str) -> dict:
-        """Unified diff of round files (all treated as new files).
+    async def diff_tmp(run_id: str, expand: str | None = None) -> dict:
+        """Round files as the unified {files:[...]} list (all new files).
+
+        Same contract as /diff/repo so the frontend consumes both identically:
+        bodies are null unless `expand=<path>` fills one (404 if absent).
 
         During round 1 the archive on the host volume is still empty — the files
         only exist inside the live sandbox at /tmp/round-N. So we check the
@@ -258,7 +284,7 @@ def register_diff_routes(app: FastAPI, server: "AgentServer") -> None:
             if client
             else _collect_tmp_from_archive(run_id)
         )
-        return {"diff": _build_tmp_diff(entries)}
+        return _tmp_files_response(entries, expand)
 
     @app.get("/branches")
     async def list_branches(

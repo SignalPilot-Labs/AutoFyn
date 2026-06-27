@@ -385,11 +385,14 @@ async def get_diff_repo(run_id: str = RunId, expand: str | None = None) -> dict:
 
 
 @router.get("/runs/{run_id}/diff/tmp")
-async def get_diff_tmp(run_id: str = RunId) -> dict:
-    """List archived tmp/round files for a run."""
+async def get_diff_tmp(run_id: str = RunId, expand: str | None = None) -> dict:
+    """Tmp/round files as the unified {files:[...]} list (+ one body on expand)."""
+    params = {"run_id": run_id}
+    if expand is not None:
+        params["expand"] = expand
     return await agent_request(
         "GET", "/diff/tmp", AGENT_TIMEOUT_LONG,
-        None, {"run_id": run_id}, None, extra_headers=None,
+        None, params, None, extra_headers=None,
     )
 
 

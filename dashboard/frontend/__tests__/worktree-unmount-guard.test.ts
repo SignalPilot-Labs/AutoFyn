@@ -71,12 +71,13 @@ describe("WorkTree: diffGenRef incremented on unmount to discard in-flight fetch
     expect(nullGuardBlock).not.toContain("diffGenRef.current++");
   });
 
-  it("fetchDiffBodies call is guarded by gen !== diffGenRef.current inside the callback", () => {
-    // fetchDiffBodies captures gen and guards setState with the generation check
-    const fetchBodiesStart = SRC.indexOf("const fetchDiffBodies = useCallback");
-    const fetchBodiesEnd = SRC.indexOf("}, []);", fetchBodiesStart);
-    const fetchBodiesBody = SRC.slice(fetchBodiesStart, fetchBodiesEnd);
+  it("refetchDiff list fetch is guarded by gen !== diffGenRef.current inside the callback", () => {
+    // refetchDiff captures gen and guards the file-list setState with the
+    // generation check so a stale prior-run fetch can't overwrite current state.
+    const start = SRC.indexOf("const refetchDiff = useCallback");
+    const end = SRC.indexOf("}, []);", start);
+    const body = SRC.slice(start, end);
 
-    expect(fetchBodiesBody).toContain("if (gen !== diffGenRef.current) return");
+    expect(body).toContain("if (gen !== diffGenRef.current) return");
   });
 });

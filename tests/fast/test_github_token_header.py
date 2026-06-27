@@ -73,9 +73,17 @@ class TestDiffRepoHeaderAuth:
         assert res.status_code == 422
 
     def test_header_accepted(self, client: TestClient) -> None:
+        blob = "\n".join([
+            "diff --git a/x b/x",
+            "--- a/x",
+            "+++ b/x",
+            "@@ -0,0 +1 @@",
+            "+hi",
+        ])
+
         async def _fake_fetch(repo, branch, base, token):
             assert token == "ghp_abc"
-            return {"diff": "diff --git a/x b/x"}
+            return {"diff": blob}
 
         with patch("endpoints.diff.fetch_github_diff", side_effect=_fake_fetch):
             res = client.get(
@@ -84,4 +92,6 @@ class TestDiffRepoHeaderAuth:
                 headers={"X-GitHub-Token": "ghp_abc"},
             )
         assert res.status_code == 200
-        assert "diff" in res.json()
+        body = res.json()
+        assert [f["path"] for f in body["files"]] == ["x"]
+        assert body["files"][0]["body"] is None
