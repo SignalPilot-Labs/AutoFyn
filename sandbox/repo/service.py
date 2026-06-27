@@ -7,8 +7,11 @@ subprocess interactions via shared.subprocess helpers.
 Lifecycle: bootstrap → (save per round) → teardown.
 """
 
+import contextlib
 import logging
 import os
+import uuid
+from collections.abc import AsyncIterator
 
 from aiohttp import web
 
@@ -16,6 +19,8 @@ from constants import (
     AUTO_COMMIT_MESSAGE,
     CLONE_TMP_DIR,
     CMD_TIMEOUT,
+    DIFF_FILE_BODY_MAX_CHARS,
+    DIFF_TMP_INDEX_PREFIX,
     GH_NO_DIFF_MARKER,
     GIT_CLONE_DEPTH,
     PR_BODY_FILE,
@@ -25,9 +30,9 @@ from constants import (
     STDERR_BRIEF_LIMIT,
     STDERR_SHORT_LIMIT,
 )
-from models import RepoState
-from repo.parsers import parse_name_status, parse_numstat
-from shared.subprocess import fail, gh, git, run_cmd, scrub_secrets
+from models import CmdResult, RepoState
+from repo.parsers import is_binary_diff_body, parse_name_status, parse_numstat
+from shared.subprocess import fail, gh, git, git_indexed, run_cmd, scrub_secrets
 
 log = logging.getLogger("sandbox.repo.service")
 
@@ -41,7 +46,8 @@ class RepoService:
         bootstrap(body)      → RepoState
         save(message)        → dict
         teardown(body)       → dict
-        diff()               → str
+        diff_list()          → list[dict]   (file list, no bodies)
+        diff_file(path)      → str          (one file's unified body)
     """
 
     def __init__(self) -> None:
@@ -142,17 +148,134 @@ class RepoService:
 
     # ── Diff ──────────────────────────────────────────────────────────
 
-    async def diff(self) -> str:
-        """Full unified diff of working tree against base."""
-        s = self.state
-        result = await git(["diff", s.base_sha], CMD_TIMEOUT, cwd=REPO_WORK_DIR)
-        if result.exit_code != 0:
-            detail = scrub_secrets(result.stderr)[:STDERR_SHORT_LIMIT]
-            raise web.HTTPInternalServerError(
-                text=f'{{"error": "git diff failed", "detail": "{detail}"}}',
-                content_type="application/json",
+    async def diff_list(self) -> list[dict]:
+        """File-level changes of the working tree against base.
+
+        Includes tracked edits AND untracked (new) files. Untracked files
+        would be invisible to a plain `git diff <base>`, so we stage the
+        whole working tree into a THROWAWAY index and diff that against base —
+        the repo's real index is never touched. Returns
+        [{path, status, added, removed}].
+        """
+        async with self._tmp_index() as index:
+            base = self.state.base_sha
+            numstat = await git_indexed(
+                ["diff", "--numstat", "--cached", base],
+                CMD_TIMEOUT, REPO_WORK_DIR, index,
             )
-        return result.stdout
+            self._fail_diff(numstat, "git diff --numstat")
+            if not numstat.stdout.strip():
+                return []
+            name_status = await git_indexed(
+                ["diff", "--name-status", "--cached", base],
+                CMD_TIMEOUT, REPO_WORK_DIR, index,
+            )
+            self._fail_diff(name_status, "git diff --name-status")
+            return parse_numstat(
+                numstat.stdout, parse_name_status(name_status.stdout),
+            )
+
+    async def diff_response(self, expand: str | None) -> dict:
+        """Build the unified diff response: file list with bodies null.
+
+        Every file carries a `body` key (None by default). When `expand` is
+        given, that one file's body is filled — and the path MUST be in the
+        list, else it's a contract violation (404), never a silent empty
+        body. This is the single source: the list defines what exists, and a
+        body is only ever served for a path the same list contains.
+        """
+        files = await self.diff_list()
+        for f in files:
+            f["body"] = None
+        if expand is not None:
+            match = next((f for f in files if f["path"] == expand), None)
+            if match is None:
+                raise web.HTTPNotFound(
+                    reason=f"expand path not in diff list: {expand}",
+                )
+            match["body"] = await self.diff_file(expand)
+        return {"files": files}
+
+    async def diff_file(self, path: str) -> str | None:
+        """Unified diff body for a single file from the live working tree.
+
+        The path must be one returned by diff_list() — the caller validates
+        membership first, so an unknown path is a contract violation, not a
+        silent empty body. Uses the same throwaway-index technique so tracked
+        and untracked files render identically (untracked → 'new file' block).
+
+        Returns None for a binary file (git emits "Binary files ... differ"
+        instead of a text patch). This matches the GitHub path's
+        extract_file_patch contract, so the frontend's single binary check
+        (body === null) is correct for both sources.
+        """
+        async with self._tmp_index() as index:
+            result = await git_indexed(
+                ["diff", "--cached", self.state.base_sha, "--", path],
+                CMD_TIMEOUT, REPO_WORK_DIR, index,
+            )
+            self._fail_diff(result, "git diff (file body)")
+            if is_binary_diff_body(result.stdout):
+                return None
+            return result.stdout[:DIFF_FILE_BODY_MAX_CHARS]
+
+    @contextlib.asynccontextmanager
+    async def _tmp_index(self) -> AsyncIterator[str]:
+        """Stage the working tree into a unique throwaway index, then clean up.
+
+        Yields the path to a per-call index file (so concurrent diff requests
+        never share one index and corrupt each other's `git add -A`). Copies
+        the real index into it so renames/mode bits are seen relative to it,
+        then `git add -A` stages everything — tracked edits AND untracked
+        files — into THAT index. The real index is never written, so this
+        never races the agent's own commits. The temp index is removed on
+        exit regardless of success.
+        """
+        index = f"{DIFF_TMP_INDEX_PREFIX}{uuid.uuid4().hex}"
+        try:
+            cp = await run_cmd(
+                ["cp", "-f", f"{REPO_WORK_DIR}/.git/index", index],
+                REPO_WORK_DIR, CMD_TIMEOUT,
+            )
+            self._fail_cmd(cp, "cp real index → tmp index")
+            add = await git_indexed(
+                ["add", "-A"], CMD_TIMEOUT, REPO_WORK_DIR, index,
+            )
+            self._fail_diff(add, "git add -A (tmp index)")
+            yield index
+        finally:
+            await run_cmd(["rm", "-f", index], REPO_WORK_DIR, CMD_TIMEOUT)
+
+    def _fail_diff(self, result: CmdResult, label: str) -> None:
+        """Raise HTTP 500 on a failed diff/index command.
+
+        git diff returns exit code 1 for "differences found", which is
+        success here — only treat exit codes other than 0/1 as failures.
+        (git add returns 0 or a fatal 128, never 1, so accepting 1 here is
+        harmless for the staging step.)
+        """
+        if result.exit_code in (0, 1):
+            return
+        self._raise_cmd_error(result, label)
+
+    def _fail_cmd(self, result: CmdResult, label: str) -> None:
+        """Raise HTTP 500 unless a plain command succeeded (exit 0).
+
+        Used for non-diff steps (e.g. the index copy) where only exit 0 is
+        success — surfacing the failure rather than silently diffing a stale
+        or missing index.
+        """
+        if result.exit_code == 0:
+            return
+        self._raise_cmd_error(result, label)
+
+    def _raise_cmd_error(self, result: CmdResult, label: str) -> None:
+        """Raise a scrubbed HTTP 500 for a failed command."""
+        detail = scrub_secrets(result.stderr)[:STDERR_SHORT_LIMIT]
+        raise web.HTTPInternalServerError(
+            text=f'{{"error": "{label} failed", "detail": "{detail}"}}',
+            content_type="application/json",
+        )
 
     # ── Private: bootstrap helpers ────────────────────────────────────
 

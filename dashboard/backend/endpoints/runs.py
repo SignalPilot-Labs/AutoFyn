@@ -328,8 +328,12 @@ async def get_run_diff(run_id: str = RunId) -> dict:
 
 
 @router.get("/runs/{run_id}/diff/repo")
-async def get_diff_repo(run_id: str = RunId) -> dict:
-    """Full unified diff — routes to sandbox (active) or GitHub (completed).
+async def get_diff_repo(run_id: str = RunId, expand: str | None = None) -> dict:
+    """Working-tree file list — routes to sandbox (active) or GitHub (completed).
+
+    Returns {"files": [{path, status, added, removed, body}]}. Bodies are
+    null unless `expand=<path>` is passed, in which case that one file's
+    body is filled (the agent 404s if the path is not in the list).
 
     The dashboard decides the source based on run status. The agent never
     silently falls through from sandbox to GitHub — that was the root cause
@@ -361,27 +365,34 @@ async def get_diff_repo(run_id: str = RunId) -> dict:
     if not token:
         raise HTTPException(status_code=400, detail="No git_token configured for this repo")
 
+    params = {
+        "run_id": run_id,
+        "branch": branch_name,
+        "base": base_branch,
+        "repo": github_repo,
+        "source": source,
+    }
+    if expand is not None:
+        params["expand"] = expand
+
     return await agent_request(
         "GET", "/diff/repo", AGENT_TIMEOUT_LONG,
         None,
-        {
-            "run_id": run_id,
-            "branch": branch_name,
-            "base": base_branch,
-            "repo": github_repo,
-            "source": source,
-        },
+        params,
         None,
         extra_headers={HEADER_GITHUB_TOKEN: token},
     )
 
 
 @router.get("/runs/{run_id}/diff/tmp")
-async def get_diff_tmp(run_id: str = RunId) -> dict:
-    """List archived tmp/round files for a run."""
+async def get_diff_tmp(run_id: str = RunId, expand: str | None = None) -> dict:
+    """Tmp/round files as the unified {files:[...]} list (+ one body on expand)."""
+    params = {"run_id": run_id}
+    if expand is not None:
+        params["expand"] = expand
     return await agent_request(
         "GET", "/diff/tmp", AGENT_TIMEOUT_LONG,
-        None, {"run_id": run_id}, None, extra_headers=None,
+        None, params, None, extra_headers=None,
     )
 
 

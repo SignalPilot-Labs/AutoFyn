@@ -43,19 +43,22 @@ def scrub_secrets(text: str) -> str:
     return scrubbed
 
 
-async def run_cmd(args: list[str], cwd: str, timeout: int) -> CmdResult:
-    """Run a subprocess inheriting the sandbox process env.
+async def _exec(
+    args: list[str], cwd: str, timeout: int, env: dict[str, str] | None,
+) -> CmdResult:
+    """Spawn a subprocess and capture its output.
 
-    A spawn-time OSError (e.g. ESTALE — a stale handle on `cwd` after a
-    remote sandbox's overlay vanished) is turned into a failed CmdResult
-    rather than propagated, so the OS message lands in stderr and the
-    fail() handler can classify it into a clean error instead of crashing
-    the request with a raw traceback.
+    `env` fully replaces the child environment when not None (callers that
+    want an overlay must pass {**os.environ, ...}). A spawn-time OSError
+    (e.g. ESTALE — a stale handle on `cwd` after a remote sandbox's overlay
+    vanished) is turned into a failed CmdResult rather than propagated, so
+    the OS message lands in stderr and the fail() handler can classify it
+    into a clean error instead of crashing the request with a raw traceback.
     """
     proc: asyncio.subprocess.Process | None = None
     try:
         proc = await asyncio.create_subprocess_exec(
-            *args, cwd=cwd,
+            *args, cwd=cwd, env=env,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         )
         stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=timeout)
@@ -71,6 +74,11 @@ async def run_cmd(args: list[str], cwd: str, timeout: int) -> CmdResult:
         return CmdResult(stdout="", stderr="timed out", exit_code=-1)
     except OSError as exc:
         return CmdResult(stdout="", stderr=str(exc), exit_code=-1)
+
+
+async def run_cmd(args: list[str], cwd: str, timeout: int) -> CmdResult:
+    """Run a subprocess inheriting the sandbox process env."""
+    return await _exec(args, cwd, timeout, None)
 
 
 async def run_with_retry(cmd: list[str], cwd: str, timeout: int) -> CmdResult:
@@ -100,6 +108,22 @@ async def git(args: list[str], timeout: int, cwd: str) -> CmdResult:
 async def gh(args: list[str], timeout: int, cwd: str) -> CmdResult:
     """Run `gh <args>` with retry on transient network errors."""
     return await run_with_retry(["gh"] + args, cwd, timeout)
+
+
+async def git_indexed(
+    args: list[str], timeout: int, cwd: str, index_file: str,
+) -> CmdResult:
+    """Run `git <args>` with GIT_INDEX_FILE pointed at a throwaway index.
+
+    Used by the live diff to stage the working tree (`git add -A`) into a
+    disposable index so untracked files appear in `git diff --cached`
+    without ever mutating the repo's real index. No retry — these are local
+    diff/index ops, not network operations, and a non-zero exit (e.g. diff
+    exit code 1 = "differences found") must be returned to the caller, not
+    retried.
+    """
+    env = {**os.environ, "GIT_INDEX_FILE": index_file}
+    return await _exec(["git"] + args, cwd, timeout, env)
 
 
 def _raise_sandbox_lost(label: str, stderr: str) -> None:

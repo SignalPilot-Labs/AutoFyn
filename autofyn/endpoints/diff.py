@@ -24,7 +24,13 @@ from utils.constants import (
     ROUND_ARCHIVE_AGENT_DIR,
     ROUND_DIR_NAME_RE,
 )
-from utils.diff import fetch_github_diff
+from utils.diff import (
+    extract_file_patch,
+    fetch_github_diff,
+    parse_diff_blob_to_files,
+)
+
+from sandbox_client.models import SandboxHTTPError
 
 if TYPE_CHECKING:
     from sandbox_client.client import SandboxClient
@@ -41,21 +47,44 @@ _github_diff_cache: OrderedDict[str, str] = OrderedDict()
 _ROUND_DIR_NAME = re.compile(ROUND_DIR_NAME_RE)
 
 
-def _build_tmp_diff(entries: list[tuple[str, str]]) -> str:
-    """Render a list of (rel_path, content) tuples as a unified 'new file' diff."""
-    parts: list[str] = []
+def _new_file_block(rel: str, content: str) -> str:
+    """Render one (rel_path, content) pair as a unified 'new file' diff block."""
+    lines = content.splitlines()
+    header = (
+        f"diff --git a/{rel} b/{rel}\n"
+        f"new file mode 100644\n"
+        f"--- /dev/null\n"
+        f"+++ b/{rel}\n"
+        f"@@ -0,0 +1,{len(lines)} @@"
+    )
+    body = "\n".join(f"+{line}" for line in lines)
+    return f"{header}\n{body}"
+
+
+def _tmp_files_response(entries: list[tuple[str, str]], expand: str | None) -> dict:
+    """Shape tmp round files into the unified {files:[...]} diff response.
+
+    Every tmp file is a new file (status "added"); `added` is its line count.
+    Bodies are null unless `expand=<path>` matches an entry, in which case
+    that one body is rendered. Fail-fast 404 if the expand path is absent,
+    mirroring the repo contract so the frontend consumes both identically.
+    """
+    files: list[dict] = []
     for rel, content in entries:
-        lines = content.splitlines()
-        header = (
-            f"diff --git a/{rel} b/{rel}\n"
-            f"new file mode 100644\n"
-            f"--- /dev/null\n"
-            f"+++ b/{rel}\n"
-            f"@@ -0,0 +1,{len(lines)} @@"
-        )
-        body = "\n".join(f"+{line}" for line in lines)
-        parts.append(f"{header}\n{body}")
-    return "\n".join(parts)
+        files.append({
+            "path": rel,
+            "status": "added",
+            "added": len(content.splitlines()),
+            "removed": 0,
+            "body": None,
+        })
+    if expand is not None:
+        match = next((e for e in entries if e[0] == expand), None)
+        if match is None:
+            raise HTTPException(status_code=404, detail=f"expand path not in tmp list: {expand}")
+        target = next(f for f in files if f["path"] == expand)
+        target["body"] = _new_file_block(match[0], match[1])
+    return {"files": files}
 
 
 async def _collect_tmp_from_sandbox(
@@ -111,27 +140,57 @@ def _collect_tmp_from_archive(run_id: str) -> list[tuple[str, str]]:
     return entries
 
 
-async def _diff_via_github(run_id: str, repo: str, branch: str, base: str, token: str) -> dict:
-    """Return a unified diff via the GitHub API, with LRU caching for completed runs."""
+def _files_from_blob(blob: str, expand: str | None) -> dict:
+    """Shape a full diff blob into the unified {files:[...]} response.
+
+    Mirrors the sandbox contract: every file carries a `body` (None unless
+    it is the expanded path). Fail-fast 404 if the expand path is absent, so
+    a body is only ever served for a path the list contains.
+    """
+    files = parse_diff_blob_to_files(blob)
+    for f in files:
+        f["body"] = None
+    if expand is not None:
+        match = next((f for f in files if f["path"] == expand), None)
+        if match is None:
+            raise HTTPException(status_code=404, detail=f"expand path not in diff list: {expand}")
+        match["body"] = extract_file_patch(blob, expand)
+    return {"files": files}
+
+
+async def _diff_via_github(
+    run_id: str, repo: str, branch: str, base: str, token: str, expand: str | None,
+) -> dict:
+    """Unified file list (+ one body on expand) via the GitHub API.
+
+    The raw blob is cached per run (completed runs are immutable), so an
+    expand re-extracts a body from the cached blob without re-fetching.
+    """
     if run_id in _github_diff_cache:
         _github_diff_cache.move_to_end(run_id)
-        return {"diff": _github_diff_cache[run_id]}
+        return _files_from_blob(_github_diff_cache[run_id], expand)
     result = await fetch_github_diff(repo, branch, base, token)
     if "error" in result:
         raise HTTPException(status_code=result.get("status", 502), detail=result["error"])
     _github_diff_cache[run_id] = result["diff"]
     if len(_github_diff_cache) > GITHUB_DIFF_CACHE_MAX:
         _github_diff_cache.popitem(last=False)
-    return result
+    return _files_from_blob(result["diff"], expand)
 
 
-async def _diff_via_sandbox(server: "AgentServer", run_id: str) -> dict:
-    """Return a unified diff from the live sandbox for an active run."""
+async def _diff_via_sandbox(
+    server: "AgentServer", run_id: str, expand: str | None,
+) -> dict:
+    """Unified file list (+ one body on expand) from the live sandbox."""
     client = server.pool().get_client(run_id)
     if not client:
         raise HTTPException(status_code=409, detail="No active sandbox for run")
     try:
-        return await client.repo.diff()
+        return await client.repo.diff(expand)
+    except SandboxHTTPError as exc:
+        # Surface the sandbox's own status (e.g. 404 for an unknown expand
+        # path) instead of masking every failure as a generic 502.
+        raise HTTPException(status_code=exc.status_code, detail=str(exc))
     except Exception as exc:
         log.warning("Sandbox diff failed for %s: %s", run_id, exc, exc_info=True)
         raise HTTPException(status_code=502, detail=f"Sandbox unreachable: {exc}")
@@ -183,16 +242,21 @@ def register_diff_routes(app: FastAPI, server: "AgentServer") -> None:
         repo: str,
         token: Annotated[str, Header(alias=HEADER_GITHUB_TOKEN)],
         source: Literal["sandbox", "github"] = "sandbox",
+        expand: str | None = None,
     ) -> dict:
-        """Full unified diff.
+        """Working-tree file list; one file's body when `expand` is set.
+
+        Response shape (identical for both sources):
+            {"files": [{path, status, added, removed, body}]}
+        Bodies are null unless `expand=<path>` is given, in which case that
+        one file's body is filled (404 if the path is not in the list).
 
         `source` controls the retrieval path:
-        - "sandbox" (default): diff against the live working tree via the
-          sandbox client. Returns 409 if no sandbox is available — the
-          caller (dashboard) should only use this mode for active runs.
-        - "github": compare via GitHub API. For completed runs whose
-          sandbox is gone. The agent caches these in an LRU so repeated
-          views don't re-fetch.
+        - "sandbox" (default): live working tree via the sandbox client.
+          Returns 409 if no sandbox is available — the caller (dashboard)
+          should only use this mode for active runs.
+        - "github": compare via GitHub API for completed runs whose sandbox
+          is gone. The raw blob is cached per run so expands don't re-fetch.
 
         The dashboard decides which source based on run.status; the agent
         never silently falls through from sandbox to GitHub, which
@@ -200,12 +264,15 @@ def register_diff_routes(app: FastAPI, server: "AgentServer") -> None:
         with a real remote branch and return an unrelated diff.
         """
         if source == "github":
-            return await _diff_via_github(run_id, repo, branch, base, token)
-        return await _diff_via_sandbox(server, run_id)
+            return await _diff_via_github(run_id, repo, branch, base, token, expand)
+        return await _diff_via_sandbox(server, run_id, expand)
 
     @app.get("/diff/tmp")
-    async def diff_tmp(run_id: str) -> dict:
-        """Unified diff of round files (all treated as new files).
+    async def diff_tmp(run_id: str, expand: str | None = None) -> dict:
+        """Round files as the unified {files:[...]} list (all new files).
+
+        Same contract as /diff/repo so the frontend consumes both identically:
+        bodies are null unless `expand=<path>` fills one (404 if absent).
 
         During round 1 the archive on the host volume is still empty — the files
         only exist inside the live sandbox at /tmp/round-N. So we check the
@@ -217,7 +284,7 @@ def register_diff_routes(app: FastAPI, server: "AgentServer") -> None:
             if client
             else _collect_tmp_from_archive(run_id)
         )
-        return {"diff": _build_tmp_diff(entries)}
+        return _tmp_files_response(entries, expand)
 
     @app.get("/branches")
     async def list_branches(
