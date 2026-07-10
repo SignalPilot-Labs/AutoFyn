@@ -288,6 +288,7 @@ export type AuditEventType =
   | "llm_thinking"
   | "round_ended"
   | "rate_limit"
+  | "credentials_exhausted_waiting"
   | "run_started"
   | "run_ended"
   | "agent_stop"
@@ -335,6 +336,7 @@ export interface AuditEventMeta {
 
 export const AUDIT_EVENT_META: Record<string, AuditEventMeta> = {
   rate_limit:          { label: "Rate Limit",        color: "text-[#ffaa00]",  bg: "bg-[#ffaa00]/[0.04]", iconColor: "#ffaa00" },
+  credentials_exhausted_waiting: { label: "Waiting for credentials", color: "text-[#ffaa00]",  bg: "bg-[#ffaa00]/[0.04]", iconColor: "#ffaa00" },
   run_started:         { label: "Run Started",       color: "text-[#88ccff]",  bg: "bg-[#88ccff]/[0.04]", iconColor: "#88ccff" },
   agent_stop:          { label: "Agent Stopped",     color: "text-[#ff8844]",  bg: "bg-[#ff8844]/[0.04]", iconColor: "#ff8844" },
   pr_failed:           { label: "PR Failed",         color: "text-[#ff4444]",  bg: "bg-[#ff4444]/[0.04]", iconColor: "#ff4444" },

@@ -116,6 +116,8 @@ class TestArchiveRoundExcInfo:
             patch("lifecycle.round_loop.build_round_system_prompt", return_value={"type": "default", "preset": "default"}),
             patch("lifecycle.round_loop.build_initial_prompt", return_value="Go"),
             patch("lifecycle.round_loop.build_agent_defs", return_value=[]),
+            patch("lifecycle.round_loop.acquire_and_inject", new_callable=AsyncMock) as mock_acquire,
+            patch("lifecycle.round_loop.report_round_outcome", new_callable=AsyncMock),
             caplog.at_level(logging.WARNING, logger="lifecycle.round_loop"),
         ):
             mock_runner_instance = MagicMock()
@@ -123,6 +125,7 @@ class TestArchiveRoundExcInfo:
             mock_runner_cls.return_value = mock_runner_instance
             mock_db.return_value = []
             mock_outcome.return_value = (terminal_outcome, 0)
+            mock_acquire.return_value = "anthropic:test"
 
             await run_rounds(
                 sandbox=sandbox,
@@ -165,12 +168,15 @@ class TestArchiveRoundExcInfo:
             patch("lifecycle.round_loop.build_round_system_prompt", return_value={"type": "default", "preset": "default"}),
             patch("lifecycle.round_loop.build_initial_prompt", return_value="Go"),
             patch("lifecycle.round_loop.build_agent_defs", return_value=[]),
+            patch("lifecycle.round_loop.acquire_and_inject", new_callable=AsyncMock) as mock_acquire,
+            patch("lifecycle.round_loop.report_round_outcome", new_callable=AsyncMock),
         ):
             mock_runner_instance = MagicMock()
             mock_runner_instance.run = AsyncMock(return_value=round_result)
             mock_runner_cls.return_value = mock_runner_instance
             mock_db.return_value = []
             mock_outcome.return_value = (terminal_outcome, 0)
+            mock_acquire.return_value = "anthropic:test"
 
             # Should not raise even though archive_round raises OSError
             result = await run_rounds(

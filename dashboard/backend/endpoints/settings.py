@@ -8,19 +8,20 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend import auth, crypto
+from backend import auth
 from backend.constants import (
     DECRYPT_ERROR_INDICATOR,
     MASK_PREFIX_DEFAULT,
-    MASTER_KEY_PATH,
     SECRET_KEYS,
 )
 from config.loader import load_subagents
+from common import crypto
 from db.constants import (
     DISABLED_SUBAGENTS_KEY_PREFIX,
     GITHUB_REPO_MAX_LEN,
     GITHUB_REPO_RE,
     HOST_MOUNTS_KEY_PREFIX,
+    MASTER_KEY_PATH,
     REPO_SUBAGENTS_CACHE_KEY_PREFIX,
     validate_host_mount,
 )

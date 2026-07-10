@@ -23,7 +23,7 @@ const TYPES_TS = fs.readFileSync(
 function extractPythonAuditTypes(): Set<string> {
   // Extract the AUDIT_EVENT_TYPES frozenset block
   const match = CONSTANTS_PY.match(
-    /AUDIT_EVENT_TYPES:\s*frozenset\[str\]\s*=\s*frozenset\(\{([\s\S]*?)\}\)/,
+    /AUDIT_EVENT_TYPES:\s*frozenset\[str\]\s*=\s*frozenset\(\s*\{([\s\S]*?)\}\s*\)/,
   );
   if (!match) throw new Error("Could not find AUDIT_EVENT_TYPES in db/constants.py");
   const types = new Set<string>();

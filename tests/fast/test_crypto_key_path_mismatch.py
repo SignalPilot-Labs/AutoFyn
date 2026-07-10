@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from dashboard.backend import crypto
+from common import crypto
 
 
 class TestCryptoKeyPathMismatch:

@@ -6,7 +6,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.constants import APP_TITLE, MASTER_KEY_PATH
+from backend.constants import APP_TITLE
+from db.constants import MASTER_KEY_PATH
 from backend.endpoints.runs import router as runs_router
 from backend.endpoints.settings import router as settings_router
 from backend.endpoints.streaming import router as streaming_router

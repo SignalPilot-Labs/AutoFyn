@@ -28,6 +28,7 @@ from backend.utils import (
     read_token_pool,
     remove_token_from_pool,
 )
+from common.broker import Lease
 
 
 def _make_session_with_pool(tokens: list[str], encrypted_blob: str = "enc-blob") -> MagicMock:
@@ -202,13 +203,12 @@ class TestPickNextTokenUsesLock:
             return ["tok-1", "tok-2"]
 
         s = MagicMock()
-        idx_row = MagicMock()
-        idx_row.value = "0"
-        s.get = AsyncMock(return_value=idx_row)
+        lease = Lease(credential_id="anthropic:aaa", index=0)
 
         with (
             patch("backend.utils.read_token_pool", new=fake_read_token_pool),
-            patch("backend.utils.upsert_setting", new=AsyncMock()),
+            patch("backend.utils.credential_id", new=MagicMock(side_effect=lambda p, m: m)),
+            patch("backend.utils.acquire", new=AsyncMock(return_value=lease)),
         ):
             result = await _pick_next_claude_token(s)
 

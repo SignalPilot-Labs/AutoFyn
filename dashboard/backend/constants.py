@@ -13,7 +13,6 @@ from db.constants import (
 APP_TITLE = "AutoFyn Dashboard API"
 
 # Secret files (inside Docker volume — autofyn-keys:/data)
-MASTER_KEY_PATH = "/data/master.key"
 API_KEY_PATH = "/data/api.key"
 
 # Agent service URL (Docker network) — port from config/config.yml
