@@ -103,19 +103,22 @@ export function ModelSelector({ value, onChange }: ModelSelectorProps): React.Re
         </svg>
       </button>
 
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.15 }}
-            className="absolute z-50 mt-1 w-full bg-bg-elevated border border-border rounded shadow-xl shadow-black/40 overflow-hidden"
-            role="listbox"
-            aria-label="Model"
-            onKeyDown={handleListKeyDown}
+            style={{ overflow: "hidden" }}
+            className="mt-1 w-full"
           >
-            <div className="max-h-[280px] overflow-y-auto py-1">
+            <div
+              role="listbox"
+              aria-label="Model"
+              onKeyDown={handleListKeyDown}
+              className="max-h-[190px] overflow-y-auto py-1 bg-bg-elevated border border-border rounded shadow-xl shadow-black/40"
+            >
               {ordered.map((m, idx) => {
                 const isSelected = m.id === value;
                 const isLegacy = m.tier === LEGACY_TIER;
@@ -191,3 +194,4 @@ export function ModelSelector({ value, onChange }: ModelSelectorProps): React.Re
     </div>
   );
 }
+
