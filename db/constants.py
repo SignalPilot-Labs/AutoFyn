@@ -72,12 +72,13 @@ CLEANABLE_RUN_STATUSES: frozenset[str] = frozenset(
 
 # ── Models ──
 # Pinned to exact SDK model IDs. No aliases, no translation layer.
+SUPPORTED_FABLE: str = "claude-fable-5"
 SUPPORTED_OPUS: str = "claude-opus-4-8"
 SUPPORTED_SONNET: str = "claude-sonnet-4-6"
 LEGACY_OPUS: str = "claude-opus-4-5"
 
-VALID_MODELS: tuple[str, ...] = (SUPPORTED_OPUS, SUPPORTED_SONNET, LEGACY_OPUS)
-DEFAULT_MODEL: str = SUPPORTED_OPUS
+VALID_MODELS: tuple[str, ...] = (SUPPORTED_FABLE, SUPPORTED_OPUS, SUPPORTED_SONNET, LEGACY_OPUS)
+DEFAULT_MODEL: str = SUPPORTED_FABLE
 VALID_MODELS_PATTERN: str = f"^({'|'.join(VALID_MODELS)})$"
 
 # Structured metadata for the /api/models endpoint — the single source of
@@ -91,10 +92,18 @@ VALID_MODELS_PATTERN: str = f"^({'|'.join(VALID_MODELS)})$"
 #   tier        — opus | sonnet | legacy (drives subagent tier resolution)
 SUPPORTED_MODELS: list[dict[str, str]] = [
     {
+        "id": SUPPORTED_FABLE,
+        "label": "Claude Fable 5",
+        "short": "Fable 5",
+        "description": "Most capable, for demanding agentic work",
+        "context": "1M context",
+        "tier": "opus",
+    },
+    {
         "id": SUPPORTED_OPUS,
         "label": "Claude Opus 4.8",
         "short": "Opus 4.8",
-        "description": "Most capable, best for agents",
+        "description": "Highly capable, strong for agents",
         "context": "1M context",
         "tier": "opus",
     },
@@ -123,7 +132,7 @@ DEFAULT_BASE_BRANCH: str = "main"
 VALID_EFFORTS_PATTERN: str = f"^({'|'.join(VALID_EFFORTS)})$"
 
 # Models that support effort="max". Others get downgraded to "high".
-MODELS_SUPPORTING_MAX_EFFORT: frozenset[str] = frozenset({SUPPORTED_OPUS, SUPPORTED_SONNET})
+MODELS_SUPPORTING_MAX_EFFORT: frozenset[str] = frozenset({SUPPORTED_FABLE, SUPPORTED_OPUS, SUPPORTED_SONNET})
 
 
 # ── Host Mounts ──
