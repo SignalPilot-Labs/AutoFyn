@@ -3,7 +3,7 @@
 from fastapi import Path
 from pydantic import BaseModel, Field, field_validator
 
-from db.constants import DEFAULT_EFFORT, DEFAULT_MODEL, ENV_VAR_KEY_RE, ENV_VAR_MAX_KEY_LEN, ENV_VAR_MAX_VALUE_LEN, GITHUB_REPO_MAX_LEN, GITHUB_REPO_PATTERN, MAX_ENV_VARS, MAX_HOST_MOUNTS, MAX_MCP_SERVERS, MAX_SUBAGENTS, VALID_EFFORTS_PATTERN, VALID_MODELS_PATTERN, VALID_PRESET_PATTERN, validate_prompt_length
+from db.constants import DEFAULT_EFFORT, DEFAULT_MODEL, ENV_VAR_KEY_RE, ENV_VAR_MAX_KEY_LEN, ENV_VAR_MAX_VALUE_LEN, GITHUB_REPO_MAX_LEN, GITHUB_REPO_PATTERN, MAX_ENV_VARS, MAX_HOST_MOUNTS, MAX_MCP_SERVERS, MAX_SUBAGENTS, TOKEN_LABEL_MAX_LEN, TOKEN_VALUE_MAX_LEN, VALID_EFFORTS_PATTERN, VALID_MODELS_PATTERN, VALID_PRESET_PATTERN, validate_prompt_length
 
 
 RunId = Path(min_length=36, max_length=36, pattern=r"^[0-9a-f\-]{36}$")
@@ -136,4 +136,5 @@ class SaveRepoEnvRequest(BaseModel):
 class AddTokenRequest(BaseModel):
     """Request body for adding a Claude token to the pool."""
 
-    token: str = Field(min_length=1, max_length=4096)
+    token: str = Field(min_length=1, max_length=TOKEN_VALUE_MAX_LEN)
+    label: str | None = Field(default=None, max_length=TOKEN_LABEL_MAX_LEN)

@@ -29,6 +29,7 @@ from backend.utils import (
     remove_token_from_pool,
 )
 from common.broker import Lease
+from common.models import Token
 
 
 def _make_session_with_pool(tokens: list[str], encrypted_blob: str = "enc-blob") -> MagicMock:
@@ -80,7 +81,7 @@ class TestReadTokenPoolForUpdate:
 
         s.get.assert_not_called()
         s.execute.assert_called_once()
-        assert result == tokens
+        assert [t.value for t in result] == tokens
 
     @pytest.mark.asyncio
     async def test_for_update_true_returns_empty_when_no_row(self) -> None:
@@ -103,9 +104,9 @@ class TestAddTokenToPoolUsesLock:
         """add_token_to_pool must pass for_update=True to read_token_pool."""
         captured_kwargs: list[dict] = []
 
-        async def fake_read_token_pool(s: MagicMock, for_update: bool = False) -> list[str]:
+        async def fake_read_token_pool(s: MagicMock, for_update: bool = False) -> list[Token]:
             captured_kwargs.append({"for_update": for_update})
-            return ["existing-token"]
+            return [Token(value="existing-token", label=None)]
 
         s = MagicMock()
         s.commit = AsyncMock()
@@ -117,7 +118,7 @@ class TestAddTokenToPoolUsesLock:
         ):
             mock_session_ctx.return_value.__aenter__ = AsyncMock(return_value=s)
             mock_session_ctx.return_value.__aexit__ = AsyncMock(return_value=None)
-            await add_token_to_pool("new-token")
+            await add_token_to_pool("new-token", None)
 
         assert len(captured_kwargs) == 1
         assert captured_kwargs[0]["for_update"] is True
@@ -154,9 +155,9 @@ class TestRemoveTokenFromPoolUsesLock:
         """remove_token_from_pool must pass for_update=True to read_token_pool."""
         captured_kwargs: list[dict] = []
 
-        async def fake_read_token_pool(s: MagicMock, for_update: bool = False) -> list[str]:
+        async def fake_read_token_pool(s: MagicMock, for_update: bool = False) -> list[Token]:
             captured_kwargs.append({"for_update": for_update})
-            return ["token-a", "token-b"]
+            return [Token(value="token-a", label=None), Token(value="token-b", label=None)]
 
         s = MagicMock()
         s.get = AsyncMock(return_value=None)
@@ -181,7 +182,7 @@ class TestRemoveTokenFromPoolUsesLock:
         s.commit = AsyncMock()
 
         with (
-            patch("backend.utils.read_token_pool", new=AsyncMock(return_value=["only-token"])),
+            patch("backend.utils.read_token_pool", new=AsyncMock(return_value=[Token(value="only-token", label=None)])),
             patch("backend.utils.session") as mock_session_ctx,
         ):
             mock_session_ctx.return_value.__aenter__ = AsyncMock(return_value=s)
@@ -198,9 +199,9 @@ class TestPickNextTokenUsesLock:
         """_pick_next_claude_token must pass for_update=True to read_token_pool."""
         captured_kwargs: list[dict] = []
 
-        async def fake_read_token_pool(s: MagicMock, for_update: bool = False) -> list[str]:
+        async def fake_read_token_pool(s: MagicMock, for_update: bool = False) -> list[Token]:
             captured_kwargs.append({"for_update": for_update})
-            return ["tok-1", "tok-2"]
+            return [Token(value="tok-1", label=None), Token(value="tok-2", label=None)]
 
         s = MagicMock()
         lease = Lease(credential_id="anthropic:aaa", index=0)
@@ -208,7 +209,10 @@ class TestPickNextTokenUsesLock:
         with (
             patch("backend.utils.read_token_pool", new=fake_read_token_pool),
             patch("backend.utils.credential_id", new=MagicMock(side_effect=lambda p, m: m)),
-            patch("backend.utils.acquire", new=AsyncMock(return_value=lease)),
+            patch(
+                "backend.utils.CredentialBroker",
+                new=MagicMock(return_value=MagicMock(acquire=AsyncMock(return_value=lease))),
+            ),
         ):
             result = await _pick_next_claude_token(s)
 

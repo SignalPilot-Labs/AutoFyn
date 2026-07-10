@@ -40,11 +40,11 @@ export async function fetchPoolTokens(): Promise<PoolToken[]> {
   }
 }
 
-export async function addPoolToken(token: string): Promise<{ ok: boolean; count: number }> {
+export async function addPoolToken(token: string, label: string | null): Promise<{ ok: boolean; count: number }> {
   const res = await apiFetch(`/api/tokens`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token }),
+    body: JSON.stringify({ token, label }),
   });
   if (!res.ok) throw new Error("Failed to add token");
   return res.json();

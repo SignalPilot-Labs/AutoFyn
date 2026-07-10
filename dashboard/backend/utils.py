@@ -33,7 +33,8 @@ from db.constants import (
     PROVIDER_ANTHROPIC,
     REMOTE_MOUNTS_KEY_PREFIX,
 )
-from common.broker import WaitDirective, acquire, credential_id
+from common.broker import CredentialBroker, WaitDirective, credential_id
+from common.models import Token, parse_token_pool
 from db.models import AuditLog, ControlSignal, Run, Setting
 
 
@@ -256,18 +257,18 @@ async def _pick_next_claude_token(s: AsyncSession) -> str | None:
     tokens = await read_token_pool(s, for_update=True)
     if not tokens:
         return None
-    ids = [credential_id(PROVIDER_ANTHROPIC, t) for t in tokens]
-    result = await acquire(s, PROVIDER_ANTHROPIC, ids, CLAUDE_TOKEN_INDEX_KEY)
+    ids = [credential_id(PROVIDER_ANTHROPIC, t.value) for t in tokens]
+    result = await CredentialBroker(s).acquire(PROVIDER_ANTHROPIC, ids, CLAUDE_TOKEN_INDEX_KEY)
     if isinstance(result, WaitDirective):
         return None
-    return tokens[result.index]
+    return tokens[result.index].value
 
 
 # ---------------------------------------------------------------------------
 # Token pool CRUD
 # ---------------------------------------------------------------------------
 
-async def read_token_pool(s: AsyncSession, for_update: bool) -> list[str]:
+async def read_token_pool(s: AsyncSession, for_update: bool) -> list[Token]:
     """Read the decrypted token pool.
 
     When for_update=True, acquires a row-level lock (SELECT ... FOR UPDATE)
@@ -281,30 +282,30 @@ async def read_token_pool(s: AsyncSession, for_update: bool) -> list[str]:
     else:
         pool = await s.get(Setting, CLAUDE_TOKENS_KEY)
     if pool:
-        return _decrypt_json(pool, "Token pool")
+        return parse_token_pool(_decrypt_json(pool, "Token pool"))
     return []
 
 
-async def _write_token_pool(s: AsyncSession, tokens: list[str]) -> None:
+async def _write_token_pool(s: AsyncSession, tokens: list[Token]) -> None:
     """Encrypt and write the token pool."""
-    encrypted = crypto.encrypt(json.dumps(tokens), MASTER_KEY_PATH)
+    encrypted = crypto.encrypt(json.dumps([t.model_dump() for t in tokens]), MASTER_KEY_PATH)
     await upsert_setting(s, CLAUDE_TOKENS_KEY, encrypted, True)
 
 
-async def add_token_to_pool(raw_token: str) -> dict:
-    """Add a Claude token to the pool. Rejects duplicates."""
+async def add_token_to_pool(raw_token: str, label: str | None) -> dict:
+    """Add a Claude token to the pool. Rejects duplicate values."""
     async with session() as s:
         tokens = await read_token_pool(s, for_update=True)
-        if raw_token in tokens:
+        if any(t.value == raw_token for t in tokens):
             raise ValueError("This token is already in the pool")
-        tokens.append(raw_token)
+        tokens.append(Token(value=raw_token, label=label))
         await _write_token_pool(s, tokens)
         await s.commit()
     return {"ok": True, "count": len(tokens)}
 
 
 async def list_pool_tokens() -> list[dict]:
-    """List all tokens in the pool (masked)."""
+    """List all tokens in the pool (value masked, label as-is)."""
     async with session() as s:
         tokens = await read_token_pool(s, for_update=False)
         idx_row = await s.get(Setting, CLAUDE_TOKEN_INDEX_KEY)
@@ -314,7 +315,12 @@ async def list_pool_tokens() -> list[dict]:
     has_used = idx_value is not None
     active_idx = (int(idx_value) - 1) % len(tokens) if has_used else -1
     return [
-        {"index": i, "masked": crypto.mask(t, prefix_len=MASK_PREFIX_CLAUDE_TOKEN), "active": has_used and i == active_idx}
+        {
+            "index": i,
+            "masked": crypto.mask(t.value, prefix_len=MASK_PREFIX_CLAUDE_TOKEN),
+            "label": t.label,
+            "active": has_used and i == active_idx,
+        }
         for i, t in enumerate(tokens)
     ]
 
@@ -425,7 +431,7 @@ async def autofill_settings(master_key_path: str) -> None:
 
         claude_token = os.environ.get("CLAUDE_CODE_OAUTH_TOKEN")
         if claude_token:
-            pool = json.dumps([claude_token])
+            pool = json.dumps([Token(value=claude_token, label=None).model_dump()])
             encrypted = crypto.encrypt(pool, master_key_path)
             await upsert_setting(s, CLAUDE_TOKENS_KEY, encrypted, True)
 

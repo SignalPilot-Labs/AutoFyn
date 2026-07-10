@@ -50,6 +50,9 @@ export const CONTAINER_LOGS_DEFAULT_TAIL = 500;
 export const PROMPT_LABEL_MAX_LEN = 40;
 export const STATUS_FLASH_DURATION_MS = 500;
 
+// Token pool — must match db/constants.py TOKEN_LABEL_MAX_LEN
+export const TOKEN_LABEL_MAX_LEN = 16;
+
 // Toast notifications
 export const TOAST_DURATION_MS = 3000;
 export const MAX_VISIBLE_TOASTS = 3;

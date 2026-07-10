@@ -14,13 +14,7 @@ from db.constants import (
 )
 from db.models import Run
 from sandbox_client.client import SandboxClient
-from common.broker import (
-    WaitDirective,
-    acquire,
-    credential_id,
-    read_claude_tokens,
-    report_exhausted,
-)
+from common.broker import CredentialBroker, WaitDirective, credential_id
 from utils import db
 from utils.constants import ENV_KEY_CLAUDE_TOKEN
 from utils.db_logging import log_audit
@@ -37,11 +31,12 @@ async def acquire_and_inject(sandbox: SandboxClient, run_id: str) -> str:
     parked = False
     while True:
         async with get_session_factory()() as s:
-            tokens = await read_claude_tokens(s)
+            broker = CredentialBroker(s)
+            tokens = await broker.read_claude_tokens()
             if not tokens:
                 raise RuntimeError("no Claude credentials configured")
             ids = [credential_id(PROVIDER_ANTHROPIC, t) for t in tokens]
-            result = await acquire(s, PROVIDER_ANTHROPIC, ids, CLAUDE_TOKEN_INDEX_KEY)
+            result = await broker.acquire(PROVIDER_ANTHROPIC, ids, CLAUDE_TOKEN_INDEX_KEY)
             await s.commit()
 
         if not isinstance(result, WaitDirective):
@@ -74,5 +69,5 @@ async def report_round_outcome(run_id: str, cred_id: str) -> None:
         reset_dt = datetime.fromtimestamp(run.rate_limit_resets_at, tz=timezone.utc)
         if reset_dt <= datetime.now(timezone.utc):
             return
-        await report_exhausted(s, cred_id, reset_dt)
+        await CredentialBroker(s).report_exhausted(cred_id, reset_dt)
         await s.commit()

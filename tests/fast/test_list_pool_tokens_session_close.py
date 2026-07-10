@@ -17,6 +17,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from backend.utils import list_pool_tokens
+from common.models import Token
 
 
 def _make_session_expiring(idx_value: str | None) -> MagicMock:
@@ -43,7 +44,11 @@ class TestListPoolTokensSessionClose:
     @pytest.mark.asyncio
     async def test_value_read_inside_session_with_active_token(self) -> None:
         """idx_row.value must be read before session closes; result is correct."""
-        tokens = ["sk-ant-tokenA", "sk-ant-tokenB", "sk-ant-tokenC"]
+        tokens = [
+            Token(value="sk-ant-tokenA", label=None),
+            Token(value="sk-ant-tokenB", label=None),
+            Token(value="sk-ant-tokenC", label=None),
+        ]
         s = _make_session_expiring("2")
 
         with (
@@ -64,7 +69,7 @@ class TestListPoolTokensSessionClose:
     @pytest.mark.asyncio
     async def test_value_read_inside_session_no_idx_row(self) -> None:
         """When idx_row is None, idx_value must be None and no token is active."""
-        tokens = ["sk-ant-tokenA", "sk-ant-tokenB"]
+        tokens = [Token(value="sk-ant-tokenA", label=None), Token(value="sk-ant-tokenB", label=None)]
         s = _make_session_expiring(None)
 
         with (
@@ -85,7 +90,11 @@ class TestListPoolTokensSessionClose:
         Also verifies idx_row.value is read inside the session: if it were
         read after session close, the attribute would be expired and raise.
         """
-        tokens = ["sk-ant-tokenA", "sk-ant-tokenB", "sk-ant-tokenC"]
+        tokens = [
+            Token(value="sk-ant-tokenA", label=None),
+            Token(value="sk-ant-tokenB", label=None),
+            Token(value="sk-ant-tokenC", label=None),
+        ]
         s = _make_session_expiring("0")
 
         with (

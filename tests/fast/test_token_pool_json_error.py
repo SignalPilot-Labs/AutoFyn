@@ -66,4 +66,4 @@ class TestTokenPoolJsonError:
             mock_crypto.decrypt.return_value = json.dumps(tokens)
             result = await read_token_pool(mock_session, for_update=False)
 
-        assert result == tokens
+        assert [t.value for t in result] == tokens

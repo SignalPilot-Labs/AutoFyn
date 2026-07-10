@@ -410,6 +410,7 @@ export interface Settings {
 export interface PoolToken {
   index: number;
   masked: string;
+  label: string | null;
   active: boolean;
 }
 

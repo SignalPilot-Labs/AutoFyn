@@ -20,6 +20,12 @@ import pytest
 
 from backend.utils import _pick_next_claude_token
 from common.broker import Lease, WaitDirective
+from common.models import Token
+
+
+def _broker_returning(result: object) -> MagicMock:
+    """Patch target for backend.utils.CredentialBroker whose acquire returns result."""
+    return MagicMock(return_value=MagicMock(acquire=AsyncMock(return_value=result)))
 
 
 class TestTokenPickNoCommit:
@@ -28,7 +34,7 @@ class TestTokenPickNoCommit:
     @pytest.mark.asyncio
     async def test_commit_not_called_on_pick(self) -> None:
         """_pick_next_claude_token must not call s.commit()."""
-        tokens = ["sk-ant-tokenA", "sk-ant-tokenB"]
+        tokens = [Token(value="sk-ant-tokenA", label=None), Token(value="sk-ant-tokenB", label=None)]
         s = MagicMock()
         s.commit = AsyncMock()
         lease = Lease(credential_id="anthropic:aaa", index=0)
@@ -36,7 +42,7 @@ class TestTokenPickNoCommit:
         with (
             patch("backend.utils.read_token_pool", new=AsyncMock(return_value=tokens)),
             patch("backend.utils.credential_id", new=MagicMock(side_effect=lambda p, m: m)),
-            patch("backend.utils.acquire", new=AsyncMock(return_value=lease)),
+            patch("backend.utils.CredentialBroker", new=_broker_returning(lease)),
         ):
             result = await _pick_next_claude_token(s)
 
@@ -46,7 +52,11 @@ class TestTokenPickNoCommit:
     @pytest.mark.asyncio
     async def test_returns_token_at_lease_index(self) -> None:
         """The picked token is tokens[lease.index] from the broker's Lease."""
-        tokens = ["sk-ant-tokenA", "sk-ant-tokenB", "sk-ant-tokenC"]
+        tokens = [
+            Token(value="sk-ant-tokenA", label=None),
+            Token(value="sk-ant-tokenB", label=None),
+            Token(value="sk-ant-tokenC", label=None),
+        ]
         s = MagicMock()
         s.commit = AsyncMock()
         lease = Lease(credential_id="anthropic:bbb", index=1)
@@ -54,7 +64,7 @@ class TestTokenPickNoCommit:
         with (
             patch("backend.utils.read_token_pool", new=AsyncMock(return_value=tokens)),
             patch("backend.utils.credential_id", new=MagicMock(side_effect=lambda p, m: m)),
-            patch("backend.utils.acquire", new=AsyncMock(return_value=lease)),
+            patch("backend.utils.CredentialBroker", new=_broker_returning(lease)),
         ):
             result = await _pick_next_claude_token(s)
 
@@ -76,7 +86,7 @@ class TestTokenPickNoCommit:
     @pytest.mark.asyncio
     async def test_wait_directive_returns_none_without_commit(self) -> None:
         """When the broker returns a WaitDirective (all cooling down), returns None."""
-        tokens = ["sk-ant-tokenA", "sk-ant-tokenB"]
+        tokens = [Token(value="sk-ant-tokenA", label=None), Token(value="sk-ant-tokenB", label=None)]
         s = MagicMock()
         s.commit = AsyncMock()
         directive = WaitDirective(
@@ -86,7 +96,7 @@ class TestTokenPickNoCommit:
         with (
             patch("backend.utils.read_token_pool", new=AsyncMock(return_value=tokens)),
             patch("backend.utils.credential_id", new=MagicMock(side_effect=lambda p, m: m)),
-            patch("backend.utils.acquire", new=AsyncMock(return_value=directive)),
+            patch("backend.utils.CredentialBroker", new=_broker_returning(directive)),
         ):
             result = await _pick_next_claude_token(s)
 

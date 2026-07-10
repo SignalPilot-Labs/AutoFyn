@@ -4,6 +4,7 @@
 
 import { AnimatePresence } from "framer-motion";
 import type { PoolToken } from "@/lib/types";
+import { TOKEN_LABEL_MAX_LEN } from "@/lib/constants";
 import { Button } from "@/components/ui/Button";
 import { ListRow } from "@/components/ui/ListRow";
 import { IconLock, IconCheck, IconPlus } from "@/components/ui/icons";
@@ -11,9 +12,11 @@ import { IconLock, IconCheck, IconPlus } from "@/components/ui/icons";
 interface TokenPoolSectionProps {
   tokens: PoolToken[];
   newToken: string;
+  newLabel: string;
   addingToken: boolean;
   tokenError: string | null;
   onNewTokenChange: (value: string) => void;
+  onNewLabelChange: (value: string) => void;
   onAddToken: () => void;
   onRemoveToken: (index: number) => void;
 }
@@ -21,9 +24,11 @@ interface TokenPoolSectionProps {
 export function TokenPoolSection({
   tokens,
   newToken,
+  newLabel,
   addingToken,
   tokenError,
   onNewTokenChange,
+  onNewLabelChange,
   onAddToken,
   onRemoveToken,
 }: TokenPoolSectionProps) {
@@ -43,9 +48,20 @@ export function TokenPoolSection({
           {tokens.map((t) => (
             <ListRow key={t.masked} layoutId={t.masked} onDelete={() => onRemoveToken(t.index)} deleteTitle="Remove token">
               <IconLock className="text-text-secondary shrink-0" />
-              <span className="text-content font-mono text-accent-hover flex-1 min-w-0 truncate">
-                {t.masked}
-              </span>
+              {t.label ? (
+                <>
+                  <span className="text-content text-accent-hover shrink-0 truncate">
+                    {t.label}
+                  </span>
+                  <span className="text-content font-mono text-text-secondary flex-1 min-w-0 truncate">
+                    {t.masked}
+                  </span>
+                </>
+              ) : (
+                <span className="text-content font-mono text-accent-hover flex-1 min-w-0 truncate">
+                  {t.masked}
+                </span>
+              )}
               {t.active && (
                 <span className="flex items-center gap-1 text-content text-[#00ff88]/60 shrink-0">
                   <IconCheck />
@@ -64,6 +80,17 @@ export function TokenPoolSection({
       </div>
 
       <div className="flex gap-2">
+        <input
+          type="text"
+          value={newLabel}
+          onChange={(e) => { onNewLabelChange(e.target.value); }}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); onAddToken(); } }}
+          placeholder="Name (optional)"
+          maxLength={TOKEN_LABEL_MAX_LEN}
+          className="w-32 bg-black/30 border border-border rounded px-3 py-2 text-content text-accent-hover placeholder:text-text-secondary focus-visible:outline-none focus-visible:border-[#00ff88]/30 focus-visible:ring-1 focus-visible:ring-[#00ff88]/40 transition-all"
+          autoComplete="off"
+          spellCheck={false}
+        />
         <input
           type="password"
           value={newToken}

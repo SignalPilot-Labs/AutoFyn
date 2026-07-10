@@ -128,7 +128,7 @@ export function OnboardingModal({ open, onComplete, initialStatus }: OnboardingM
     setSaving(true);
     try {
       if (currentStep.key === "claude_token") {
-        await addPoolToken(currentValue.trim());
+        await addPoolToken(currentValue.trim(), null);
       } else {
         await updateSettings({ [currentStep.key]: currentValue.trim() });
       }

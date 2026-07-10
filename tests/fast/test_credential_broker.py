@@ -15,16 +15,10 @@ import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from db.constants import CREDENTIAL_DEFAULT_COOLDOWN_SECONDS, PROVIDER_ANTHROPIC
-from common.broker import (
-    Lease,
-    WaitDirective,
-    acquire,
-    credential_id,
-    report_exhausted,
-)
+from common.broker import CredentialBroker, Lease, WaitDirective, credential_id
 from db.models import CredentialHealth
 
-_CURSOR_KEY = "claude_token_index"
+_ROTATION_KEY = "claude_token_index"
 _IDS = ["anthropic:aaa", "anthropic:bbb", "anthropic:ccc"]
 
 
@@ -49,36 +43,39 @@ class TestCredentialBroker:
         await engine.dispose()
 
     @pytest.mark.asyncio
-    async def test_round_robin_advances_cursor(self, session: AsyncSession) -> None:
-        """No cursor picks index 0; the next acquire picks index 1."""
-        first = await acquire(session, PROVIDER_ANTHROPIC, _IDS, _CURSOR_KEY)
+    async def test_round_robin_advances_rotation(self, session: AsyncSession) -> None:
+        """No rotation bookmark picks index 0; the next acquire picks index 1."""
+        broker = CredentialBroker(session)
+        first = await broker.acquire(PROVIDER_ANTHROPIC, _IDS, _ROTATION_KEY)
         assert isinstance(first, Lease)
         assert first.index == 0
 
-        second = await acquire(session, PROVIDER_ANTHROPIC, _IDS, _CURSOR_KEY)
+        second = await broker.acquire(PROVIDER_ANTHROPIC, _IDS, _ROTATION_KEY)
         assert isinstance(second, Lease)
         assert second.index == 1
 
     @pytest.mark.asyncio
     async def test_skips_cooling_down_id(self, session: AsyncSession) -> None:
         """A future cooldown on ids[0] makes acquire pick a different id."""
+        broker = CredentialBroker(session)
         future = datetime.now(timezone.utc) + timedelta(hours=1)
-        await report_exhausted(session, _IDS[0], future)
+        await broker.report_exhausted(_IDS[0], future)
 
-        result = await acquire(session, PROVIDER_ANTHROPIC, _IDS, _CURSOR_KEY)
+        result = await broker.acquire(PROVIDER_ANTHROPIC, _IDS, _ROTATION_KEY)
         assert isinstance(result, Lease)
         assert result.credential_id != _IDS[0]
 
     @pytest.mark.asyncio
     async def test_all_cooling_down_returns_wait(self, session: AsyncSession) -> None:
         """When every id cools down, acquire returns the soonest wait_until."""
+        broker = CredentialBroker(session)
         now = datetime.now(timezone.utc)
         soonest = now + timedelta(minutes=5)
-        await report_exhausted(session, _IDS[0], soonest)
-        await report_exhausted(session, _IDS[1], now + timedelta(minutes=10))
-        await report_exhausted(session, _IDS[2], now + timedelta(minutes=20))
+        await broker.report_exhausted(_IDS[0], soonest)
+        await broker.report_exhausted(_IDS[1], now + timedelta(minutes=10))
+        await broker.report_exhausted(_IDS[2], now + timedelta(minutes=20))
 
-        result = await acquire(session, PROVIDER_ANTHROPIC, _IDS, _CURSOR_KEY)
+        result = await broker.acquire(PROVIDER_ANTHROPIC, _IDS, _ROTATION_KEY)
         assert isinstance(result, WaitDirective)
         assert _as_utc(result.wait_until) == soonest
 
@@ -86,13 +83,13 @@ class TestCredentialBroker:
     async def test_empty_ids_raises(self, session: AsyncSession) -> None:
         """acquire with no ids raises ValueError."""
         with pytest.raises(ValueError):
-            await acquire(session, PROVIDER_ANTHROPIC, [], _CURSOR_KEY)
+            await CredentialBroker(session).acquire(PROVIDER_ANTHROPIC, [], _ROTATION_KEY)
 
     @pytest.mark.asyncio
     async def test_report_exhausted_none_uses_default_cooldown(self, session: AsyncSession) -> None:
         """reset_at=None sets cooldown to a future time (~now + default cooldown)."""
         before = datetime.now(timezone.utc)
-        await report_exhausted(session, _IDS[0], None)
+        await CredentialBroker(session).report_exhausted(_IDS[0], None)
 
         row = await session.get(CredentialHealth, _IDS[0])
         assert row is not None
@@ -105,10 +102,11 @@ class TestCredentialBroker:
     @pytest.mark.asyncio
     async def test_expired_cooldown_becomes_available(self, session: AsyncSession) -> None:
         """A cooldown in the past no longer blocks selection (automatic recovery)."""
+        broker = CredentialBroker(session)
         past = datetime.now(timezone.utc) - timedelta(hours=1)
-        await report_exhausted(session, _IDS[0], past)
+        await broker.report_exhausted(_IDS[0], past)
 
-        result = await acquire(session, PROVIDER_ANTHROPIC, [_IDS[0]], _CURSOR_KEY)
+        result = await broker.acquire(PROVIDER_ANTHROPIC, [_IDS[0]], _ROTATION_KEY)
         assert isinstance(result, Lease)
         assert result.credential_id == _IDS[0]
 

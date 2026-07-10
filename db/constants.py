@@ -102,6 +102,8 @@ CLAUDE_TOKENS_KEY: str = "claude_tokens"
 CLAUDE_TOKEN_INDEX_KEY: str = "claude_token_index"
 CREDENTIAL_WAIT_POLL_SECONDS: int = 30
 CREDENTIAL_DEFAULT_COOLDOWN_SECONDS: int = 300
+TOKEN_VALUE_MAX_LEN: int = 4096
+TOKEN_LABEL_MAX_LEN: int = 16
 
 # Structured metadata for the /api/models endpoint — the single source of
 # truth the dashboard fetches at runtime. The frontend defines no model list

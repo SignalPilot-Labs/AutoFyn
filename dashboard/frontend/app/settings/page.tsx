@@ -100,6 +100,7 @@ export default function SettingsPage() {
 
   const [tokens, setTokens] = useState<PoolToken[]>([]);
   const [newToken, setNewToken] = useState("");
+  const [newLabel, setNewLabel] = useState("");
   const [addingToken, setAddingToken] = useState(false);
   const [tokenError, setTokenError] = useState<string | null>(null);
 
@@ -215,9 +216,10 @@ export default function SettingsPage() {
     setAddingToken(true);
     setTokenError(null);
     try {
-      await addPoolToken(val);
+      await addPoolToken(val, newLabel.trim() || null);
       setTokens(await fetchPoolTokens());
       setNewToken("");
+      setNewLabel("");
     } catch (e) {
       setTokenError(e instanceof Error ? e.message : "Failed to add token");
     } finally {
@@ -323,9 +325,11 @@ export default function SettingsPage() {
             <TokenPoolSection
               tokens={tokens}
               newToken={newToken}
+              newLabel={newLabel}
               addingToken={addingToken}
               tokenError={tokenError}
               onNewTokenChange={(v) => { setNewToken(v); setTokenError(null); }}
+              onNewLabelChange={setNewLabel}
               onAddToken={handleAddToken}
               onRemoveToken={handleRemoveToken}
             />

@@ -98,4 +98,5 @@ class TestReadTokenPool:
         with patch("backend.utils.crypto.decrypt", return_value=json.dumps(tokens)):
             result = await read_token_pool(s, for_update=False)
 
-        assert result == tokens
+        assert [t.value for t in result] == tokens
+        assert all(t.label is None for t in result)
