@@ -30,45 +30,49 @@ RUN_STATUS_CONNECTOR_LOST: str = "connector_lost"
 # Canonical set of all run status values.
 # Cross-language sync test (test_run_status_sync.py) verifies this matches
 # the TypeScript RunStatus union in dashboard/frontend/lib/types.ts.
-RUN_STATUSES: frozenset[str] = frozenset({
-    RUN_STATUS_STARTING,
-    RUN_STATUS_RUNNING,
-    RUN_STATUS_PAUSED,
-    RUN_STATUS_RATE_LIMITED,
-    RUN_STATUS_COMPLETED,
-    RUN_STATUS_COMPLETED_NO_CHANGES,
-    RUN_STATUS_STOPPED,
-    RUN_STATUS_ERROR,
-    RUN_STATUS_CRASHED,
-    RUN_STATUS_KILLED,
-    RUN_STATUS_CONNECTOR_LOST,
-})
+RUN_STATUSES: frozenset[str] = frozenset(
+    {
+        RUN_STATUS_STARTING,
+        RUN_STATUS_RUNNING,
+        RUN_STATUS_PAUSED,
+        RUN_STATUS_RATE_LIMITED,
+        RUN_STATUS_COMPLETED,
+        RUN_STATUS_COMPLETED_NO_CHANGES,
+        RUN_STATUS_STOPPED,
+        RUN_STATUS_ERROR,
+        RUN_STATUS_CRASHED,
+        RUN_STATUS_KILLED,
+        RUN_STATUS_CONNECTOR_LOST,
+    }
+)
 
 # Statuses where the run is still alive (not terminal).
-ACTIVE_RUN_STATUSES: frozenset[str] = frozenset({
-    RUN_STATUS_STARTING,
-    RUN_STATUS_RUNNING,
-    RUN_STATUS_PAUSED,
-    RUN_STATUS_RATE_LIMITED,
-    RUN_STATUS_CONNECTOR_LOST,
-})
+ACTIVE_RUN_STATUSES: frozenset[str] = frozenset(
+    {
+        RUN_STATUS_STARTING,
+        RUN_STATUS_RUNNING,
+        RUN_STATUS_PAUSED,
+        RUN_STATUS_RATE_LIMITED,
+        RUN_STATUS_CONNECTOR_LOST,
+    }
+)
 
 # Truly terminal statuses — run's background task has stopped.
-TERMINAL_RUN_STATUSES: frozenset[str] = frozenset({
-    RUN_STATUS_COMPLETED,
-    RUN_STATUS_COMPLETED_NO_CHANGES,
-    RUN_STATUS_STOPPED,
-    RUN_STATUS_ERROR,
-    RUN_STATUS_CRASHED,
-    RUN_STATUS_KILLED,
-})
+TERMINAL_RUN_STATUSES: frozenset[str] = frozenset(
+    {
+        RUN_STATUS_COMPLETED,
+        RUN_STATUS_COMPLETED_NO_CHANGES,
+        RUN_STATUS_STOPPED,
+        RUN_STATUS_ERROR,
+        RUN_STATUS_CRASHED,
+        RUN_STATUS_KILLED,
+    }
+)
 
 # Statuses that the /cleanup endpoint removes from the in-memory registry.
 # Only terminal runs — active runs (including rate_limited) still have
 # live sandboxes and background tasks.
-CLEANABLE_RUN_STATUSES: frozenset[str] = frozenset(
-    TERMINAL_RUN_STATUSES
-)
+CLEANABLE_RUN_STATUSES: frozenset[str] = frozenset(TERMINAL_RUN_STATUSES)
 
 # ── Models ──
 # Pinned to exact SDK model IDs. No aliases, no translation layer.
@@ -77,8 +81,13 @@ SUPPORTED_OPUS: str = "claude-opus-4-8"
 SUPPORTED_SONNET: str = "claude-sonnet-4-6"
 LEGACY_OPUS: str = "claude-opus-4-5"
 
-VALID_MODELS: tuple[str, ...] = (SUPPORTED_FABLE, SUPPORTED_OPUS, SUPPORTED_SONNET, LEGACY_OPUS)
-DEFAULT_MODEL: str = SUPPORTED_FABLE
+VALID_MODELS: tuple[str, ...] = (
+    SUPPORTED_FABLE,
+    SUPPORTED_OPUS,
+    SUPPORTED_SONNET,
+    LEGACY_OPUS,
+)
+DEFAULT_MODEL: str = SUPPORTED_OPUS
 VALID_MODELS_PATTERN: str = f"^({'|'.join(VALID_MODELS)})$"
 
 # Structured metadata for the /api/models endpoint — the single source of
@@ -132,7 +141,9 @@ DEFAULT_BASE_BRANCH: str = "main"
 VALID_EFFORTS_PATTERN: str = f"^({'|'.join(VALID_EFFORTS)})$"
 
 # Models that support effort="max". Others get downgraded to "high".
-MODELS_SUPPORTING_MAX_EFFORT: frozenset[str] = frozenset({SUPPORTED_FABLE, SUPPORTED_OPUS, SUPPORTED_SONNET})
+MODELS_SUPPORTING_MAX_EFFORT: frozenset[str] = frozenset(
+    {SUPPORTED_FABLE, SUPPORTED_OPUS, SUPPORTED_SONNET}
+)
 
 
 # ── Host Mounts ──
@@ -149,26 +160,32 @@ BLOCKED_MOUNT_PREFIXES: tuple[str, ...] = (
     "/sbin",
     "/usr/sbin",
 )
-BLOCKED_MOUNT_PATHS: frozenset[str] = frozenset({
-    "/",
-    "/home",
-    "/tmp",
-    "/var",
-    "/usr",
-})
+BLOCKED_MOUNT_PATHS: frozenset[str] = frozenset(
+    {
+        "/",
+        "/home",
+        "/tmp",
+        "/var",
+        "/usr",
+    }
+)
 VALID_MOUNT_MODES: frozenset[str] = frozenset({"ro", "rw"})
 
 # Container paths that must not be overwritten by user mounts.
 # The repo root itself is blocked (it's a Docker volume), but subdirs
 # like /home/agentuser/repo/data are allowed — users mount data there.
-BLOCKED_CONTAINER_PATHS: frozenset[str] = frozenset({
-    "/home/agentuser/.claude",
-    "/tmp/repo-clone",
-})
-BLOCKED_CONTAINER_EXACT_PATHS: frozenset[str] = frozenset({
-    "/",
-    SANDBOX_REPO_DIR,
-})
+BLOCKED_CONTAINER_PATHS: frozenset[str] = frozenset(
+    {
+        "/home/agentuser/.claude",
+        "/tmp/repo-clone",
+    }
+)
+BLOCKED_CONTAINER_EXACT_PATHS: frozenset[str] = frozenset(
+    {
+        "/",
+        SANDBOX_REPO_DIR,
+    }
+)
 MAX_HOST_MOUNTS: int = 10
 MAX_MCP_SERVERS: int = 10
 
@@ -197,8 +214,12 @@ def validate_host_mount(
     if resolved_container in BLOCKED_CONTAINER_EXACT_PATHS:
         return f"container_path would overwrite sandbox internals: {container_path!r}"
     for blocked in BLOCKED_CONTAINER_PATHS:
-        if resolved_container == blocked or resolved_container.startswith(blocked + "/"):
-            return f"container_path would overwrite sandbox internals: {container_path!r}"
+        if resolved_container == blocked or resolved_container.startswith(
+            blocked + "/"
+        ):
+            return (
+                f"container_path would overwrite sandbox internals: {container_path!r}"
+            )
 
     # Host path checks
     if resolved_host in BLOCKED_MOUNT_PATHS:
@@ -220,7 +241,9 @@ SANDBOX_HEARTBEAT_TIMEOUT_SEC: int = 1800
 # ── Remote Sandbox Types ──
 SANDBOX_TYPE_SLURM: str = "slurm"
 SANDBOX_TYPE_DOCKER: str = "docker"
-VALID_SANDBOX_TYPES: frozenset[str] = frozenset({SANDBOX_TYPE_SLURM, SANDBOX_TYPE_DOCKER})
+VALID_SANDBOX_TYPES: frozenset[str] = frozenset(
+    {SANDBOX_TYPE_SLURM, SANDBOX_TYPE_DOCKER}
+)
 
 # ── Sandbox Protocol ──
 SANDBOX_PROTOCOL_VERSION: int = 1
@@ -294,7 +317,9 @@ TOOL_CALL_PHASES: frozenset[str] = frozenset({"pre", "post"})
 
 # ── UUID Pattern ──
 # Strict UUID pattern (hex with hyphens, grouped, case-insensitive).
-UUID_PATTERN: str = r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+UUID_PATTERN: str = (
+    r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+)
 
 # ── Input Limits ──
 # Maximum characters for a user-submitted prompt.  ~25 K tokens — generous
@@ -338,10 +363,18 @@ def validate_github_repo(v: str | None) -> str | None:
         raise ValueError("github_repo must match owner/repo format")
     return v
 
+
 # ── SQL DDL Safety ──
 # Allowlisted values for control_signals.signal CHECK constraint and migration DDL.
 # Used by validate_sql_identifier() to prevent SQL injection via f-string DDL.
-VALID_CONTROL_SIGNALS: tuple[str, ...] = ("pause", "resume", "inject", "stop", "unlock", "kill")
+VALID_CONTROL_SIGNALS: tuple[str, ...] = (
+    "pause",
+    "resume",
+    "inject",
+    "stop",
+    "unlock",
+    "kill",
+)
 
 # Allowlisted column names for cache token migration DDL.
 MIGRATION_CACHE_TOKEN_COLUMNS: tuple[str, ...] = (
@@ -391,9 +424,7 @@ def validate_sql_identifier(value: str, allowlist: tuple[str, ...]) -> str:
             f"SQL identifier {value!r} is not in the allowlist {allowlist!r}"
         )
     if not SAFE_SQL_IDENTIFIER_RE.fullmatch(value):
-        raise ValueError(
-            f"SQL identifier {value!r} contains unsafe characters"
-        )
+        raise ValueError(f"SQL identifier {value!r} contains unsafe characters")
     return value
 
 
@@ -402,60 +433,62 @@ def validate_sql_identifier(value: str, allowlist: tuple[str, ...]) -> str:
 # the agent, sandbox, and dashboard containers.  Both the Python backend
 # and the TypeScript frontend must stay in sync with this set — there are
 # cross-language tests that verify it.
-AUDIT_EVENT_TYPES: frozenset[str] = frozenset({
-    # Bootstrap progress
-    "run_starting",
-    "sandbox_created",
-    "repo_cloned",
-    # Lifecycle
-    "run_started",
-    "run_ended",
-    "killed",
-    "fatal_error",
-    "sandbox_crash",
-    "teardown_failed",
-    "agent_restarted",
-    # Round management
-    "round_ended",
-    "session_error",
-    "max_rounds_reached",
-    # User actions
-    "pause_requested",
-    "stop_requested",
-    "prompt_submitted",
-    "prompt_injected",
-    # Git / PR
-    "push_failed",
-    "pr_failed",
-    "pr_created",
-    "auto_commit",
-    "no_changes",
-    # Session control
-    "end_session_denied",
-    "run_unlocked",
-    "run_resumed",
-    # Permission / security
-    "permission_denied",
-    # Rate limiting
-    "rate_limit",
-    # Idle / stuck detection
-    "idle_timeout",
-    "idle_nudge",
-    "tool_timeout",
-    "stuck_recovery",
-    # Subagent tracking
-    "subagent_start",
-    "subagent_complete",
-    "agent_stop",
-    # MCP
-    "mcp_warning",
-    # Remote sandbox
-    "sandbox_queued",
-    "sandbox_allocated",
-    "startup_log",
-    "sandbox_start_failed",
-    # LLM output
-    "llm_text",
-    "llm_thinking",
-    "usage",
-})
+AUDIT_EVENT_TYPES: frozenset[str] = frozenset(
+    {
+        # Bootstrap progress
+        "run_starting",
+        "sandbox_created",
+        "repo_cloned",
+        # Lifecycle
+        "run_started",
+        "run_ended",
+        "killed",
+        "fatal_error",
+        "sandbox_crash",
+        "teardown_failed",
+        "agent_restarted",
+        # Round management
+        "round_ended",
+        "session_error",
+        "max_rounds_reached",
+        # User actions
+        "pause_requested",
+        "stop_requested",
+        "prompt_submitted",
+        "prompt_injected",
+        # Git / PR
+        "push_failed",
+        "pr_failed",
+        "pr_created",
+        "auto_commit",
+        "no_changes",
+        # Session control
+        "end_session_denied",
+        "run_unlocked",
+        "run_resumed",
+        # Permission / security
+        "permission_denied",
+        # Rate limiting
+        "rate_limit",
+        # Idle / stuck detection
+        "idle_timeout",
+        "idle_nudge",
+        "tool_timeout",
+        "stuck_recovery",
+        # Subagent tracking
+        "subagent_start",
+        "subagent_complete",
+        "agent_stop",
+        # MCP
+        "mcp_warning",
+        # Remote sandbox
+        "sandbox_queued",
+        "sandbox_allocated",
+        "startup_log",
+        "sandbox_start_failed",
+        # LLM output
+        "llm_text",
+        "llm_thinking",
+        "usage",
+    }
+)

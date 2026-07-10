@@ -19,7 +19,7 @@ vi.mock("@/lib/models", async (importOriginal) => {
         { id: "claude-sonnet-4-6", label: "Claude Sonnet 4.6", short: "Sonnet 4.6", description: "c", context: "1M context", tier: "sonnet" },
         { id: "claude-opus-4-5", label: "Claude Opus 4.5", short: "Opus 4.5", description: "d", context: "200K context", tier: "legacy" },
       ],
-      defaultModel: "claude-fable-5",
+      defaultModel: "claude-opus-4-8",
       loading: false,
     }),
   };
