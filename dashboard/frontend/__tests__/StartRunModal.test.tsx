@@ -162,15 +162,19 @@ describe("StartRunModal", () => {
     );
     expect(modelButton).toBeDefined();
 
-    // Before clicking: model radio buttons should not be visible
-    expect(document.body.querySelector('[role="radiogroup"]')).toBeNull();
+    // Before clicking: the ModelSelector trigger should not be visible
+    expect(
+      document.body.querySelector('[aria-haspopup="listbox"][aria-label="Model"]')
+    ).toBeNull();
 
     if (modelButton) {
       await userEvent.click(modelButton);
     }
 
-    // After clicking: the ModelSelector radiogroup should now appear
-    expect(document.body.querySelector('[role="radiogroup"]')).not.toBeNull();
+    // After clicking: the ModelSelector trigger should now appear
+    expect(
+      document.body.querySelector('[aria-haspopup="listbox"][aria-label="Model"]')
+    ).not.toBeNull();
   });
 });
 
