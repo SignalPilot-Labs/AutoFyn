@@ -67,9 +67,9 @@ describe("ModelSelector", () => {
     expect(selectedOption).toHaveTextContent("Claude Opus 4.8");
   });
 
-  it("does not render provider headers for a single provider", () => {
+  it("renders a provider header above the models", () => {
     render(<ModelSelector value="claude-fable-5" onChange={() => {}} />);
     fireEvent.click(screen.getByLabelText("Model"));
-    expect(screen.queryByText("Anthropic")).toBeNull();
+    expect(screen.getByText("Anthropic")).toBeInTheDocument();
   });
 });

@@ -1,8 +1,8 @@
 "use client";
 
 /** Model picker: a collapsed trigger that opens a listbox of models from
- * /api/models. Legacy-tier models sort last and render dimmed; groups by
- * provider once more than one provider is present. */
+ * /api/models. Legacy-tier models sort last and render dimmed; models are
+ * grouped under a provider header (one provider today, more later). */
 
 import { useRef, useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -39,9 +39,6 @@ export function ModelSelector({ value, onChange }: ModelSelectorProps): React.Re
 
   const ordered = useMemo(() => orderModels(models), [models]);
   const selected = findModel(models, value);
-
-  const providers = useMemo(() => new Set(ordered.map(providerOf)), [ordered]);
-  const showProviderHeaders = providers.size > 1;
 
   const selectById = (id: string): void => {
     onChange(id);
@@ -123,7 +120,7 @@ export function ModelSelector({ value, onChange }: ModelSelectorProps): React.Re
                 const isSelected = m.id === value;
                 const isLegacy = m.tier === LEGACY_TIER;
                 const provider = providerOf(m);
-                const header = showProviderHeaders && provider !== renderedProvider ? provider : null;
+                const header = provider !== renderedProvider ? provider : null;
                 renderedProvider = provider;
                 return (
                   <div key={m.id}>
