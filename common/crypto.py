@@ -11,7 +11,7 @@ from pathlib import Path
 
 from cryptography.fernet import Fernet
 
-log = logging.getLogger("shared.crypto")
+log = logging.getLogger("common.crypto")
 
 
 _fernet: Fernet | None = None

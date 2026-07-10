@@ -252,12 +252,14 @@ async def _pick_next_claude_token(s: AsyncSession) -> str | None:
     The agent re-acquires per round from round 1 onward; this only seeds the
     run so the sandbox has a token before the first round loop iteration. With
     a single token and no cooldown the broker picks index 0 and advances the
-    cursor exactly as the old round-robin did.
+    bookmark exactly as the old round-robin did. Returns None when every
+    credential is cooling down (WaitDirective); read_credentials then omits the
+    seed token and the per-round loop parks until one frees up.
     """
     tokens = await read_token_pool(s, for_update=True)
     if not tokens:
         return None
-    ids = [credential_id(PROVIDER_ANTHROPIC, t.value) for t in tokens]
+    ids = [credential_id(t.provider, t.value) for t in tokens]
     result = await CredentialBroker(s).acquire(PROVIDER_ANTHROPIC, ids, CLAUDE_TOKEN_INDEX_KEY)
     if isinstance(result, WaitDirective):
         return None
@@ -292,20 +294,20 @@ async def _write_token_pool(s: AsyncSession, tokens: list[Token]) -> None:
     await upsert_setting(s, CLAUDE_TOKENS_KEY, encrypted, True)
 
 
-async def add_token_to_pool(raw_token: str, label: str | None) -> dict:
-    """Add a Claude token to the pool. Rejects duplicate values."""
+async def add_token_to_pool(raw_token: str, label: str | None, provider: str) -> dict:
+    """Add a credential to the pool. Rejects duplicate values."""
     async with session() as s:
         tokens = await read_token_pool(s, for_update=True)
         if any(t.value == raw_token for t in tokens):
             raise ValueError("This token is already in the pool")
-        tokens.append(Token(value=raw_token, label=label))
+        tokens.append(Token(provider=provider, value=raw_token, label=label))
         await _write_token_pool(s, tokens)
         await s.commit()
     return {"ok": True, "count": len(tokens)}
 
 
 async def list_pool_tokens() -> list[dict]:
-    """List all tokens in the pool (value masked, label as-is)."""
+    """List all tokens in the pool (value masked, provider and label as-is)."""
     async with session() as s:
         tokens = await read_token_pool(s, for_update=False)
         idx_row = await s.get(Setting, CLAUDE_TOKEN_INDEX_KEY)
@@ -317,6 +319,7 @@ async def list_pool_tokens() -> list[dict]:
     return [
         {
             "index": i,
+            "provider": t.provider,
             "masked": crypto.mask(t.value, prefix_len=MASK_PREFIX_CLAUDE_TOKEN),
             "label": t.label,
             "active": has_used and i == active_idx,
@@ -431,7 +434,7 @@ async def autofill_settings(master_key_path: str) -> None:
 
         claude_token = os.environ.get("CLAUDE_CODE_OAUTH_TOKEN")
         if claude_token:
-            pool = json.dumps([Token(value=claude_token, label=None).model_dump()])
+            pool = json.dumps([Token(provider=PROVIDER_ANTHROPIC, value=claude_token, label=None).model_dump()])
             encrypted = crypto.encrypt(pool, master_key_path)
             await upsert_setting(s, CLAUDE_TOKENS_KEY, encrypted, True)
 

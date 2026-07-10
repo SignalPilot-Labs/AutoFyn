@@ -30,6 +30,7 @@ from backend.utils import (
 )
 from common.broker import Lease
 from common.models import Token
+from db.constants import PROVIDER_ANTHROPIC
 
 
 def _make_session_with_pool(tokens: list[str], encrypted_blob: str = "enc-blob") -> MagicMock:
@@ -118,7 +119,7 @@ class TestAddTokenToPoolUsesLock:
         ):
             mock_session_ctx.return_value.__aenter__ = AsyncMock(return_value=s)
             mock_session_ctx.return_value.__aexit__ = AsyncMock(return_value=None)
-            await add_token_to_pool("new-token", None)
+            await add_token_to_pool("new-token", None, PROVIDER_ANTHROPIC)
 
         assert len(captured_kwargs) == 1
         assert captured_kwargs[0]["for_update"] is True

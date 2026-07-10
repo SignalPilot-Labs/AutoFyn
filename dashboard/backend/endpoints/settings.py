@@ -388,11 +388,11 @@ async def get_tokens() -> list:
 
 @router.post("/tokens")
 async def add_token(body: AddTokenRequest) -> dict:
-    """Add a Claude token to the pool."""
+    """Add a credential to the pool."""
     stripped = body.label.strip() if body.label else ""
     label = stripped or None
     try:
-        return await add_token_to_pool(body.token.strip(), label)
+        return await add_token_to_pool(body.token.strip(), label, body.provider)
     except ValueError as e:
         raise HTTPException(status_code=409, detail=str(e))
 

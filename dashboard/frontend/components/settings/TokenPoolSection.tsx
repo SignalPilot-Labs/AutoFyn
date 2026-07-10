@@ -8,15 +8,18 @@ import { TOKEN_LABEL_MAX_LEN } from "@/lib/constants";
 import { Button } from "@/components/ui/Button";
 import { ListRow } from "@/components/ui/ListRow";
 import { IconLock, IconCheck, IconPlus } from "@/components/ui/icons";
+import { ProviderSelector } from "@/components/settings/ProviderSelector";
 
 interface TokenPoolSectionProps {
   tokens: PoolToken[];
   newToken: string;
   newLabel: string;
+  newProvider: string;
   addingToken: boolean;
   tokenError: string | null;
   onNewTokenChange: (value: string) => void;
   onNewLabelChange: (value: string) => void;
+  onNewProviderChange: (value: string) => void;
   onAddToken: () => void;
   onRemoveToken: (index: number) => void;
 }
@@ -25,10 +28,12 @@ export function TokenPoolSection({
   tokens,
   newToken,
   newLabel,
+  newProvider,
   addingToken,
   tokenError,
   onNewTokenChange,
   onNewLabelChange,
+  onNewProviderChange,
   onAddToken,
   onRemoveToken,
 }: TokenPoolSectionProps) {
@@ -48,6 +53,9 @@ export function TokenPoolSection({
           {tokens.map((t) => (
             <ListRow key={t.masked} layoutId={t.masked} onDelete={() => onRemoveToken(t.index)} deleteTitle="Remove token">
               <IconLock className="text-text-secondary shrink-0" />
+              <span className="text-content text-text-secondary shrink-0 truncate">
+                {t.provider}
+              </span>
               {t.label ? (
                 <>
                   <span className="text-content text-accent-hover shrink-0 truncate">
@@ -80,6 +88,7 @@ export function TokenPoolSection({
       </div>
 
       <div className="flex gap-2">
+        <ProviderSelector value={newProvider} onChange={onNewProviderChange} />
         <input
           type="text"
           value={newLabel}

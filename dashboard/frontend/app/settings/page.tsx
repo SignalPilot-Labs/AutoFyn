@@ -17,6 +17,7 @@ import { SubagentSection } from "@/components/settings/SubagentSection";
 import { SecurityBanner } from "@/components/settings/SecurityBanner";
 import { CredentialField } from "@/components/settings/CredentialField";
 import type { CredentialFieldConfig } from "@/components/settings/CredentialField";
+import { DEFAULT_PROVIDER } from "@/lib/constants";
 import { clsx } from "clsx";
 import { apiFetch } from "@/lib/fetch";
 
@@ -101,6 +102,7 @@ export default function SettingsPage() {
   const [tokens, setTokens] = useState<PoolToken[]>([]);
   const [newToken, setNewToken] = useState("");
   const [newLabel, setNewLabel] = useState("");
+  const [newProvider, setNewProvider] = useState(DEFAULT_PROVIDER);
   const [addingToken, setAddingToken] = useState(false);
   const [tokenError, setTokenError] = useState<string | null>(null);
 
@@ -216,10 +218,11 @@ export default function SettingsPage() {
     setAddingToken(true);
     setTokenError(null);
     try {
-      await addPoolToken(val, newLabel.trim() || null);
+      await addPoolToken(val, newLabel.trim() || null, newProvider);
       setTokens(await fetchPoolTokens());
       setNewToken("");
       setNewLabel("");
+      setNewProvider(DEFAULT_PROVIDER);
     } catch (e) {
       setTokenError(e instanceof Error ? e.message : "Failed to add token");
     } finally {
@@ -326,10 +329,12 @@ export default function SettingsPage() {
               tokens={tokens}
               newToken={newToken}
               newLabel={newLabel}
+              newProvider={newProvider}
               addingToken={addingToken}
               tokenError={tokenError}
               onNewTokenChange={(v) => { setNewToken(v); setTokenError(null); }}
               onNewLabelChange={setNewLabel}
+              onNewProviderChange={setNewProvider}
               onAddToken={handleAddToken}
               onRemoveToken={handleRemoveToken}
             />

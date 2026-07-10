@@ -96,6 +96,11 @@ VALID_MODELS_PATTERN: str = f"^({'|'.join(VALID_MODELS)})$"
 
 # ── Providers ──
 PROVIDER_ANTHROPIC: str = "anthropic"
+# All credential providers the pool accepts. Anthropic is the only one today;
+# Part 2 (LiteLLM) appends here and the settings dropdown picks it up for free.
+VALID_PROVIDERS: tuple[str, ...] = (PROVIDER_ANTHROPIC,)
+DEFAULT_PROVIDER: str = PROVIDER_ANTHROPIC
+VALID_PROVIDERS_PATTERN: str = f"^({'|'.join(VALID_PROVIDERS)})$"
 
 # ── CredentialBroker ──
 CLAUDE_TOKENS_KEY: str = "claude_tokens"

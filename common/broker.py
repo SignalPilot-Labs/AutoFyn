@@ -15,7 +15,7 @@ from db.constants import (
 )
 from db.models import CredentialHealth, Setting
 from common import crypto
-from common.models import parse_token_pool
+from common.models import Token, parse_token_pool
 
 
 @dataclass(frozen=True)
@@ -60,13 +60,12 @@ class CredentialBroker:
     def __init__(self, session: AsyncSession) -> None:
         self._s = session
 
-    async def read_claude_tokens(self) -> list[str]:
-        """Read and decrypt the Claude token pool values (read-only, no lock)."""
+    async def read_pool(self) -> list[Token]:
+        """Read and decrypt the credential pool (read-only, no lock)."""
         row = await self._s.get(Setting, CLAUDE_TOKENS_KEY)
         if row is None:
             return []
-        pool = parse_token_pool(json.loads(crypto.decrypt(row.value, MASTER_KEY_PATH)))
-        return [t.value for t in pool]
+        return parse_token_pool(json.loads(crypto.decrypt(row.value, MASTER_KEY_PATH)))
 
     async def acquire(
         self, provider: str, ids: list[str], rotation_key: str
@@ -106,7 +105,11 @@ class CredentialBroker:
             row.cooldown_until = cooldown
 
     async def _cooldowns(self, ids: list[str]) -> dict[str, datetime]:
-        """Map credential_id -> cooldown_until for ids currently cooling down."""
+        """Map credential_id -> cooldown_until, restricted to the given ids.
+
+        acquire relies on this restriction: WaitDirective.wait_until is the min
+        over these values, so it must never include cooldowns for other ids.
+        """
         rows = (
             (
                 await self._s.execute(
