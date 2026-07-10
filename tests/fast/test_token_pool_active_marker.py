@@ -1,9 +1,9 @@
 """Regression test for token pool active marker off-by-one.
 
 Previously list_pool_tokens used `current_idx % len(tokens)` as the active
-index. But _pick_next_claude_token stores (idx + 1) after picking, so the
-stored index always points to the NEXT token, not the last-picked one.
-The fix uses `(current_idx - 1) % len(tokens)` to point back to last-picked.
+index. But the broker stores (idx + 1) after picking, so the stored index
+always points to the NEXT token, not the last-picked one. The fix uses
+`(current_idx - 1) % len(tokens)` to point back to last-picked.
 """
 
 from __future__ import annotations

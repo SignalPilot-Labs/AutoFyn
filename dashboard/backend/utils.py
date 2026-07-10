@@ -33,7 +33,6 @@ from db.constants import (
     PROVIDER_ANTHROPIC,
     REMOTE_MOUNTS_KEY_PREFIX,
 )
-from common.broker import CredentialBroker, WaitDirective, credential_id
 from common.models import Token, parse_token_pool
 from db.models import AuditLog, ControlSignal, Run, Setting
 
@@ -203,11 +202,6 @@ async def read_credentials(repo: str | None, sandbox_id: str | None) -> dict:
             else:
                 creds[key] = setting.value
 
-        token = await _pick_next_claude_token(s)
-        if token:
-            creds["claude_token"] = token
-            await s.commit()
-
         if repo:
             env_key = f"env_vars:{repo}"
             env_setting = await s.get(Setting, env_key)
@@ -244,26 +238,6 @@ async def read_credentials(repo: str | None, sandbox_id: str | None) -> dict:
                     ) from e
 
     return creds
-
-
-async def _pick_next_claude_token(s: AsyncSession) -> str | None:
-    """Pick a healthy Claude token via the broker for the initial injection.
-
-    The agent re-acquires per round from round 1 onward; this only seeds the
-    run so the sandbox has a token before the first round loop iteration. With
-    a single token and no cooldown the broker picks index 0 and advances the
-    bookmark exactly as the old round-robin did. Returns None when every
-    credential is cooling down (WaitDirective); read_credentials then omits the
-    seed token and the per-round loop parks until one frees up.
-    """
-    tokens = await read_token_pool(s, for_update=True)
-    if not tokens:
-        return None
-    ids = [credential_id(t.provider, t.value) for t in tokens]
-    result = await CredentialBroker(s).acquire(PROVIDER_ANTHROPIC, ids, CLAUDE_TOKEN_INDEX_KEY)
-    if isinstance(result, WaitDirective):
-        return None
-    return tokens[result.index].value
 
 
 # ---------------------------------------------------------------------------

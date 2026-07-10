@@ -1,9 +1,8 @@
 """Regression test for token pool read-modify-write race condition.
 
-Bug: add_token_to_pool, remove_token_from_pool, and _pick_next_claude_token
-all follow a read-modify-write pattern without database-level locking.
-Concurrent calls could interleave reads and writes, losing updates or
-making conflicting decisions on stale state.
+Bug: add_token_to_pool and remove_token_from_pool follow a read-modify-write
+pattern without database-level locking. Concurrent calls could interleave
+reads and writes, losing updates or making conflicting decisions on stale state.
 
 Fix: read_token_pool() accepts for_update=True which issues SELECT...FOR UPDATE,
 holding a row-level lock for the duration of the transaction. All callers
@@ -22,13 +21,11 @@ if "db.connection" not in sys.modules:
     sys.modules["db.connection"] = MagicMock()
 
 from backend.utils import (
-    _pick_next_claude_token,
     add_token_to_pool,
     list_pool_tokens,
     read_token_pool,
     remove_token_from_pool,
 )
-from common.broker import Lease
 from common.models import Token
 from db.constants import PROVIDER_ANTHROPIC
 
@@ -190,33 +187,3 @@ class TestRemoveTokenFromPoolUsesLock:
             mock_session_ctx.return_value.__aexit__ = AsyncMock(return_value=None)
             with pytest.raises(ValueError, match="out of range"):
                 await remove_token_from_pool(5)
-
-
-class TestPickNextTokenUsesLock:
-    """_pick_next_claude_token must call read_token_pool with for_update=True."""
-
-    @pytest.mark.asyncio
-    async def test_pick_calls_read_with_for_update(self) -> None:
-        """_pick_next_claude_token must pass for_update=True to read_token_pool."""
-        captured_kwargs: list[dict] = []
-
-        async def fake_read_token_pool(s: MagicMock, for_update: bool = False) -> list[Token]:
-            captured_kwargs.append({"for_update": for_update})
-            return [Token(value="tok-1", label=None), Token(value="tok-2", label=None)]
-
-        s = MagicMock()
-        lease = Lease(credential_id="anthropic:aaa", index=0)
-
-        with (
-            patch("backend.utils.read_token_pool", new=fake_read_token_pool),
-            patch("backend.utils.credential_id", new=MagicMock(side_effect=lambda p, m: m)),
-            patch(
-                "backend.utils.CredentialBroker",
-                new=MagicMock(return_value=MagicMock(acquire=AsyncMock(return_value=lease))),
-            ),
-        ):
-            result = await _pick_next_claude_token(s)
-
-        assert result == "tok-1"
-        assert len(captured_kwargs) == 1
-        assert captured_kwargs[0]["for_update"] is True

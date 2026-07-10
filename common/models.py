@@ -1,8 +1,13 @@
 """Shared data models for the credential pool."""
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
-from db.constants import DEFAULT_PROVIDER, TOKEN_LABEL_MAX_LEN, TOKEN_VALUE_MAX_LEN
+from db.constants import (
+    DEFAULT_PROVIDER,
+    TOKEN_LABEL_MAX_LEN,
+    TOKEN_VALUE_MAX_LEN,
+    VALID_PROVIDERS,
+)
 
 
 class Token(BaseModel):
@@ -11,6 +16,14 @@ class Token(BaseModel):
     provider: str = Field(default=DEFAULT_PROVIDER)
     value: str = Field(min_length=1, max_length=TOKEN_VALUE_MAX_LEN)
     label: str | None = Field(default=None, max_length=TOKEN_LABEL_MAX_LEN)
+
+    @field_validator("provider")
+    @classmethod
+    def _provider_is_known(cls, v: str) -> str:
+        """Reject unknown providers here so every write path shares one gate."""
+        if v not in VALID_PROVIDERS:
+            raise ValueError(f"unknown provider '{v}' (valid: {', '.join(VALID_PROVIDERS)})")
+        return v
 
 
 def parse_token_pool(raw: list) -> list[Token]:

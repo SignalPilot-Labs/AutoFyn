@@ -4,7 +4,7 @@
 
 import { AnimatePresence } from "framer-motion";
 import type { PoolToken } from "@/lib/types";
-import { TOKEN_LABEL_MAX_LEN } from "@/lib/constants";
+import { TOKEN_LABEL_MAX_LEN, CREDENTIAL_PROVIDERS } from "@/lib/constants";
 import { Button } from "@/components/ui/Button";
 import { ListRow } from "@/components/ui/ListRow";
 import { IconLock, IconCheck, IconPlus } from "@/components/ui/icons";
@@ -51,10 +51,10 @@ export function TokenPoolSection({
       <div className="space-y-1.5 mb-3">
         <AnimatePresence>
           {tokens.map((t) => (
-            <ListRow key={t.masked} layoutId={t.masked} onDelete={() => onRemoveToken(t.index)} deleteTitle="Remove token">
+            <ListRow key={t.index} layoutId={String(t.index)} onDelete={() => onRemoveToken(t.index)} deleteTitle="Remove token">
               <IconLock className="text-text-secondary shrink-0" />
               <span className="text-content text-text-secondary shrink-0 truncate">
-                {t.provider}
+                {CREDENTIAL_PROVIDERS.find((p) => p.value === t.provider)?.label ?? t.provider}
               </span>
               {t.label ? (
                 <>

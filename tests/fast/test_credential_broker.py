@@ -9,9 +9,11 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 from datetime import datetime, timedelta, timezone
+from typing import Any
 
 import pytest
 import pytest_asyncio
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from db.constants import CREDENTIAL_DEFAULT_COOLDOWN_SECONDS, PROVIDER_ANTHROPIC
@@ -32,8 +34,18 @@ class TestCredentialBroker:
 
     @pytest_asyncio.fixture
     async def session(self) -> AsyncIterator[AsyncSession]:
-        """Yield a fresh in-memory SQLite AsyncSession with broker tables created."""
+        """Yield a fresh in-memory SQLite AsyncSession with broker tables created.
+
+        Production runs Postgres; report_exhausted uses its scalar greatest().
+        SQLite has no greatest(), so register a Python shim on the connection so
+        the real upsert path runs end to end here instead of a weakened variant.
+        """
         engine = create_async_engine("sqlite+aiosqlite:///:memory:")
+
+        @event.listens_for(engine.sync_engine, "connect")
+        def _register_greatest(dbapi_conn: Any, _record: object) -> None:
+            dbapi_conn.create_function("greatest", 2, lambda a, b: max(a, b))
+
         tables = [CredentialHealth.metadata.tables[t] for t in ("credential_health", "settings")]
         async with engine.begin() as conn:
             await conn.run_sync(lambda c: CredentialHealth.metadata.create_all(c, tables=tables))
@@ -109,6 +121,26 @@ class TestCredentialBroker:
         result = await broker.acquire(PROVIDER_ANTHROPIC, [_IDS[0]], _ROTATION_KEY)
         assert isinstance(result, Lease)
         assert result.credential_id == _IDS[0]
+
+    @pytest.mark.asyncio
+    async def test_report_exhausted_never_shortens_cooldown(self, session: AsyncSession) -> None:
+        """A second report with an earlier reset must not shorten an existing cooldown.
+
+        Concurrent runs can both cool the same credential; the longer cooldown wins
+        so a credential cannot be un-cooled early by a racing report with a nearer reset.
+        """
+        broker = CredentialBroker(session)
+        now = datetime.now(timezone.utc)
+        later = now + timedelta(hours=2)
+        earlier = now + timedelta(minutes=5)
+
+        await broker.report_exhausted(_IDS[0], later)
+        await broker.report_exhausted(_IDS[0], earlier)
+
+        row = await session.get(CredentialHealth, _IDS[0])
+        assert row is not None
+        assert row.cooldown_until is not None
+        assert _as_utc(row.cooldown_until) == later
 
     @pytest.mark.asyncio
     async def test_credential_id_stable_and_provider_prefixed(self) -> None:
