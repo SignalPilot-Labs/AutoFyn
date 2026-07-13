@@ -7,6 +7,7 @@ import { AnimatePresence } from "framer-motion";
 import type { PoolToken } from "@/lib/types";
 import { TOKEN_LABEL_MAX_LEN, TOKEN_NAME_PLACEHOLDER, CREDENTIAL_PROVIDERS } from "@/lib/constants";
 import { Button } from "@/components/ui/Button";
+import { Tag } from "@/components/ui/Tag";
 import { ListRow } from "@/components/ui/ListRow";
 import { IconLock, IconCheck, IconPlus } from "@/components/ui/icons";
 import { ProviderSelector } from "@/components/settings/ProviderSelector";
@@ -69,9 +70,9 @@ export function TokenPoolSection({
           {tokens.map((t) => (
             <ListRow key={t.index} layoutId={String(t.index)} onDelete={() => onRemoveToken(t.index)} deleteTitle="Remove token">
               <IconLock className="text-text-secondary shrink-0" />
-              <span className="text-content text-text-secondary shrink-0 truncate">
+              <Tag className="shrink-0">
                 {CREDENTIAL_PROVIDERS.find((p) => p.value === t.provider)?.label ?? t.provider}
-              </span>
+              </Tag>
               {editingIndex === t.index ? (
                 <input
                   type="text"
@@ -85,7 +86,7 @@ export function TokenPoolSection({
                   placeholder="Name"
                   maxLength={TOKEN_LABEL_MAX_LEN}
                   autoFocus
-                  className="w-32 bg-black/30 border border-border rounded px-2 py-0.5 text-content text-accent-hover placeholder:text-text-secondary focus-visible:outline-none focus-visible:border-[#00ff88]/30 focus-visible:ring-1 focus-visible:ring-[#00ff88]/40 transition-all"
+                  className="flex-1 min-w-0 bg-black/30 border border-border rounded px-3 py-2 text-content text-accent-hover placeholder:text-text-secondary focus-visible:outline-none focus-visible:border-[#00ff88]/30 focus-visible:ring-1 focus-visible:ring-[#00ff88]/40 transition-all"
                   autoComplete="off"
                   spellCheck={false}
                 />
@@ -93,7 +94,7 @@ export function TokenPoolSection({
                 <button
                   onClick={() => { startEdit(t); }}
                   title="Rename token"
-                  className={`text-content shrink-0 truncate text-left hover:text-[#00ff88] transition-colors ${t.label ? "text-accent-hover" : "text-text-dim italic"}`}
+                  className={`text-content shrink-0 truncate text-left hover:text-[#00ff88] transition-colors ${t.label ? "text-accent-hover" : "text-text-dim"}`}
                 >
                   {t.label ?? TOKEN_NAME_PLACEHOLDER}
                 </button>
