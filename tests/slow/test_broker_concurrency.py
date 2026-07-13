@@ -25,12 +25,18 @@ import pytest_asyncio
 from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from common.broker import CredentialBroker, Lease
+from common.broker import CredentialBroker, SelectedCredential, credential_id
 from common.constants import PROVIDER_ANTHROPIC
+from common.models import Token
 from db.models import CredentialHealth
 
 _ROTATION_KEY = "claude_token_index"
-_IDS = ["anthropic:aaa", "anthropic:bbb", "anthropic:ccc"]
+_TOKENS = [
+    Token(provider=PROVIDER_ANTHROPIC, value="sk-ant-aaa", label=None),
+    Token(provider=PROVIDER_ANTHROPIC, value="sk-ant-bbb", label=None),
+    Token(provider=PROVIDER_ANTHROPIC, value="sk-ant-ccc", label=None),
+]
+_IDS = [credential_id(t.provider, t.value) for t in _TOKENS]
 
 
 def _as_utc(dt: datetime) -> datetime:
@@ -63,9 +69,9 @@ class TestBrokerConcurrency:
         """N sequential acquires cycle the pool exactly once each, in order."""
         broker = CredentialBroker(session)
         picked = []
-        for _ in range(len(_IDS) * 2):
-            result = await broker.acquire(PROVIDER_ANTHROPIC, _IDS, _ROTATION_KEY)
-            assert isinstance(result, Lease)
+        for _ in range(len(_TOKENS) * 2):
+            result = await broker.acquire(_TOKENS, _ROTATION_KEY)
+            assert isinstance(result, SelectedCredential)
             picked.append(result.index)
             await session.commit()
         assert picked == [0, 1, 2, 0, 1, 2]

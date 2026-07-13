@@ -1,6 +1,6 @@
 """Behavior tests for the health-aware credential broker against a real SQLite DB.
 
-Exercises acquire round-robin, cooldown skipping, WaitDirective, and the
+Exercises acquire round-robin, cooldown skipping, AllRateLimited, and the
 report_* health mutators using an in-memory aiosqlite AsyncSession so the
 broker's real select/get/add paths run end to end.
 """
@@ -18,11 +18,17 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 from common.constants import PROVIDER_ANTHROPIC
 from db.constants import CREDENTIAL_DEFAULT_COOLDOWN_SECONDS
-from common.broker import CredentialBroker, Lease, WaitDirective, credential_id
+from common.broker import AllRateLimited, CredentialBroker, SelectedCredential, credential_id
+from common.models import Token
 from db.models import CredentialHealth
 
 _ROTATION_KEY = "claude_token_index"
-_IDS = ["anthropic:aaa", "anthropic:bbb", "anthropic:ccc"]
+_TOKENS = [
+    Token(provider=PROVIDER_ANTHROPIC, value="sk-ant-aaa", label=None),
+    Token(provider=PROVIDER_ANTHROPIC, value="sk-ant-bbb", label=None),
+    Token(provider=PROVIDER_ANTHROPIC, value="sk-ant-ccc", label=None),
+]
+_IDS = [credential_id(t.provider, t.value) for t in _TOKENS]
 
 
 def _as_utc(dt: datetime) -> datetime:
@@ -59,13 +65,15 @@ class TestCredentialBroker:
     async def test_round_robin_advances_rotation(self, session: AsyncSession) -> None:
         """No rotation bookmark picks index 0; the next acquire picks index 1."""
         broker = CredentialBroker(session)
-        first = await broker.acquire(PROVIDER_ANTHROPIC, _IDS, _ROTATION_KEY)
-        assert isinstance(first, Lease)
+        first = await broker.acquire(_TOKENS, _ROTATION_KEY)
+        assert isinstance(first, SelectedCredential)
         assert first.index == 0
+        assert first.token is _TOKENS[0]
 
-        second = await broker.acquire(PROVIDER_ANTHROPIC, _IDS, _ROTATION_KEY)
-        assert isinstance(second, Lease)
+        second = await broker.acquire(_TOKENS, _ROTATION_KEY)
+        assert isinstance(second, SelectedCredential)
         assert second.index == 1
+        assert second.token is _TOKENS[1]
 
     @pytest.mark.asyncio
     async def test_skips_cooling_down_id(self, session: AsyncSession) -> None:
@@ -74,8 +82,8 @@ class TestCredentialBroker:
         future = datetime.now(timezone.utc) + timedelta(hours=1)
         await broker.report_exhausted(_IDS[0], future)
 
-        result = await broker.acquire(PROVIDER_ANTHROPIC, _IDS, _ROTATION_KEY)
-        assert isinstance(result, Lease)
+        result = await broker.acquire(_TOKENS, _ROTATION_KEY)
+        assert isinstance(result, SelectedCredential)
         assert result.credential_id != _IDS[0]
 
     @pytest.mark.asyncio
@@ -88,15 +96,15 @@ class TestCredentialBroker:
         await broker.report_exhausted(_IDS[1], now + timedelta(minutes=10))
         await broker.report_exhausted(_IDS[2], now + timedelta(minutes=20))
 
-        result = await broker.acquire(PROVIDER_ANTHROPIC, _IDS, _ROTATION_KEY)
-        assert isinstance(result, WaitDirective)
+        result = await broker.acquire(_TOKENS, _ROTATION_KEY)
+        assert isinstance(result, AllRateLimited)
         assert _as_utc(result.wait_until) == soonest
 
     @pytest.mark.asyncio
-    async def test_empty_ids_raises(self, session: AsyncSession) -> None:
-        """acquire with no ids raises ValueError."""
+    async def test_empty_tokens_raises(self, session: AsyncSession) -> None:
+        """acquire with no tokens raises ValueError."""
         with pytest.raises(ValueError):
-            await CredentialBroker(session).acquire(PROVIDER_ANTHROPIC, [], _ROTATION_KEY)
+            await CredentialBroker(session).acquire([], _ROTATION_KEY)
 
     @pytest.mark.asyncio
     async def test_report_exhausted_none_uses_default_cooldown(self, session: AsyncSession) -> None:
@@ -119,8 +127,8 @@ class TestCredentialBroker:
         past = datetime.now(timezone.utc) - timedelta(hours=1)
         await broker.report_exhausted(_IDS[0], past)
 
-        result = await broker.acquire(PROVIDER_ANTHROPIC, [_IDS[0]], _ROTATION_KEY)
-        assert isinstance(result, Lease)
+        result = await broker.acquire([_TOKENS[0]], _ROTATION_KEY)
+        assert isinstance(result, SelectedCredential)
         assert result.credential_id == _IDS[0]
 
     @pytest.mark.asyncio

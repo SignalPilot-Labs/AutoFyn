@@ -1,9 +1,10 @@
 """Per-round credential acquisition: pick a healthy credential, inject it, park if none.
 
-Provider-aware: the run's model determines its provider (Claude → anthropic,
-GPT-5.6 → openrouter), the broker rotates only over that provider's tokens, and
-the injected env differs per provider (native OAuth token vs. OpenRouter gateway
-routing). A run is single-provider, so there is no cross-provider env to clear.
+The run's model decides which tokens are eligible (a Claude run can only use
+Anthropic tokens, a GPT-5.6 run only OpenRouter tokens), and the broker rotates
+over that eligible set. The provider is a property of the selected token, so the
+injected env is built from the selection — native OAuth token for Anthropic, or
+OpenRouter gateway routing — not from a provider locked onto the run.
 See docs/providers.md.
 """
 
@@ -20,7 +21,7 @@ from db.constants import (
 )
 from db.models import Run
 from sandbox_client.client import SandboxClient
-from common.broker import CredentialBroker, WaitDirective, credential_id
+from common.broker import AllRateLimited, CredentialBroker
 from common.constants import (
     ENV_ANTHROPIC_API_KEY,
     ENV_ANTHROPIC_AUTH_TOKEN,
@@ -40,53 +41,53 @@ from utils.db_logging import log_audit
 log = logging.getLogger("lifecycle.credentials")
 
 
-def _provider_env(provider: str, model: str, value: str) -> dict[str, str]:
-    """Build the SDK credential env for a leased token, per provider.
+def _provider_env(token: Token, model: str) -> dict[str, str]:
+    """Build the SDK credential env for the selected token, keyed on its provider.
 
     Fails loudly on an unknown provider rather than injecting a partial env
     that would silently route to the wrong place.
     """
-    if provider == PROVIDER_ANTHROPIC:
-        return {ENV_CLAUDE_OAUTH_TOKEN: value}
-    if provider == PROVIDER_OPENROUTER:
+    if token.provider == PROVIDER_ANTHROPIC:
+        return {ENV_CLAUDE_OAUTH_TOKEN: token.value}
+    if token.provider == PROVIDER_OPENROUTER:
         # Point the SDK at OpenRouter, auth with the OpenRouter key, and blank
         # ANTHROPIC_API_KEY so it never falls back to a native Anthropic key
         # that would bypass the gateway. Model overrides route the SDK tiers.
         return {
             ENV_ANTHROPIC_BASE_URL: OPENROUTER_BASE_URL,
-            ENV_ANTHROPIC_AUTH_TOKEN: value,
+            ENV_ANTHROPIC_AUTH_TOKEN: token.value,
             ENV_ANTHROPIC_API_KEY: "",
             **openrouter_model_env(model),
         }
-    raise ValueError(f"cannot build credential env for unknown provider '{provider}'")
+    raise ValueError(f"cannot build credential env for unknown provider '{token.provider}'")
 
 
 async def acquire_and_inject(sandbox: SandboxClient, run_id: str, model: str) -> str:
-    """Acquire a healthy credential for the run's provider and inject it.
+    """Acquire a healthy credential eligible for the run's model and inject it.
 
-    The run's model fixes its provider; the broker rotates only over tokens of
-    that provider. Parks the run (status rate_limited) until a credential is
-    free, then injects the provider-specific env and returns its credential_id
-    so the caller can report exhaustion.
+    The model decides the eligible token set (its provider); the broker rotates
+    over that set and returns the selected token, whose provider drives the
+    injected env. Parks the run (status rate_limited) until a credential is
+    free, then returns its credential_id so the caller can report exhaustion.
     """
     provider = provider_for_model(model)
+    rotation_key = rotation_key_for(provider, CLAUDE_TOKEN_INDEX_KEY)
     parked = False
     while True:
         async with get_session_factory()() as s:
             broker = CredentialBroker(s)
-            pool = await broker.read_pool()
-            tokens: list[Token] = [t for t in pool if t.provider == provider]
-            if not tokens:
+            eligible: list[Token] = [
+                t for t in await broker.read_pool() if t.provider == provider
+            ]
+            if not eligible:
                 raise RuntimeError(f"no {provider} credentials configured")
-            ids = [credential_id(t.provider, t.value) for t in tokens]
-            rotation_key = rotation_key_for(provider, CLAUDE_TOKEN_INDEX_KEY)
-            result = await broker.acquire(provider, ids, rotation_key)
+            result = await broker.acquire(eligible, rotation_key)
             await s.commit()
 
-        if not isinstance(result, WaitDirective):
+        if not isinstance(result, AllRateLimited):
             if parked:
                 await db.update_run_status(run_id, RUN_STATUS_RUNNING)
-            await sandbox.env.set(_provider_env(provider, model, tokens[result.index].value))
+            await sandbox.env.set(_provider_env(result.token, model))
             return result.credential_id
 
         if not parked:

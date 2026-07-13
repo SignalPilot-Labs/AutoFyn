@@ -20,16 +20,22 @@ from common.models import Token, parse_token_pool
 
 
 @dataclass(frozen=True)
-class Lease:
-    """A selected credential: which one, and its pool index."""
+class SelectedCredential:
+    """The credential the broker picked this round.
+
+    Carries the token itself, so the caller reads the provider (and value) off
+    the selection instead of re-deriving it from the run's model. The provider
+    is a property of the chosen credential, not a lock on the run.
+    """
 
     credential_id: str
     index: int
+    token: Token
 
 
 @dataclass(frozen=True)
-class WaitDirective:
-    """Every credential is cooling down; retry after wait_until."""
+class AllRateLimited:
+    """Every eligible credential is cooling down; retry after wait_until."""
 
     wait_until: datetime
     reason: str
@@ -54,8 +60,9 @@ class CredentialBroker:
     """Selects healthy credentials and records rate-limit cooldowns.
 
     Bound to one session; all queries run on it. The caller commits.
-    Selection is round-robin over the credentials not currently cooling down,
-    bookmarked by a per-provider rotation index in the settings table.
+    Selection is round-robin over the tokens not currently cooling down,
+    bookmarked by a rotation index in the settings table. The caller passes the
+    eligible token set and its rotation key, so the broker is provider-agnostic.
     """
 
     def __init__(self, session: AsyncSession) -> None:
@@ -69,11 +76,13 @@ class CredentialBroker:
         return parse_token_pool(json.loads(crypto.decrypt(row.value, MASTER_KEY_PATH)))
 
     async def acquire(
-        self, provider: str, ids: list[str], rotation_key: str
-    ) -> Lease | WaitDirective:
-        """Pick the next credential round-robin over the ids not cooling down.
+        self, tokens: list[Token], rotation_key: str
+    ) -> SelectedCredential | AllRateLimited:
+        """Pick the next credential round-robin over ``tokens`` not cooling down.
 
-        Advances the rotation bookmark; returns a WaitDirective when all cool down.
+        Advances the rotation bookmark; returns AllRateLimited when all cool down.
+        The returned SelectedCredential carries the chosen Token, so the caller
+        reads its provider off the selection rather than the run's model.
 
         Concurrent runs share one rotation bookmark, so the whole selection is a
         read-modify-write on that row. We lock it FOR UPDATE first: that serializes
@@ -81,23 +90,26 @@ class CredentialBroker:
         start, pick the same index, and both write start+1 (which would hand the
         same credential out twice and stall the rotation).
         """
-        if not ids:
-            raise ValueError(f"no credentials for provider '{provider}'")
+        if not tokens:
+            raise ValueError("no credentials to select from")
 
+        ids = [credential_id(t.provider, t.value) for t in tokens]
         start = await self._read_rotation_for_update(rotation_key) % len(ids)
 
         now = _now()
         cooldowns = await self._cooldowns(ids)
         available = [i for i, cid in enumerate(ids) if cooldowns.get(cid, now) <= now]
         if not available:
-            return WaitDirective(
+            return AllRateLimited(
                 wait_until=min(cooldowns[cid] for cid in ids),
                 reason="all credentials rate-limited",
             )
 
         picked = min(available, key=lambda i: (i - start) % len(ids))
         await self._write_rotation(rotation_key, (picked + 1) % len(ids))
-        return Lease(credential_id=ids[picked], index=picked)
+        return SelectedCredential(
+            credential_id=ids[picked], index=picked, token=tokens[picked]
+        )
 
     async def report_exhausted(self, cid: str, reset_at: datetime | None) -> None:
         """Mark a credential rate-limited until reset_at (default cooldown if None).
@@ -129,7 +141,7 @@ class CredentialBroker:
     async def _cooldowns(self, ids: list[str]) -> dict[str, datetime]:
         """Map credential_id -> cooldown_until, restricted to the given ids.
 
-        acquire relies on this restriction: WaitDirective.wait_until is the min
+        acquire relies on this restriction: AllRateLimited.wait_until is the min
         over these values, so it must never include cooldowns for other ids.
         """
         rows = (

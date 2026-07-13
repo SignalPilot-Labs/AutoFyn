@@ -8,6 +8,7 @@ docs/providers.md.
 import pytest
 
 from lifecycle.credentials import _provider_env
+from common.models import Token
 from common.constants import (
     ENV_ANTHROPIC_API_KEY,
     ENV_ANTHROPIC_AUTH_TOKEN,
@@ -25,15 +26,19 @@ from common.constants import (
 )
 
 
+def _token(provider: str, value: str) -> Token:
+    return Token(provider=provider, value=value, label=None)
+
+
 class TestProviderEnvInjection:
-    """_provider_env produces the right env set per provider."""
+    """_provider_env produces the right env set for the selected token's provider."""
 
     def test_anthropic_injects_only_oauth_token(self) -> None:
-        env = _provider_env(PROVIDER_ANTHROPIC, SUPPORTED_OPUS, "sk-ant-oat01-xyz")
+        env = _provider_env(_token(PROVIDER_ANTHROPIC, "sk-ant-oat01-xyz"), SUPPORTED_OPUS)
         assert env == {ENV_CLAUDE_OAUTH_TOKEN: "sk-ant-oat01-xyz"}
 
     def test_openrouter_injects_gateway_env(self) -> None:
-        env = _provider_env(PROVIDER_OPENROUTER, SUPPORTED_GPT_SOL, "sk-or-v1-abc")
+        env = _provider_env(_token(PROVIDER_OPENROUTER, "sk-or-v1-abc"), SUPPORTED_GPT_SOL)
         assert env[ENV_ANTHROPIC_BASE_URL] == OPENROUTER_BASE_URL
         assert env[ENV_ANTHROPIC_AUTH_TOKEN] == "sk-or-v1-abc"
         # Explicitly empty so the SDK never falls back to a native Anthropic key.
@@ -44,9 +49,16 @@ class TestProviderEnvInjection:
 
     def test_openrouter_never_sets_claude_oauth_token(self) -> None:
         """A GPT run must not carry the native Claude OAuth var."""
-        env = _provider_env(PROVIDER_OPENROUTER, SUPPORTED_GPT_SOL, "sk-or-v1-abc")
+        env = _provider_env(_token(PROVIDER_OPENROUTER, "sk-or-v1-abc"), SUPPORTED_GPT_SOL)
         assert ENV_CLAUDE_OAUTH_TOKEN not in env
 
     def test_unknown_provider_raises(self) -> None:
+        """A token whose provider has no env branch fails loud, not silently.
+
+        Token validation blocks unknown providers at the pool boundary, so bypass
+        it here (model_construct) to exercise _provider_env's own else-branch —
+        the guard that catches a valid-in-pool provider we forgot to wire.
+        """
+        rogue = Token.model_construct(provider="litellm", value="whatever", label=None)
         with pytest.raises(ValueError):
-            _provider_env("litellm", SUPPORTED_OPUS, "whatever")
+            _provider_env(rogue, SUPPORTED_OPUS)
