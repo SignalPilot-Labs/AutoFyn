@@ -1,10 +1,11 @@
-/**Settings section for Claude OAuth token pool management.*/
+/**Settings section for Claude token pool management.*/
 
 "use client";
 
+import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import type { PoolToken } from "@/lib/types";
-import { TOKEN_LABEL_MAX_LEN, CREDENTIAL_PROVIDERS } from "@/lib/constants";
+import { TOKEN_LABEL_MAX_LEN, TOKEN_NAME_PLACEHOLDER, CREDENTIAL_PROVIDERS } from "@/lib/constants";
 import { Button } from "@/components/ui/Button";
 import { ListRow } from "@/components/ui/ListRow";
 import { IconLock, IconCheck, IconPlus } from "@/components/ui/icons";
@@ -22,6 +23,7 @@ interface TokenPoolSectionProps {
   onNewProviderChange: (value: string) => void;
   onAddToken: () => void;
   onRemoveToken: (index: number) => void;
+  onRenameToken: (index: number, label: string | null) => void;
 }
 
 export function TokenPoolSection({
@@ -36,7 +38,21 @@ export function TokenPoolSection({
   onNewProviderChange,
   onAddToken,
   onRemoveToken,
+  onRenameToken,
 }: TokenPoolSectionProps) {
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [draftLabel, setDraftLabel] = useState("");
+
+  const startEdit = (t: PoolToken) => {
+    setEditingIndex(t.index);
+    setDraftLabel(t.label ?? "");
+  };
+
+  const commitEdit = (index: number) => {
+    onRenameToken(index, draftLabel.trim() || null);
+    setEditingIndex(null);
+  };
+
   return (
     <div className="p-4 bg-white/[0.01] border border-border rounded-lg">
       <div className="flex items-center justify-between mb-3">
@@ -56,20 +72,35 @@ export function TokenPoolSection({
               <span className="text-content text-text-secondary shrink-0 truncate">
                 {CREDENTIAL_PROVIDERS.find((p) => p.value === t.provider)?.label ?? t.provider}
               </span>
-              {t.label ? (
-                <>
-                  <span className="text-content text-accent-hover shrink-0 truncate">
-                    {t.label}
-                  </span>
-                  <span className="text-content font-mono text-text-secondary flex-1 min-w-0 truncate">
-                    {t.masked}
-                  </span>
-                </>
+              {editingIndex === t.index ? (
+                <input
+                  type="text"
+                  value={draftLabel}
+                  onChange={(e) => { setDraftLabel(e.target.value); }}
+                  onBlur={() => { commitEdit(t.index); }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") { e.preventDefault(); commitEdit(t.index); }
+                    if (e.key === "Escape") { e.preventDefault(); setEditingIndex(null); }
+                  }}
+                  placeholder="Name"
+                  maxLength={TOKEN_LABEL_MAX_LEN}
+                  autoFocus
+                  className="w-32 bg-black/30 border border-border rounded px-2 py-0.5 text-content text-accent-hover placeholder:text-text-secondary focus-visible:outline-none focus-visible:border-[#00ff88]/30 focus-visible:ring-1 focus-visible:ring-[#00ff88]/40 transition-all"
+                  autoComplete="off"
+                  spellCheck={false}
+                />
               ) : (
-                <span className="text-content font-mono text-accent-hover flex-1 min-w-0 truncate">
-                  {t.masked}
-                </span>
+                <button
+                  onClick={() => { startEdit(t); }}
+                  title="Rename token"
+                  className={`text-content shrink-0 truncate text-left hover:text-[#00ff88] transition-colors ${t.label ? "text-accent-hover" : "text-text-dim italic"}`}
+                >
+                  {t.label ?? TOKEN_NAME_PLACEHOLDER}
+                </button>
               )}
+              <span className="text-content font-mono text-text-secondary flex-1 min-w-0 truncate">
+                {t.masked}
+              </span>
               {t.active && (
                 <span className="flex items-center gap-1 text-content text-[#00ff88]/60 shrink-0">
                   <IconCheck />

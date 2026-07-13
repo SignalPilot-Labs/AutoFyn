@@ -91,6 +91,9 @@ DEFAULT_RUN_DURATION: float = 0.0
 # Stop action defaults
 STOP_PR_DEFAULT: str = "Y"
 
+# Token pool — mirrors db/constants.py TOKEN_LABEL_MAX_LEN
+TOKEN_LABEL_MAX_LEN: int = 16
+
 # Secret masking — prefix lengths mirror dashboard/backend/constants.py
 MASK_PREFIX_DEFAULT: int = 6
 MASK_PREFIX_CLAUDE: int = 8

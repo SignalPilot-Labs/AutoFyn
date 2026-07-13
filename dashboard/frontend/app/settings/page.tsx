@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { fetchSettings, fetchSettingsStatus, updateSettings, fetchPoolTokens, addPoolToken, removePoolToken } from "@/lib/settings-api";
+import { fetchSettings, fetchSettingsStatus, updateSettings, fetchPoolTokens, addPoolToken, removePoolToken, renamePoolToken } from "@/lib/settings-api";
 import { fetchRepos } from "@/lib/api";
 import type { Settings, SettingsStatus, RepoInfo, PoolToken } from "@/lib/types";
 import { useModels, saveStoredModel, resolveInitialModel } from "@/lib/models";
@@ -239,6 +239,15 @@ export default function SettingsPage() {
     }
   };
 
+  const handleRenameToken = async (index: number, label: string | null) => {
+    try {
+      await renamePoolToken(index, label);
+      setTokens(await fetchPoolTokens());
+    } catch (e) {
+      setTokenError(e instanceof Error ? e.message : "Failed to rename token");
+    }
+  };
+
   const hasEdits = Object.values(edits).some((v) => v && v.trim());
   const activeRepo = settings.github_repo || "";
 
@@ -337,6 +346,7 @@ export default function SettingsPage() {
               onNewProviderChange={setNewProvider}
               onAddToken={handleAddToken}
               onRemoveToken={handleRemoveToken}
+              onRenameToken={handleRenameToken}
             />
 
             <RemoteSandboxes />

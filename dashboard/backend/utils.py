@@ -280,6 +280,19 @@ async def add_token_to_pool(raw_token: str, label: str | None, provider: str) ->
     return {"ok": True, "count": len(tokens)}
 
 
+async def rename_token_in_pool(index: int, label: str | None) -> dict:
+    """Rename a token's label by index. Never touches the value or provider."""
+    async with session() as s:
+        tokens = await read_token_pool(s, for_update=True)
+        if index < 0 or index >= len(tokens):
+            raise ValueError(f"Index {index} out of range (pool has {len(tokens)} tokens)")
+        existing = tokens[index]
+        tokens[index] = Token(provider=existing.provider, value=existing.value, label=label)
+        await _write_token_pool(s, tokens)
+        await s.commit()
+    return {"ok": True, "index": index}
+
+
 async def list_pool_tokens() -> list[dict]:
     """List all tokens in the pool (value masked, provider and label as-is)."""
     async with session() as s:

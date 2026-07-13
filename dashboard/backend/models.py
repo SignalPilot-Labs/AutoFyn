@@ -139,3 +139,9 @@ class AddTokenRequest(BaseModel):
     provider: str = Field(default=DEFAULT_PROVIDER, pattern=VALID_PROVIDERS_PATTERN)
     token: str = Field(min_length=1, max_length=TOKEN_VALUE_MAX_LEN)
     label: str | None = Field(default=None, max_length=TOKEN_LABEL_MAX_LEN)
+
+
+class RenameTokenRequest(BaseModel):
+    """Request body for renaming a pool credential's label (value never changes)."""
+
+    label: str | None = Field(default=None, max_length=TOKEN_LABEL_MAX_LEN)

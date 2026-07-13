@@ -50,6 +50,16 @@ export async function addPoolToken(token: string, label: string | null, provider
   return res.json();
 }
 
+export async function renamePoolToken(index: number, label: string | null): Promise<{ ok: boolean; index: number }> {
+  const res = await apiFetch(`/api/tokens/${index}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ label }),
+  });
+  if (!res.ok) throw new Error("Failed to rename token");
+  return res.json();
+}
+
 export async function removePoolToken(index: number): Promise<{ ok: boolean; count: number }> {
   const res = await apiFetch(`/api/tokens/${index}`, {
     method: "DELETE",

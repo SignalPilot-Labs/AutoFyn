@@ -27,6 +27,7 @@ from db.constants import (
 )
 from backend.models import (
     AddTokenRequest,
+    RenameTokenRequest,
     SaveDisabledSubagentsRequest,
     SaveMcpServersRequest,
     SaveMountsRequest,
@@ -43,6 +44,7 @@ from backend.utils import (
     get_repo_list,
     list_pool_tokens,
     remove_token_from_pool,
+    rename_token_in_pool,
     save_repo_list,
     session,
     upsert_setting,
@@ -395,6 +397,17 @@ async def add_token(body: AddTokenRequest) -> dict:
         return await add_token_to_pool(body.token.strip(), label, body.provider)
     except ValueError as e:
         raise HTTPException(status_code=409, detail=str(e))
+
+
+@router.patch("/tokens/{index}")
+async def rename_token(index: int, body: RenameTokenRequest) -> dict:
+    """Rename a token's label by index. Never changes the value or provider."""
+    stripped = body.label.strip() if body.label else ""
+    label = stripped or None
+    try:
+        return await rename_token_in_pool(index, label)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 @router.delete("/tokens/{index}")
