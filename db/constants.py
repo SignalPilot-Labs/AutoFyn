@@ -10,6 +10,10 @@ import posixpath
 
 from config.constants import SANDBOX_REPO_DIR as SANDBOX_REPO_DIR
 
+# ── Secrets ──
+# Secret files (inside Docker volume — autofyn-keys:/data)
+MASTER_KEY_PATH: str = "/data/master.key"
+
 # ── Secret Redaction ──
 SECRET_REDACT_MASK: str = "***REDACTED***"
 
@@ -89,6 +93,22 @@ VALID_MODELS: tuple[str, ...] = (
 )
 DEFAULT_MODEL: str = SUPPORTED_OPUS
 VALID_MODELS_PATTERN: str = f"^({'|'.join(VALID_MODELS)})$"
+
+# ── Providers ──
+PROVIDER_ANTHROPIC: str = "anthropic"
+# All credential providers the pool accepts. Anthropic is the only one today;
+# Part 2 (LiteLLM) appends here and the settings dropdown picks it up for free.
+VALID_PROVIDERS: tuple[str, ...] = (PROVIDER_ANTHROPIC,)
+DEFAULT_PROVIDER: str = PROVIDER_ANTHROPIC
+VALID_PROVIDERS_PATTERN: str = f"^({'|'.join(VALID_PROVIDERS)})$"
+
+# ── CredentialBroker ──
+CLAUDE_TOKENS_KEY: str = "claude_tokens"
+CLAUDE_TOKEN_INDEX_KEY: str = "claude_token_index"
+CREDENTIAL_WAIT_POLL_SECONDS: int = 30
+CREDENTIAL_DEFAULT_COOLDOWN_SECONDS: int = 300
+TOKEN_VALUE_MAX_LEN: int = 4096
+TOKEN_LABEL_MAX_LEN: int = 16
 
 # Structured metadata for the /api/models endpoint — the single source of
 # truth the dashboard fetches at runtime. The frontend defines no model list
@@ -470,6 +490,7 @@ AUDIT_EVENT_TYPES: frozenset[str] = frozenset(
         "permission_denied",
         # Rate limiting
         "rate_limit",
+        "credentials_exhausted_waiting",
         # Idle / stuck detection
         "idle_timeout",
         "idle_nudge",

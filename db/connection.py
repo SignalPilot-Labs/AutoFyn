@@ -87,6 +87,7 @@ async def run_migrations() -> None:
         await _migrate_idempotency_key_columns(conn)
         await _migrate_sandbox_snapshot_columns(conn)
         await _migrate_drop_redundant_sandbox_columns(conn)
+        await _migrate_credential_health_table(conn)
 
 
 async def _migrate_control_signals_constraint(conn) -> None:
@@ -167,6 +168,23 @@ async def _migrate_branch_name_nullable(conn) -> None:
         await conn.execute(text("ALTER TABLE runs ALTER COLUMN branch_name DROP NOT NULL"))
         await conn.execute(text("UPDATE runs SET branch_name = NULL WHERE branch_name = 'pending'"))
         log.info("Migrated runs.branch_name to nullable, converted 'pending' to NULL")
+
+
+async def _migrate_credential_health_table(conn) -> None:
+    """Create the credential_health table on already-initialized deployments."""
+    result = await conn.execute(text(
+        "SELECT 1 FROM information_schema.tables "
+        "WHERE table_name = 'credential_health'"
+    ))
+    if result.first() is None:
+        await conn.execute(text(
+            "CREATE TABLE credential_health ("
+            "credential_id VARCHAR PRIMARY KEY, "
+            "cooldown_until TIMESTAMPTZ, "
+            "updated_at TIMESTAMPTZ DEFAULT now()"
+            ")"
+        ))
+        log.info("Created table credential_health")
 
 
 def get_session_factory() -> async_sessionmaker[AsyncSession]:

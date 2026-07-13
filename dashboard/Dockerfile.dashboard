@@ -38,6 +38,9 @@ RUN useradd -m appuser && mkdir -p /data && chown appuser:appuser /app /data
 # Config (required by db/connection.py)
 COPY --chown=appuser:appuser config/ /app/config/
 
+# Common credential logic (crypto + broker), imported by agent and dashboard
+COPY --chown=appuser:appuser common/ /app/common/
+
 # Shared DB package (models + connection pool)
 COPY --chown=appuser:appuser db/pyproject.toml /app/db/pyproject.toml
 COPY --chown=appuser:appuser db/__init__.py /app/db/__init__.py

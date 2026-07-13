@@ -7,6 +7,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { updateSettings, addPoolToken } from "@/lib/settings-api";
 import type { SettingsStatus } from "@/lib/types";
+import { DEFAULT_PROVIDER } from "@/lib/constants";
 import { clsx } from "clsx";
 
 interface OnboardingModalProps {
@@ -128,7 +129,7 @@ export function OnboardingModal({ open, onComplete, initialStatus }: OnboardingM
     setSaving(true);
     try {
       if (currentStep.key === "claude_token") {
-        await addPoolToken(currentValue.trim());
+        await addPoolToken(currentValue.trim(), null, DEFAULT_PROVIDER);
       } else {
         await updateSettings({ [currentStep.key]: currentValue.trim() });
       }

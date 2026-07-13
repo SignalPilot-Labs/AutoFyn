@@ -15,17 +15,25 @@ from sqlalchemy import select, func
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend import crypto
+from common import crypto
 from backend.constants import (
     AGENT_API_URL,
     AGENT_TIMEOUT_SHORT,
     MASK_PREFIX_CLAUDE_TOKEN,
-    MASTER_KEY_PATH,
     SECRET_KEYS,
     SIGNAL_AGENT_PATHS,
 )
 from db.connection import get_session_factory
-from db.constants import DISABLED_SUBAGENTS_KEY_PREFIX, HOST_MOUNTS_KEY_PREFIX, REMOTE_MOUNTS_KEY_PREFIX
+from db.constants import (
+    CLAUDE_TOKEN_INDEX_KEY,
+    CLAUDE_TOKENS_KEY,
+    DISABLED_SUBAGENTS_KEY_PREFIX,
+    HOST_MOUNTS_KEY_PREFIX,
+    MASTER_KEY_PATH,
+    PROVIDER_ANTHROPIC,
+    REMOTE_MOUNTS_KEY_PREFIX,
+)
+from common.models import Token, parse_token_pool
 from db.models import AuditLog, ControlSignal, Run, Setting
 
 
@@ -194,11 +202,6 @@ async def read_credentials(repo: str | None, sandbox_id: str | None) -> dict:
             else:
                 creds[key] = setting.value
 
-        token = await _pick_next_claude_token(s)
-        if token:
-            creds["claude_token"] = token
-            await s.commit()
-
         if repo:
             env_key = f"env_vars:{repo}"
             env_setting = await s.get(Setting, env_key)
@@ -237,29 +240,11 @@ async def read_credentials(repo: str | None, sandbox_id: str | None) -> dict:
     return creds
 
 
-async def _pick_next_claude_token(s: AsyncSession) -> str | None:
-    """Pick the next Claude token round-robin from the token pool.
-
-    Tokens are stored as an encrypted JSON array in settings key 'claude_tokens'.
-    The current index is tracked in 'claude_token_index'. Legacy single-token
-    entries are auto-migrated into the pool by read_token_pool().
-    """
-    tokens = await read_token_pool(s, for_update=True)
-    if not tokens:
-        return None
-    idx_row = await s.get(Setting, "claude_token_index")
-    idx = int(idx_row.value) if idx_row else 0
-    idx = idx % len(tokens)
-    picked = tokens[idx]
-    await upsert_setting(s, "claude_token_index", str((idx + 1) % len(tokens)), False)
-    return picked
-
-
 # ---------------------------------------------------------------------------
 # Token pool CRUD
 # ---------------------------------------------------------------------------
 
-async def read_token_pool(s: AsyncSession, for_update: bool) -> list[str]:
+async def read_token_pool(s: AsyncSession, for_update: bool) -> list[Token]:
     """Read the decrypted token pool.
 
     When for_update=True, acquires a row-level lock (SELECT ... FOR UPDATE)
@@ -267,46 +252,65 @@ async def read_token_pool(s: AsyncSession, for_update: bool) -> list[str]:
     Pass for_update=True in any caller that modifies the pool after reading.
     """
     if for_update:
-        stmt = select(Setting).where(Setting.key == "claude_tokens").with_for_update()
+        stmt = select(Setting).where(Setting.key == CLAUDE_TOKENS_KEY).with_for_update()
         result = await s.execute(stmt)
         pool = result.scalar_one_or_none()
     else:
-        pool = await s.get(Setting, "claude_tokens")
+        pool = await s.get(Setting, CLAUDE_TOKENS_KEY)
     if pool:
-        return _decrypt_json(pool, "Token pool")
+        return parse_token_pool(_decrypt_json(pool, "Token pool"))
     return []
 
 
-async def _write_token_pool(s: AsyncSession, tokens: list[str]) -> None:
+async def _write_token_pool(s: AsyncSession, tokens: list[Token]) -> None:
     """Encrypt and write the token pool."""
-    encrypted = crypto.encrypt(json.dumps(tokens), MASTER_KEY_PATH)
-    await upsert_setting(s, "claude_tokens", encrypted, True)
+    encrypted = crypto.encrypt(json.dumps([t.model_dump() for t in tokens]), MASTER_KEY_PATH)
+    await upsert_setting(s, CLAUDE_TOKENS_KEY, encrypted, True)
 
 
-async def add_token_to_pool(raw_token: str) -> dict:
-    """Add a Claude token to the pool. Rejects duplicates."""
+async def add_token_to_pool(raw_token: str, label: str | None, provider: str) -> dict:
+    """Add a credential to the pool. Rejects duplicate values."""
     async with session() as s:
         tokens = await read_token_pool(s, for_update=True)
-        if raw_token in tokens:
+        if any(t.value == raw_token for t in tokens):
             raise ValueError("This token is already in the pool")
-        tokens.append(raw_token)
+        tokens.append(Token(provider=provider, value=raw_token, label=label))
         await _write_token_pool(s, tokens)
         await s.commit()
     return {"ok": True, "count": len(tokens)}
 
 
+async def rename_token_in_pool(index: int, label: str | None) -> dict:
+    """Rename a token's label by index. Never touches the value or provider."""
+    async with session() as s:
+        tokens = await read_token_pool(s, for_update=True)
+        if index < 0 or index >= len(tokens):
+            raise ValueError(f"Index {index} out of range (pool has {len(tokens)} tokens)")
+        existing = tokens[index]
+        tokens[index] = Token(provider=existing.provider, value=existing.value, label=label)
+        await _write_token_pool(s, tokens)
+        await s.commit()
+    return {"ok": True, "index": index}
+
+
 async def list_pool_tokens() -> list[dict]:
-    """List all tokens in the pool (masked)."""
+    """List all tokens in the pool (value masked, provider and label as-is)."""
     async with session() as s:
         tokens = await read_token_pool(s, for_update=False)
-        idx_row = await s.get(Setting, "claude_token_index")
+        idx_row = await s.get(Setting, CLAUDE_TOKEN_INDEX_KEY)
         idx_value: str | None = idx_row.value if idx_row else None
     if not tokens:
         return []
     has_used = idx_value is not None
     active_idx = (int(idx_value) - 1) % len(tokens) if has_used else -1
     return [
-        {"index": i, "masked": crypto.mask(t, prefix_len=MASK_PREFIX_CLAUDE_TOKEN), "active": has_used and i == active_idx}
+        {
+            "index": i,
+            "provider": t.provider,
+            "masked": crypto.mask(t.value, prefix_len=MASK_PREFIX_CLAUDE_TOKEN),
+            "label": t.label,
+            "active": has_used and i == active_idx,
+        }
         for i, t in enumerate(tokens)
     ]
 
@@ -321,17 +325,17 @@ async def remove_token_from_pool(index: int) -> dict:
         if tokens:
             await _write_token_pool(s, tokens)
         else:
-            pool_row = await s.get(Setting, "claude_tokens")
+            pool_row = await s.get(Setting, CLAUDE_TOKENS_KEY)
             if pool_row:
                 await s.delete(pool_row)
         # Adjust round-robin index
-        idx_row = await s.get(Setting, "claude_token_index")
+        idx_row = await s.get(Setting, CLAUDE_TOKEN_INDEX_KEY)
         if idx_row and tokens:
             current = int(idx_row.value)
             if index < current:
-                await upsert_setting(s, "claude_token_index", str(current - 1), False)
+                await upsert_setting(s, CLAUDE_TOKEN_INDEX_KEY, str(current - 1), False)
             elif current >= len(tokens):
-                await upsert_setting(s, "claude_token_index", str(0), False)
+                await upsert_setting(s, CLAUDE_TOKEN_INDEX_KEY, str(0), False)
         elif idx_row and not tokens:
             await s.delete(idx_row)
         await s.commit()
@@ -417,9 +421,9 @@ async def autofill_settings(master_key_path: str) -> None:
 
         claude_token = os.environ.get("CLAUDE_CODE_OAUTH_TOKEN")
         if claude_token:
-            pool = json.dumps([claude_token])
+            pool = json.dumps([Token(provider=PROVIDER_ANTHROPIC, value=claude_token, label=None).model_dump()])
             encrypted = crypto.encrypt(pool, master_key_path)
-            await upsert_setting(s, "claude_tokens", encrypted, True)
+            await upsert_setting(s, CLAUDE_TOKENS_KEY, encrypted, True)
 
         await s.commit()
 

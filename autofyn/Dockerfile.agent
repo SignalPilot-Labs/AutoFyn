@@ -41,6 +41,9 @@ RUN mkdir -p /home/agentuser/.autofyn/rounds \
 # Config (required by db/connection.py and config loader)
 COPY --chown=agentuser:agentuser config/ /app/config/
 
+# Common credential logic (crypto + broker), imported by agent and dashboard
+COPY --chown=agentuser:agentuser common/ /app/common/
+
 # Shared DB package (models + connection pool) — deps first for layer caching
 COPY --chown=agentuser:agentuser db/pyproject.toml /app/db/pyproject.toml
 COPY --chown=agentuser:agentuser db/__init__.py /app/db/__init__.py

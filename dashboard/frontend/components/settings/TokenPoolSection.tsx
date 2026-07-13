@@ -1,32 +1,64 @@
-/**Settings section for Claude OAuth token pool management.*/
+/**Settings section for Claude token pool management.*/
 
 "use client";
 
+import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import type { PoolToken } from "@/lib/types";
-import { Button } from "@/components/ui/Button";
+import { TOKEN_LABEL_MAX_LEN, TOKEN_NAME_PLACEHOLDER, CREDENTIAL_PROVIDERS } from "@/lib/constants";
 import { ListRow } from "@/components/ui/ListRow";
 import { IconLock, IconCheck, IconPlus } from "@/components/ui/icons";
+import { ProviderSelector } from "@/components/settings/ProviderSelector";
+
+// Shared box styling so the read-only display fields and the editable inputs
+// are pixel-identical — the display row mirrors the add-token row.
+const FIELD_BOX =
+  "bg-black/30 border border-border rounded px-3 py-2 text-content";
+const FIELD_FOCUS =
+  "placeholder:text-text-secondary focus-visible:outline-none focus-visible:border-[#00ff88]/30 focus-visible:ring-1 focus-visible:ring-[#00ff88]/40 transition-all";
 
 interface TokenPoolSectionProps {
   tokens: PoolToken[];
   newToken: string;
+  newLabel: string;
+  newProvider: string;
   addingToken: boolean;
   tokenError: string | null;
   onNewTokenChange: (value: string) => void;
+  onNewLabelChange: (value: string) => void;
+  onNewProviderChange: (value: string) => void;
   onAddToken: () => void;
   onRemoveToken: (index: number) => void;
+  onRenameToken: (index: number, label: string | null) => void;
 }
 
 export function TokenPoolSection({
   tokens,
   newToken,
+  newLabel,
+  newProvider,
   addingToken,
   tokenError,
   onNewTokenChange,
+  onNewLabelChange,
+  onNewProviderChange,
   onAddToken,
   onRemoveToken,
+  onRenameToken,
 }: TokenPoolSectionProps) {
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [draftLabel, setDraftLabel] = useState("");
+
+  const startEdit = (t: PoolToken) => {
+    setEditingIndex(t.index);
+    setDraftLabel(t.label ?? "");
+  };
+
+  const commitEdit = (index: number) => {
+    onRenameToken(index, draftLabel.trim() || null);
+    setEditingIndex(null);
+  };
+
   return (
     <div className="p-4 bg-white/[0.01] border border-border rounded-lg">
       <div className="flex items-center justify-between mb-3">
@@ -34,24 +66,55 @@ export function TokenPoolSection({
           Claude Tokens
         </label>
         <span className="text-content text-text-secondary">
-          {tokens.length} key{tokens.length !== 1 ? "s" : ""} · round-robin
+          {tokens.length} key{tokens.length !== 1 ? "s" : ""}
         </span>
       </div>
 
       <div className="space-y-1.5 mb-3">
         <AnimatePresence>
           {tokens.map((t) => (
-            <ListRow key={t.masked} layoutId={t.masked} onDelete={() => onRemoveToken(t.index)} deleteTitle="Remove token">
-              <IconLock className="text-text-secondary shrink-0" />
-              <span className="text-content font-mono text-accent-hover flex-1 min-w-0 truncate">
-                {t.masked}
-              </span>
-              {t.active && (
-                <span className="flex items-center gap-1 text-content text-[#00ff88]/60 shrink-0">
-                  <IconCheck />
-                  Next
+            <ListRow key={t.index} layoutId={String(t.index)} onDelete={() => onRemoveToken(t.index)} deleteTitle="Remove token">
+              <div className={`${FIELD_BOX} w-32 flex items-center gap-1.5 text-text-secondary`}>
+                <IconLock className="shrink-0" />
+                <span className="truncate">
+                  {CREDENTIAL_PROVIDERS.find((p) => p.value === t.provider)?.label ?? t.provider}
                 </span>
+              </div>
+              {editingIndex === t.index ? (
+                <input
+                  type="text"
+                  value={draftLabel}
+                  onChange={(e) => { setDraftLabel(e.target.value); }}
+                  onBlur={() => { commitEdit(t.index); }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") { e.preventDefault(); commitEdit(t.index); }
+                    if (e.key === "Escape") { e.preventDefault(); setEditingIndex(null); }
+                  }}
+                  placeholder="Name"
+                  maxLength={TOKEN_LABEL_MAX_LEN}
+                  autoFocus
+                  className={`${FIELD_BOX} ${FIELD_FOCUS} w-32 text-accent-hover`}
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+              ) : (
+                <button
+                  onClick={() => { startEdit(t); }}
+                  title="Rename token"
+                  className={`${FIELD_BOX} w-32 text-left truncate hover:border-border-hover transition-colors ${t.label ? "text-accent-hover" : "text-text-dim"}`}
+                >
+                  {t.label ?? TOKEN_NAME_PLACEHOLDER}
+                </button>
               )}
+              <div className={`${FIELD_BOX} flex-1 min-w-0 flex items-center gap-2 font-mono text-text-secondary`}>
+                <span className="flex-1 min-w-0 truncate">{t.masked}</span>
+                {t.active && (
+                  <span className="flex items-center gap-1 text-[#00ff88]/60 shrink-0">
+                    <IconCheck />
+                    Next
+                  </span>
+                )}
+              </div>
             </ListRow>
           ))}
         </AnimatePresence>
@@ -63,26 +126,37 @@ export function TokenPoolSection({
         )}
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex items-center gap-2 px-2.5 border border-transparent">
+        <ProviderSelector value={newProvider} onChange={onNewProviderChange} />
+        <input
+          type="text"
+          value={newLabel}
+          onChange={(e) => { onNewLabelChange(e.target.value); }}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); onAddToken(); } }}
+          placeholder="Name (optional)"
+          maxLength={TOKEN_LABEL_MAX_LEN}
+          className={`${FIELD_BOX} ${FIELD_FOCUS} w-32 text-accent-hover`}
+          autoComplete="off"
+          spellCheck={false}
+        />
         <input
           type="password"
           value={newToken}
           onChange={(e) => { onNewTokenChange(e.target.value); }}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); onAddToken(); } }}
           placeholder="sk-ant-oat01-..."
-          className="flex-1 bg-black/30 border border-border rounded px-3 py-2 text-content text-accent-hover font-mono placeholder:text-text-secondary focus-visible:outline-none focus-visible:border-[#00ff88]/30 focus-visible:ring-1 focus-visible:ring-[#00ff88]/40 transition-all"
+          className={`${FIELD_BOX} ${FIELD_FOCUS} flex-1 text-accent-hover font-mono`}
           autoComplete="off"
           spellCheck={false}
         />
-        <Button
-          variant="success"
-          size="md"
-          icon={<IconPlus size={10} />}
+        <button
           onClick={onAddToken}
           disabled={addingToken || !newToken.trim()}
+          title="Add token"
+          className="text-text-secondary hover:text-[#00ff88] disabled:opacity-30 disabled:pointer-events-none transition-colors shrink-0"
         >
-          {addingToken ? "Adding..." : "Add"}
-        </Button>
+          <IconPlus size={11} />
+        </button>
       </div>
 
       {tokenError && (

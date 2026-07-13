@@ -230,6 +230,14 @@ export function milestoneFromAudit(event: FeedEvent): GroupedEvent | null {
         ts,
       };
     }
+    case "credentials_exhausted_waiting":
+      return {
+        id: `ctrl-${ts}-credentials-exhausted-waiting`,
+        type: "control",
+        text: "Waiting for available credentials",
+        details: d,
+        ts,
+      };
     case "prompt_injected":
       return {
         id: `up-${event.data.id}-${ts}`,

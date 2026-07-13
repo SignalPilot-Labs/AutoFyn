@@ -1,9 +1,9 @@
 """Regression test for token pool active marker off-by-one.
 
 Previously list_pool_tokens used `current_idx % len(tokens)` as the active
-index. But _pick_next_claude_token stores (idx + 1) after picking, so the
-stored index always points to the NEXT token, not the last-picked one.
-The fix uses `(current_idx - 1) % len(tokens)` to point back to last-picked.
+index. But the broker stores (idx + 1) after picking, so the stored index
+always points to the NEXT token, not the last-picked one. The fix uses
+`(current_idx - 1) % len(tokens)` to point back to last-picked.
 """
 
 from __future__ import annotations
@@ -13,9 +13,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from backend.utils import list_pool_tokens
+from common.models import Token
 
 
-def _make_session(idx_value: str | None, tokens: list[str]) -> MagicMock:
+def _make_session(idx_value: str | None, tokens: list[Token]) -> MagicMock:
     """Build an AsyncSession mock that returns the given idx and token pool."""
     s = MagicMock()
 
@@ -34,7 +35,11 @@ class TestTokenPoolActiveMarker:
     @pytest.mark.asyncio
     async def test_active_is_last_picked_not_next(self) -> None:
         """With 3 tokens and stored index=1, token at index 0 must be active."""
-        tokens = ["sk-ant-tokenA", "sk-ant-tokenB", "sk-ant-tokenC"]
+        tokens = [
+            Token(value="sk-ant-tokenA", label=None),
+            Token(value="sk-ant-tokenB", label=None),
+            Token(value="sk-ant-tokenC", label=None),
+        ]
         s = _make_session("1", tokens)
 
         with (
@@ -54,7 +59,11 @@ class TestTokenPoolActiveMarker:
     @pytest.mark.asyncio
     async def test_active_wraps_around_on_first_pick(self) -> None:
         """With stored index=0 (just wrapped around), last token must be active."""
-        tokens = ["sk-ant-tokenA", "sk-ant-tokenB", "sk-ant-tokenC"]
+        tokens = [
+            Token(value="sk-ant-tokenA", label=None),
+            Token(value="sk-ant-tokenB", label=None),
+            Token(value="sk-ant-tokenC", label=None),
+        ]
         s = _make_session("0", tokens)
 
         with (
@@ -74,7 +83,11 @@ class TestTokenPoolActiveMarker:
     @pytest.mark.asyncio
     async def test_no_index_row_marks_no_token_active(self) -> None:
         """When idx_row is None (no token used yet), no token must be marked active."""
-        tokens = ["sk-ant-tokenA", "sk-ant-tokenB", "sk-ant-tokenC"]
+        tokens = [
+            Token(value="sk-ant-tokenA", label=None),
+            Token(value="sk-ant-tokenB", label=None),
+            Token(value="sk-ant-tokenC", label=None),
+        ]
         s = _make_session(None, tokens)
 
         with (

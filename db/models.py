@@ -168,3 +168,17 @@ class Setting(Base):
     value: Mapped[str] = mapped_column(Text, nullable=False)
     encrypted: Mapped[bool] = mapped_column(Boolean, default=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=_utcnow)
+
+
+class CredentialHealth(Base):
+    """Per-credential cooldown so the broker skips rate-limited credentials.
+
+    Keyed by a stable credential id (provider + hash of the credential). Holds
+    only health; the credential material lives in the encrypted settings blob.
+    """
+
+    __tablename__ = "credential_health"
+
+    credential_id: Mapped[str] = mapped_column(String, primary_key=True)
+    cooldown_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=_utcnow)
