@@ -17,10 +17,15 @@ export interface ModelSelectorProps {
 
 const LEGACY_TIER = "legacy";
 
-/** Provider inferred from the model id prefix. */
+/** Display label for a provider group header, keyed on the model's provider. */
+const PROVIDER_LABELS: Record<string, string> = {
+  anthropic: "Anthropic",
+  openrouter: "OpenRouter",
+};
+
+/** Provider group header for a model, from its provider field (not id prefix). */
 function providerOf(model: ModelInfo): string {
-  if (model.id.startsWith("claude-")) return "Anthropic";
-  return "Other";
+  return PROVIDER_LABELS[model.provider] ?? model.provider;
 }
 
 /** Non-legacy models first (in list order), legacy models last. */

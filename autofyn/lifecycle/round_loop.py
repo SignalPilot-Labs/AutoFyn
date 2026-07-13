@@ -223,7 +223,7 @@ async def run_rounds(
             round_number, bootstrap, time_lock, prior_reports
         )
 
-        cred_id = await acquire_and_inject(sandbox, run.run_id)
+        cred_id = await acquire_and_inject(sandbox, run.run_id, bootstrap.model)
         result = await runner.run(options, initial_prompt, round_number)
         await report_round_outcome(run.run_id, cred_id)
         await reconcile_orphaned_agent_calls(run.run_id)

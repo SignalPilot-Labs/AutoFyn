@@ -6,7 +6,8 @@ describe the shape of HTTP request bodies and response payloads.
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from db.constants import DEFAULT_BASE_BRANCH, DEFAULT_EFFORT, DEFAULT_MODEL, STARTER_PRESET_KEYS, VALID_EFFORTS, VALID_MODELS, validate_github_repo, validate_prompt_length
+from common.constants import DEFAULT_MODEL, VALID_MODELS
+from db.constants import DEFAULT_BASE_BRANCH, DEFAULT_EFFORT, STARTER_PRESET_KEYS, VALID_EFFORTS, validate_github_repo, validate_prompt_length
 from utils.constants import INJECT_PAYLOAD_MAX_LEN
 
 

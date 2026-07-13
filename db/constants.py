@@ -78,31 +78,12 @@ TERMINAL_RUN_STATUSES: frozenset[str] = frozenset(
 # live sandboxes and background tasks.
 CLEANABLE_RUN_STATUSES: frozenset[str] = frozenset(TERMINAL_RUN_STATUSES)
 
-# ── Models ──
-# Pinned to exact SDK model IDs. No aliases, no translation layer.
-SUPPORTED_FABLE: str = "claude-fable-5"
-SUPPORTED_OPUS: str = "claude-opus-4-8"
-SUPPORTED_SONNET: str = "claude-sonnet-4-6"
-LEGACY_OPUS: str = "claude-opus-4-5"
+# ── Provider & model constants ──
+# The provider list, model IDs, SUPPORTED_MODELS metadata, tier mapping, and
+# the model↔provider/env helpers live in common/constants.py — they describe
+# the credential/model domain, not database schema. See docs/providers.md.
 
-VALID_MODELS: tuple[str, ...] = (
-    SUPPORTED_FABLE,
-    SUPPORTED_OPUS,
-    SUPPORTED_SONNET,
-    LEGACY_OPUS,
-)
-DEFAULT_MODEL: str = SUPPORTED_OPUS
-VALID_MODELS_PATTERN: str = f"^({'|'.join(VALID_MODELS)})$"
-
-# ── Providers ──
-PROVIDER_ANTHROPIC: str = "anthropic"
-# All credential providers the pool accepts. Anthropic is the only one today;
-# Part 2 (LiteLLM) appends here and the settings dropdown picks it up for free.
-VALID_PROVIDERS: tuple[str, ...] = (PROVIDER_ANTHROPIC,)
-DEFAULT_PROVIDER: str = PROVIDER_ANTHROPIC
-VALID_PROVIDERS_PATTERN: str = f"^({'|'.join(VALID_PROVIDERS)})$"
-
-# ── CredentialBroker ──
+# ── CredentialBroker (DB-backed settings rows + cooldown timing) ──
 CLAUDE_TOKENS_KEY: str = "claude_tokens"
 CLAUDE_TOKEN_INDEX_KEY: str = "claude_token_index"
 CREDENTIAL_WAIT_POLL_SECONDS: int = 30
@@ -110,60 +91,11 @@ CREDENTIAL_DEFAULT_COOLDOWN_SECONDS: int = 300
 TOKEN_VALUE_MAX_LEN: int = 4096
 TOKEN_LABEL_MAX_LEN: int = 16
 
-# Structured metadata for the /api/models endpoint — the single source of
-# truth the dashboard fetches at runtime. The frontend defines no model list
-# of its own; everything textual lives here.
-#   id          — exact SDK model ID
-#   label       — full product name, shown in the picker
-#   short       — compact name with version, shown on badges/run cards
-#   description — one-line picker blurb
-#   context     — context-window blurb
-#   tier        — opus | sonnet | legacy (drives subagent tier resolution)
-SUPPORTED_MODELS: list[dict[str, str]] = [
-    {
-        "id": SUPPORTED_FABLE,
-        "label": "Claude Fable 5",
-        "short": "Fable 5",
-        "description": "Most capable, for demanding agentic work",
-        "context": "1M context",
-        "tier": "opus",
-    },
-    {
-        "id": SUPPORTED_OPUS,
-        "label": "Claude Opus 4.8",
-        "short": "Opus 4.8",
-        "description": "Highly capable, strong for agents",
-        "context": "1M context",
-        "tier": "opus",
-    },
-    {
-        "id": SUPPORTED_SONNET,
-        "label": "Claude Sonnet 4.6",
-        "short": "Sonnet 4.6",
-        "description": "Fast and capable",
-        "context": "1M context",
-        "tier": "sonnet",
-    },
-    {
-        "id": LEGACY_OPUS,
-        "label": "Claude Opus 4.5",
-        "short": "Opus 4.5",
-        "description": "Legacy Opus model",
-        "context": "200K context",
-        "tier": "legacy",
-    },
-]
-
 # ── Effort ──
 VALID_EFFORTS: tuple[str, ...] = ("low", "medium", "high", "max")
 DEFAULT_EFFORT: str = "high"
 DEFAULT_BASE_BRANCH: str = "main"
 VALID_EFFORTS_PATTERN: str = f"^({'|'.join(VALID_EFFORTS)})$"
-
-# Models that support effort="max". Others get downgraded to "high".
-MODELS_SUPPORTING_MAX_EFFORT: frozenset[str] = frozenset(
-    {SUPPORTED_FABLE, SUPPORTED_OPUS, SUPPORTED_SONNET}
-)
 
 
 # ── Host Mounts ──

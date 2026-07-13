@@ -2,7 +2,7 @@
 
 import pytest
 
-from db.constants import DEFAULT_MODEL
+from common.constants import DEFAULT_MODEL
 from utils.models_http import StartRequest
 
 

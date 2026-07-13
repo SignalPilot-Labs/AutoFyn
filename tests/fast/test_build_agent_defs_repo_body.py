@@ -7,7 +7,7 @@ pins the one branch in _resolve_body.
 
 from config.constants import SANDBOX_KIND_DOCKER, SandboxResources, SubagentSpec
 from config.loader import merge_subagents
-from db.constants import SUPPORTED_OPUS
+from common.constants import SUPPORTED_OPUS
 from prompts.subagent import build_agent_defs
 
 _TEST_RESOURCES = SandboxResources(

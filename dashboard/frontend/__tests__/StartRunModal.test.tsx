@@ -20,8 +20,8 @@ vi.mock("@/lib/models", async (importOriginal) => {
     ...actual,
     useModels: () => ({
       models: [
-        { id: "claude-opus-4-8", label: "Claude Opus 4.8", short: "Opus 4.8", description: "Most capable", context: "1M context", tier: "opus" },
-        { id: "claude-sonnet-4-6", label: "Claude Sonnet 4.6", short: "Sonnet 4.6", description: "Fast", context: "1M context", tier: "sonnet" },
+        { id: "claude-opus-4-8", api_model: "claude-opus-4-8", label: "Claude Opus 4.8", short: "Opus 4.8", description: "Most capable", context: "1M context", tier: "opus", provider: "anthropic" },
+        { id: "claude-sonnet-4-6", api_model: "claude-sonnet-4-6", label: "Claude Sonnet 4.6", short: "Sonnet 4.6", description: "Fast", context: "1M context", tier: "sonnet", provider: "anthropic" },
       ],
       defaultModel: "claude-opus-4-8",
       loading: false,

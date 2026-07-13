@@ -35,14 +35,13 @@ from backend.utils import (
     send_control_signal,
     session,
 )
+from common.constants import DEFAULT_MODEL, SUPPORTED_MODELS
 from db.constants import (
     ACTIVE_RUN_STATUSES,
-    DEFAULT_MODEL,
     RUN_STATUS_PAUSED,
     RUN_STATUS_RATE_LIMITED,
     RUN_STATUS_RUNNING,
     RUN_STATUS_STARTING,
-    SUPPORTED_MODELS,
 )
 from db.models import AuditLog, Run, ToolCall
 

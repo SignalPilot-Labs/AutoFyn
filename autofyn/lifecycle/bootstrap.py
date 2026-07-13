@@ -25,7 +25,8 @@ from sandbox_client.client import SandboxClient
 from agent_session.time_lock import TimeLock
 from utils import db
 from utils.db_logging import log_audit
-from db.constants import MODELS_SUPPORTING_MAX_EFFORT, RUN_STATUS_RUNNING
+from common.constants import MODELS_SUPPORTING_MAX_EFFORT, fallback_model_for
+from db.constants import RUN_STATUS_RUNNING
 from utils.constants import (
     BRANCH_SLUG_MAX_LEN,
     DEFAULT_AGENT_ROLE,
@@ -44,7 +45,6 @@ from utils.models import (
     BootstrapResult,
     RoundsMetadata,
     RunContext,
-    get_fallback_model,
 )
 from utils.run_config import RunAgentConfig, load_run_agent_config
 from utils.run_subagents import SubagentConfig, load_repo_subagents
@@ -72,7 +72,7 @@ async def bootstrap_run(
     if not custom_prompt:
         raise RuntimeError("bootstrap_run requires a non-empty task prompt")
 
-    fallback_model = get_fallback_model(model)
+    fallback_model = fallback_model_for(model)
 
     branch_name, is_resume, run_config, subagent_config = await _resolve_branch_and_clone(
         sandbox, run_id, custom_prompt, github_repo, base_branch

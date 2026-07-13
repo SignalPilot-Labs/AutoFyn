@@ -11,10 +11,19 @@ default is a real model.
 import re
 from pathlib import Path
 
-from db.constants import SUPPORTED_MODELS, VALID_MODELS, DEFAULT_MODEL
+from common.constants import SUPPORTED_MODELS, VALID_MODELS, DEFAULT_MODEL
 
 # Fields the frontend ModelInfo interface reads off each model.
-_REQUIRED_MODEL_FIELDS = {"id", "label", "short", "description", "context", "tier"}
+_REQUIRED_MODEL_FIELDS = {
+    "id",
+    "api_model",
+    "label",
+    "short",
+    "description",
+    "context",
+    "tier",
+    "provider",
+}
 
 TS_API_PATH = Path("dashboard/frontend/lib/api.ts")
 

@@ -54,12 +54,9 @@ def idle_nudge_max_attempts() -> int:
     return _agent_cfg()["idle_nudge_max_attempts"]
 
 
-# ── Subagent Model Tiers ──
-# Each subagent declares a tier ("opus" or "sonnet"). At runtime,
-# build_agent_defs resolves the tier to the actual model based on the
-# user's selection. See resolve_subagent_model() in prompts/subagent.py.
-TIER_OPUS: str = "opus"
-TIER_SONNET: str = "sonnet"
+# Subagent model tiers (TIER_OPUS/TIER_SONNET) live in common.constants — they
+# are model-domain constants shared across layers. See _resolve_subagent_model
+# in prompts/subagent.py for how a tier binds to a concrete model per provider.
 DEFAULT_AGENT_ROLE = "worker"
 SESSION_PERMISSION_MODE = "bypassPermissions"
 # Tools the autonomous agent must never call. AskUserQuestion blocks the

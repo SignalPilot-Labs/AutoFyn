@@ -12,24 +12,33 @@ The orchestrator calls these subagents by name via the SDK's Agent tool.
 
 from config.constants import SandboxResources, SubagentSpec
 from prompts.loader import load_markdown, render_environment, render_subagent_budget
-from db.constants import SUPPORTED_SONNET
-from utils.constants import TIER_OPUS
+from common.constants import (
+    TIER_OPUS,
+    TIER_SONNET,
+    provider_for_model,
+    tier_for_model,
+    tier_model_for,
+)
 
 
 def _resolve_subagent_model(tier: str, user_model: str) -> str:
-    """Resolve a subagent tier to a concrete model ID based on user selection.
+    """Resolve a subagent tier to a concrete model ID within the run's family.
 
-    - User picks an opus model → opus-tier subagents get that model,
-      sonnet-tier subagents get SUPPORTED_SONNET.
-    - User picks a sonnet model → ALL subagents (including opus-tier) get
-      that sonnet model. Sonnet runs are cost-conscious — no opus anywhere.
+    Tiers are roles, not vendor labels: opus = flagship, sonnet = workhorse.
+    The run's provider (Anthropic native, or OpenRouter for GPT-5.6) is fixed by
+    the user's model, and the tier binds to that family's flagship or workhorse.
+
+    - Opus-class run → opus-tier subagents get the user's model, sonnet-tier
+      subagents get the family workhorse (Claude Sonnet, or GPT Terra).
+    - Sonnet-class run → ALL subagents (including opus-tier) get the user's
+      model. Sonnet runs are cost-conscious — no flagship anywhere.
     """
-    is_sonnet_run = "sonnet" in user_model
-    if is_sonnet_run:
+    provider = provider_for_model(user_model)
+    if tier_for_model(user_model) == TIER_SONNET:
         return user_model
     if tier == TIER_OPUS:
         return user_model
-    return SUPPORTED_SONNET
+    return tier_model_for(provider, TIER_SONNET)
 
 
 def enabled_subagents(

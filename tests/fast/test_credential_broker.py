@@ -16,7 +16,8 @@ import pytest_asyncio
 from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from db.constants import CREDENTIAL_DEFAULT_COOLDOWN_SECONDS, PROVIDER_ANTHROPIC
+from common.constants import PROVIDER_ANTHROPIC
+from db.constants import CREDENTIAL_DEFAULT_COOLDOWN_SECONDS
 from common.broker import CredentialBroker, Lease, WaitDirective, credential_id
 from db.models import CredentialHealth
 

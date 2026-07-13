@@ -1,6 +1,6 @@
 """Tests for effort downgrade logic in bootstrap."""
 
-from db.constants import LEGACY_OPUS, SUPPORTED_OPUS, SUPPORTED_SONNET
+from common.constants import LEGACY_OPUS, SUPPORTED_OPUS, SUPPORTED_SONNET
 from lifecycle.bootstrap import _build_base_session_options
 from utils.constants import DISALLOWED_SESSION_TOOLS
 from utils.models import RunContext

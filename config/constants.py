@@ -26,9 +26,9 @@ SUBAGENT_TYPES: frozenset[str] = frozenset(SUBAGENT_PHASE_ORDER)
 
 # Valid `model` tier strings for a subagent. A repo-defined agent with any
 # other tier is rejected at load (a typo would otherwise silently downgrade
-# to sonnet). These are the canonical tier literals — the agent container's
-# utils.constants.TIER_OPUS/TIER_SONNET hold the same values, but config is
-# the lowest layer and cannot import from autofyn.
+# to sonnet). These are the canonical tier literals — common.constants
+# TIER_OPUS/TIER_SONNET hold the same values, but config is the lowest layer
+# and cannot import from common.
 ALLOWED_SUBAGENT_MODELS: frozenset[str] = frozenset({"opus", "sonnet"})
 
 # A repo `.autofyn/subagents.json` declares its own tools per entry — that list

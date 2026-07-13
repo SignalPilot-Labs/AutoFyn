@@ -26,7 +26,7 @@ from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from common.broker import CredentialBroker, Lease
-from db.constants import PROVIDER_ANTHROPIC
+from common.constants import PROVIDER_ANTHROPIC
 from db.models import CredentialHealth
 
 _ROTATION_KEY = "claude_token_index"

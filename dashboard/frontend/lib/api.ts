@@ -12,11 +12,13 @@ export async function fetchRuns(repo?: string): Promise<Run[]> {
 
 export interface ModelInfo {
   id: string;
+  api_model: string;
   label: string;
   short: string;
   description: string;
   context: string;
   tier: string;
+  provider: string;
 }
 
 export interface ModelsResponse {
