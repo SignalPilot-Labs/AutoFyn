@@ -6,7 +6,6 @@ import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import type { PoolToken } from "@/lib/types";
 import { TOKEN_LABEL_MAX_LEN, TOKEN_NAME_PLACEHOLDER, CREDENTIAL_PROVIDERS } from "@/lib/constants";
-import { Button } from "@/components/ui/Button";
 import { ListRow } from "@/components/ui/ListRow";
 import { IconLock, IconCheck, IconPlus } from "@/components/ui/icons";
 import { ProviderSelector } from "@/components/settings/ProviderSelector";
@@ -67,7 +66,7 @@ export function TokenPoolSection({
           Claude Tokens
         </label>
         <span className="text-content text-text-secondary">
-          {tokens.length} key{tokens.length !== 1 ? "s" : ""} · round-robin
+          {tokens.length} key{tokens.length !== 1 ? "s" : ""}
         </span>
       </div>
 
@@ -127,7 +126,7 @@ export function TokenPoolSection({
         )}
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex items-center gap-2 px-2.5 border border-transparent">
         <ProviderSelector value={newProvider} onChange={onNewProviderChange} />
         <input
           type="text"
@@ -150,15 +149,14 @@ export function TokenPoolSection({
           autoComplete="off"
           spellCheck={false}
         />
-        <Button
-          variant="success"
-          size="md"
-          icon={<IconPlus size={10} />}
+        <button
           onClick={onAddToken}
           disabled={addingToken || !newToken.trim()}
+          title="Add token"
+          className="text-text-secondary hover:text-[#00ff88] disabled:opacity-30 disabled:pointer-events-none transition-colors shrink-0"
         >
-          {addingToken ? "Adding..." : "Add"}
-        </Button>
+          <IconPlus size={11} />
+        </button>
       </div>
 
       {tokenError && (
