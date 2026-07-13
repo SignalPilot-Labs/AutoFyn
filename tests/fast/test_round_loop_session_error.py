@@ -149,11 +149,14 @@ class TestRoundLoopSessionErrorRoundNumber:
             patch("lifecycle.round_loop.build_agent_defs", return_value=[]),
             patch("lifecycle.round_loop.RoundRunner") as MockRunner,
             patch("lifecycle.round_loop._handle_round_outcome", new_callable=AsyncMock) as mock_outcome,
+            patch("lifecycle.round_loop.acquire_and_inject", new_callable=AsyncMock) as mock_acquire,
+            patch("lifecycle.round_loop.report_round_outcome", new_callable=AsyncMock),
         ):
             mock_db.return_value = []
             runner_instance = MockRunner.return_value
             runner_instance.run = AsyncMock(side_effect=runner_results)
             mock_outcome.side_effect = outcome_returns
+            mock_acquire.return_value = "anthropic:test"
 
             result = await run_rounds(
                 sandbox=sandbox,
@@ -208,11 +211,14 @@ class TestRoundLoopSessionErrorRoundNumber:
             patch("lifecycle.round_loop.build_agent_defs", return_value=[]),
             patch("lifecycle.round_loop.RoundRunner") as MockRunner,
             patch("lifecycle.round_loop._handle_round_outcome", new_callable=AsyncMock) as mock_outcome,
+            patch("lifecycle.round_loop.acquire_and_inject", new_callable=AsyncMock) as mock_acquire,
+            patch("lifecycle.round_loop.report_round_outcome", new_callable=AsyncMock),
         ):
             mock_db.return_value = []
             runner_instance = MockRunner.return_value
             runner_instance.run = AsyncMock(side_effect=runner_results)
             mock_outcome.side_effect = outcome_returns
+            mock_acquire.return_value = "anthropic:test"
 
             await run_rounds(
                 sandbox=sandbox,

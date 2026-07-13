@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { fetchSettings, fetchSettingsStatus, updateSettings, fetchPoolTokens, addPoolToken, removePoolToken } from "@/lib/settings-api";
+import { fetchSettings, fetchSettingsStatus, updateSettings, fetchPoolTokens, addPoolToken, removePoolToken, renamePoolToken } from "@/lib/settings-api";
 import { fetchRepos } from "@/lib/api";
 import type { Settings, SettingsStatus, RepoInfo, PoolToken } from "@/lib/types";
 import { useModels, saveStoredModel, resolveInitialModel } from "@/lib/models";
@@ -17,6 +17,7 @@ import { SubagentSection } from "@/components/settings/SubagentSection";
 import { SecurityBanner } from "@/components/settings/SecurityBanner";
 import { CredentialField } from "@/components/settings/CredentialField";
 import type { CredentialFieldConfig } from "@/components/settings/CredentialField";
+import { DEFAULT_PROVIDER } from "@/lib/constants";
 import { clsx } from "clsx";
 import { apiFetch } from "@/lib/fetch";
 
@@ -100,6 +101,8 @@ export default function SettingsPage() {
 
   const [tokens, setTokens] = useState<PoolToken[]>([]);
   const [newToken, setNewToken] = useState("");
+  const [newLabel, setNewLabel] = useState("");
+  const [newProvider, setNewProvider] = useState(DEFAULT_PROVIDER);
   const [addingToken, setAddingToken] = useState(false);
   const [tokenError, setTokenError] = useState<string | null>(null);
 
@@ -215,9 +218,11 @@ export default function SettingsPage() {
     setAddingToken(true);
     setTokenError(null);
     try {
-      await addPoolToken(val);
+      await addPoolToken(val, newLabel.trim() || null, newProvider);
       setTokens(await fetchPoolTokens());
       setNewToken("");
+      setNewLabel("");
+      setNewProvider(DEFAULT_PROVIDER);
     } catch (e) {
       setTokenError(e instanceof Error ? e.message : "Failed to add token");
     } finally {
@@ -231,6 +236,15 @@ export default function SettingsPage() {
       setTokens(await fetchPoolTokens());
     } catch (e) {
       setTokenError(e instanceof Error ? e.message : "Failed to remove token");
+    }
+  };
+
+  const handleRenameToken = async (index: number, label: string | null) => {
+    try {
+      await renamePoolToken(index, label);
+      setTokens(await fetchPoolTokens());
+    } catch (e) {
+      setTokenError(e instanceof Error ? e.message : "Failed to rename token");
     }
   };
 
@@ -323,11 +337,16 @@ export default function SettingsPage() {
             <TokenPoolSection
               tokens={tokens}
               newToken={newToken}
+              newLabel={newLabel}
+              newProvider={newProvider}
               addingToken={addingToken}
               tokenError={tokenError}
               onNewTokenChange={(v) => { setNewToken(v); setTokenError(null); }}
+              onNewLabelChange={setNewLabel}
+              onNewProviderChange={setNewProvider}
               onAddToken={handleAddToken}
               onRemoveToken={handleRemoveToken}
+              onRenameToken={handleRenameToken}
             />
 
             <RemoteSandboxes />

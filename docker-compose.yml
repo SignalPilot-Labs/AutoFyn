@@ -82,6 +82,9 @@ services:
     volumes:
       - .:/workspace:rw
       - /var/run/docker.sock:/var/run/docker.sock:rw
+      # Read-only master key so the agent can decrypt the credential pool
+      # per round. Sandboxes never mount this — only the trusted brain.
+      - autofyn-keys:/data:ro
       # Persistent round archive. Only the agent mounts this — pool
       # sandboxes never see it, so runs can't read each other's reports.
       # The Dockerfile pre-creates the dir as agentuser so Docker's

@@ -107,7 +107,7 @@ def short_id(run_id: str) -> str:
 def mask_secret(value: str, prefix_len: int) -> str:
     """Mask a secret, showing only the first *prefix_len* characters.
 
-    Mirrors dashboard/backend/crypto.py::mask byte-for-byte so CLI-local
+    Mirrors db/crypto.py::mask byte-for-byte so CLI-local
     masking and server-side masking render identically.
     """
     if not value:

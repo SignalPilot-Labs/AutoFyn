@@ -19,6 +19,7 @@ import logging
 from typing import Any
 
 from lifecycle.bootstrap import BootstrapResult
+from lifecycle.credentials import acquire_and_inject, report_round_outcome
 from lifecycle.round_handlers import (
     handle_complete_or_ended,
     handle_paused,
@@ -222,7 +223,9 @@ async def run_rounds(
             round_number, bootstrap, time_lock, prior_reports
         )
 
+        cred_id = await acquire_and_inject(sandbox, run.run_id)
         result = await runner.run(options, initial_prompt, round_number)
+        await report_round_outcome(run.run_id, cred_id)
         await reconcile_orphaned_agent_calls(run.run_id)
 
         terminal, consecutive_session_errors = await _handle_round_outcome(

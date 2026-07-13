@@ -8,24 +8,26 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend import auth, crypto
+from backend import auth
 from backend.constants import (
     DECRYPT_ERROR_INDICATOR,
     MASK_PREFIX_DEFAULT,
-    MASTER_KEY_PATH,
     SECRET_KEYS,
 )
 from config.loader import load_subagents
+from common import crypto
 from db.constants import (
     DISABLED_SUBAGENTS_KEY_PREFIX,
     GITHUB_REPO_MAX_LEN,
     GITHUB_REPO_RE,
     HOST_MOUNTS_KEY_PREFIX,
+    MASTER_KEY_PATH,
     REPO_SUBAGENTS_CACHE_KEY_PREFIX,
     validate_host_mount,
 )
 from backend.models import (
     AddTokenRequest,
+    RenameTokenRequest,
     SaveDisabledSubagentsRequest,
     SaveMcpServersRequest,
     SaveMountsRequest,
@@ -42,6 +44,7 @@ from backend.utils import (
     get_repo_list,
     list_pool_tokens,
     remove_token_from_pool,
+    rename_token_in_pool,
     save_repo_list,
     session,
     upsert_setting,
@@ -387,11 +390,24 @@ async def get_tokens() -> list:
 
 @router.post("/tokens")
 async def add_token(body: AddTokenRequest) -> dict:
-    """Add a Claude token to the pool."""
+    """Add a credential to the pool."""
+    stripped = body.label.strip() if body.label else ""
+    label = stripped or None
     try:
-        return await add_token_to_pool(body.token.strip())
+        return await add_token_to_pool(body.token.strip(), label, body.provider)
     except ValueError as e:
         raise HTTPException(status_code=409, detail=str(e))
+
+
+@router.patch("/tokens/{index}")
+async def rename_token(index: int, body: RenameTokenRequest) -> dict:
+    """Rename a token's label by index. Never changes the value or provider."""
+    stripped = body.label.strip() if body.label else ""
+    label = stripped or None
+    try:
+        return await rename_token_in_pool(index, label)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 @router.delete("/tokens/{index}")

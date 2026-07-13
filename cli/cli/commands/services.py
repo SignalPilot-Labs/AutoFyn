@@ -27,6 +27,7 @@ from cli.constants import (
     SECURE_FILE_MODE,
     SIGINT_EXIT_CODE,
     START_SCRIPT,
+    TOKEN_LABEL_MAX_LEN,
     UNINSTALL_SCRIPT,
 )
 from cli.git import detect_local_repo
@@ -121,9 +122,13 @@ def _ensure_tokens() -> None:
     if not status["has_claude_token"]:
         token = _detect_claude_token()
         if token:
+            label = _ask_token_name()
+            body: dict[str, str] = {"token": token}
+            if label:
+                body["label"] = label
             try:
-                client.post("/api/tokens", json={"token": token})
-                console.print("[green]✓[/green] Saved Claude OAuth token to pool")
+                client.post("/api/tokens", json=body)
+                console.print("[green]✓[/green] Saved Claude token to pool")
             except SystemExit:
                 console.print(
                     "[yellow]Failed to save Claude token — add it in settings[/yellow]"
@@ -175,6 +180,18 @@ def _ask_token(prompt: str) -> str | None:
     return token if token else None
 
 
+def _ask_token_name() -> str | None:
+    """Ask for an optional name/label for the token. Enter to skip.
+
+    Truncated to TOKEN_LABEL_MAX_LEN so onboarding never trips the backend's
+    length validation mid-setup (mirrors the dashboard's Name field).
+    """
+    sys.stdout.flush()
+    sys.stderr.flush()
+    name = input("Name for this token (optional, enter to skip): ").strip()
+    return name[:TOKEN_LABEL_MAX_LEN] if name else None
+
+
 def _extract_token(raw: str) -> str | None:
     """Extract OAuth token from claude setup-token output.
 
@@ -197,8 +214,8 @@ def _extract_token(raw: str) -> str | None:
 
 
 def _detect_claude_token() -> str | None:
-    """Get Claude OAuth token via `claude setup-token` (interactive OAuth flow)."""
-    console.print("\n[bold]Claude OAuth Token[/bold]")
+    """Get a Claude token via `claude setup-token` (interactive OAuth flow)."""
+    console.print("\n[bold]Claude Token[/bold]")
     if _ask_yes_no("Run `claude setup-token` to authenticate via browser?"):
         try:
             result = subprocess.run(
@@ -218,7 +235,7 @@ def _detect_claude_token() -> str | None:
                 "[yellow]claude CLI not installed. Install it: npm install -g @anthropic-ai/claude-code[/yellow]"
             )
     console.print("[dim]Paste your token below, or press enter to skip.[/dim]")
-    return _ask_token("Claude OAuth token")
+    return _ask_token("Claude token")
 
 
 def _detect_git_token() -> str | None:
