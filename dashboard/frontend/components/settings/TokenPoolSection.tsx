@@ -7,10 +7,16 @@ import { AnimatePresence } from "framer-motion";
 import type { PoolToken } from "@/lib/types";
 import { TOKEN_LABEL_MAX_LEN, TOKEN_NAME_PLACEHOLDER, CREDENTIAL_PROVIDERS } from "@/lib/constants";
 import { Button } from "@/components/ui/Button";
-import { Tag } from "@/components/ui/Tag";
 import { ListRow } from "@/components/ui/ListRow";
 import { IconLock, IconCheck, IconPlus } from "@/components/ui/icons";
 import { ProviderSelector } from "@/components/settings/ProviderSelector";
+
+// Shared box styling so the read-only display fields and the editable inputs
+// are pixel-identical — the display row mirrors the add-token row.
+const FIELD_BOX =
+  "bg-black/30 border border-border rounded px-3 py-2 text-content";
+const FIELD_FOCUS =
+  "placeholder:text-text-secondary focus-visible:outline-none focus-visible:border-[#00ff88]/30 focus-visible:ring-1 focus-visible:ring-[#00ff88]/40 transition-all";
 
 interface TokenPoolSectionProps {
   tokens: PoolToken[];
@@ -69,10 +75,12 @@ export function TokenPoolSection({
         <AnimatePresence>
           {tokens.map((t) => (
             <ListRow key={t.index} layoutId={String(t.index)} onDelete={() => onRemoveToken(t.index)} deleteTitle="Remove token">
-              <IconLock className="text-text-secondary shrink-0" />
-              <Tag className="shrink-0">
-                {CREDENTIAL_PROVIDERS.find((p) => p.value === t.provider)?.label ?? t.provider}
-              </Tag>
+              <div className={`${FIELD_BOX} w-32 flex items-center gap-1.5 text-text-secondary`}>
+                <IconLock className="shrink-0" />
+                <span className="truncate">
+                  {CREDENTIAL_PROVIDERS.find((p) => p.value === t.provider)?.label ?? t.provider}
+                </span>
+              </div>
               {editingIndex === t.index ? (
                 <input
                   type="text"
@@ -86,7 +94,7 @@ export function TokenPoolSection({
                   placeholder="Name"
                   maxLength={TOKEN_LABEL_MAX_LEN}
                   autoFocus
-                  className="flex-1 min-w-0 bg-black/30 border border-border rounded px-3 py-2 text-content text-accent-hover placeholder:text-text-secondary focus-visible:outline-none focus-visible:border-[#00ff88]/30 focus-visible:ring-1 focus-visible:ring-[#00ff88]/40 transition-all"
+                  className={`${FIELD_BOX} ${FIELD_FOCUS} w-32 text-accent-hover`}
                   autoComplete="off"
                   spellCheck={false}
                 />
@@ -94,20 +102,20 @@ export function TokenPoolSection({
                 <button
                   onClick={() => { startEdit(t); }}
                   title="Rename token"
-                  className={`text-content shrink-0 truncate text-left hover:text-[#00ff88] transition-colors ${t.label ? "text-accent-hover" : "text-text-dim"}`}
+                  className={`${FIELD_BOX} w-32 text-left truncate hover:border-border-hover transition-colors ${t.label ? "text-accent-hover" : "text-text-dim"}`}
                 >
                   {t.label ?? TOKEN_NAME_PLACEHOLDER}
                 </button>
               )}
-              <span className="text-content font-mono text-text-secondary flex-1 min-w-0 truncate">
-                {t.masked}
-              </span>
-              {t.active && (
-                <span className="flex items-center gap-1 text-content text-[#00ff88]/60 shrink-0">
-                  <IconCheck />
-                  Next
-                </span>
-              )}
+              <div className={`${FIELD_BOX} flex-1 min-w-0 flex items-center gap-2 font-mono text-text-secondary`}>
+                <span className="flex-1 min-w-0 truncate">{t.masked}</span>
+                {t.active && (
+                  <span className="flex items-center gap-1 text-[#00ff88]/60 shrink-0">
+                    <IconCheck />
+                    Next
+                  </span>
+                )}
+              </div>
             </ListRow>
           ))}
         </AnimatePresence>
@@ -128,7 +136,7 @@ export function TokenPoolSection({
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); onAddToken(); } }}
           placeholder="Name (optional)"
           maxLength={TOKEN_LABEL_MAX_LEN}
-          className="w-32 bg-black/30 border border-border rounded px-3 py-2 text-content text-accent-hover placeholder:text-text-secondary focus-visible:outline-none focus-visible:border-[#00ff88]/30 focus-visible:ring-1 focus-visible:ring-[#00ff88]/40 transition-all"
+          className={`${FIELD_BOX} ${FIELD_FOCUS} w-32 text-accent-hover`}
           autoComplete="off"
           spellCheck={false}
         />
@@ -138,7 +146,7 @@ export function TokenPoolSection({
           onChange={(e) => { onNewTokenChange(e.target.value); }}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); onAddToken(); } }}
           placeholder="sk-ant-oat01-..."
-          className="flex-1 bg-black/30 border border-border rounded px-3 py-2 text-content text-accent-hover font-mono placeholder:text-text-secondary focus-visible:outline-none focus-visible:border-[#00ff88]/30 focus-visible:ring-1 focus-visible:ring-[#00ff88]/40 transition-all"
+          className={`${FIELD_BOX} ${FIELD_FOCUS} flex-1 text-accent-hover font-mono`}
           autoComplete="off"
           spellCheck={false}
         />

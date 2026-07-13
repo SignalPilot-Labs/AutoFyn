@@ -70,7 +70,18 @@ adding and editing look identical.
 (button → animated `framer-motion` listbox, `w-1.5 h-1.5` active dot, checkmark,
 `bg-white/[0.04]` hover, `bg-bg-card` panel).
 
-**Empty cell** — render an em-dash `—` in `text-text-dim`, not "N/A" or a blank.
+**Empty value** — never "N/A" (reads as an error). In a table cell, use an
+em-dash `—` in `text-text-dim`. In a field that mirrors an input (e.g. a
+read-only name box), use dim placeholder-style text like `Unnamed` in
+`text-text-dim`, matching the input's placeholder.
+
+**Read-only field mirrors its input** — when a row can toggle between display and
+edit (e.g. rename), share one class constant between the static box and the
+`<input>` so they are pixel-identical. See `FIELD_BOX`/`FIELD_FOCUS` in
+`TokenPoolSection.tsx`: the provider/name/key display boxes reuse the same
+`bg-black/30 border border-border rounded px-3 py-2` as the add-token inputs, at
+matching widths (`w-32 · w-32 · flex-1`), so the list and the add row read as one
+consistent form.
 
 ## Rule of thumb
 

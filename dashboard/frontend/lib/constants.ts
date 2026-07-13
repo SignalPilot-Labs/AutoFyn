@@ -52,9 +52,9 @@ export const STATUS_FLASH_DURATION_MS = 500;
 
 // Token pool — must match db/constants.py TOKEN_LABEL_MAX_LEN
 export const TOKEN_LABEL_MAX_LEN = 16;
-// Placeholder shown in the name column for a token saved without a label.
-// An em-dash reads as "empty cell" in the aligned row without looking like an error.
-export const TOKEN_NAME_PLACEHOLDER = "—";
+// Placeholder shown in the name box for a token saved without a label.
+// Reads like empty-field placeholder text, matching the "Name (optional)" input.
+export const TOKEN_NAME_PLACEHOLDER = "Unnamed";
 
 // Credential providers — must match db/constants.py VALID_PROVIDERS / DEFAULT_PROVIDER.
 // Anthropic is the only provider today; Part 2 appends here and the dropdown grows.
