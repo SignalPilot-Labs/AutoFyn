@@ -28,12 +28,7 @@ interface ModelsContextValue {
   /** model id -> providers the user has keys for that can serve it. */
   providersByModel: Record<string, string[]>;
   loading: boolean;
-  /**
-   * Re-fetch models + providersByModel from the backend. providersByModel is a
-   * snapshot of the token pool at fetch time, so callers that can change the
-   * pool (adding a key in Settings) must refetch to avoid a stale map — e.g.
-   * the start modal refetches on open.
-   */
+  /** Re-fetch models + providersByModel (a token-pool snapshot) from the backend. */
   refetch: () => void;
 }
 

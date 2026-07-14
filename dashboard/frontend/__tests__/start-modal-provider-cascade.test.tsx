@@ -1,17 +1,4 @@
-/**
- * Regression tests for the StartRunModal provider cascade.
- *
- * The modal does cascading selection: pick a model, then a provider from a
- * dropdown filtered to the providers the user holds keys for. These tests pin
- * the delicate state transitions the cascade effect must get right:
- *   - a model with one available provider auto-selects it (read-only select),
- *   - a model with zero providers shows the "add keys" warning and disables
- *     start (provider === "" gates the button),
- *   - switching model A(1) -> B(0) -> C(1) resets provider each time with no
- *     stale value leaking into onStart,
- *   - on open the modal refetches models so a key added in Settings is picked
- *     up without a page reload.
- */
+/** Regression tests for the StartRunModal model→provider cascade. */
 
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -137,8 +124,7 @@ describe("StartRunModal provider cascade", () => {
     expect(screen.queryByLabelText("Provider")).toBeNull();
     expect(startButton()).toBeDisabled();
 
-    // C: single (openrouter) provider — provider re-selects to the new model's
-    // provider, NOT the stale "anthropic" from A.
+    // C: openrouter re-selected, not the stale "anthropic" from A.
     await pickModel("GPT-5.6 Sol");
     const select = screen.getByLabelText<HTMLSelectElement>("Provider");
     expect(select.value).toBe("openrouter");

@@ -182,8 +182,7 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, defaultB
     const wasOpen = prevOpenRef.current;
     prevOpenRef.current = open;
     if (!wasOpen && open) {
-      // providersByModel is a token-pool snapshot from the last fetch; refetch
-      // on open so a key added in Settings is reflected without a page reload.
+      // Re-read the token pool so a key added in Settings shows up here.
       refetchModels();
       setCustomPrompt("");
       setBudget(0);
