@@ -350,6 +350,7 @@ export function getToolIcon(category: ToolCategory, color?: string) {
     case "glob": return <GlobIcon color={color} />;
     case "grep": return <GrepIcon color={color} />;
     case "agent": return <AgentIcon color={color} />;
+    case "agent_output": return <AgentIcon color={color} />;
     case "web_search": return <WebSearchIcon color={color} />;
     case "web_fetch": return <WebFetchIcon color={color} />;
     case "todo": return <TodoIcon color={color} />;
