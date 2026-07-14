@@ -66,7 +66,10 @@ SDK_MAX_BUFFER_BYTES: int = 4 * 1024 * 1024
 INPUT_SUMMARY_MAX_LEN: int = 1000
 INPUT_CONTENT_MAX_LEN: int = 3000
 SUMMARY_CONTENT_KEYS: frozenset[str] = frozenset({"content", "prompt"})
-SUMMARY_MAX_DEPTH: int = 4
+# Levels of nesting walked before a container is replaced by an ellipsis.
+# summarize() seeds the recursion at the payload's own keys, so this counts
+# that first level: 3 means top-level keys plus two levels beneath them.
+SUMMARY_MAX_DEPTH: int = 3
 SUMMARY_MAX_ITEMS: int = 50
 SUMMARY_TRUNCATED_KEY: str = "_truncated"
 SUMMARY_ELLIPSIS: str = "..."

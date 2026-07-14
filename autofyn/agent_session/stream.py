@@ -363,6 +363,12 @@ class StreamDispatcher:
         billed us directly already reported its real cost per message_delta,
         and the SDK reports 0.0 for those rounds because it did not bill them —
         so the gateway's figure wins.
+
+        Discarding the SDK's figure is only safe because a round bills exactly
+        one provider: acquire_and_inject filters the credential pool to the
+        run's provider, and the fallback model resolves through the same one.
+        If a round could ever span two providers, the loser's cost would be
+        dropped here rather than added.
         """
         run_id = self._run.run_id
         session_id = data.get("session_id")

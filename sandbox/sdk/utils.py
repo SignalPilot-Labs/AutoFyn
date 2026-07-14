@@ -88,18 +88,24 @@ def _clamp(val: Any, key: str, depth: int, report: TruncationReport) -> Any:
 
 
 def summarize(data: Any) -> dict:
-    """Truncate large values in tool input/output for event log storage."""
+    """Truncate large values in tool input/output for event log storage.
+
+    The returned SUMMARY_TRUNCATED_KEY is ours alone: a payload carrying that
+    key of its own is dropped, so the flag always means "summarize clamped
+    this" rather than flipping type with whatever the tool happened to send.
+    """
     report = TruncationReport()
     if not isinstance(data, dict):
         raw = json.dumps(data, default=str)
         if len(raw) > INPUT_SUMMARY_MAX_LEN:
             raw = raw[:INPUT_SUMMARY_MAX_LEN] + SUMMARY_ELLIPSIS
         return {"_raw": raw}
-    if len(data) > SUMMARY_MAX_ITEMS:
+    payload = {k: v for k, v in data.items() if k != SUMMARY_TRUNCATED_KEY}
+    if len(payload) != len(data) or len(payload) > SUMMARY_MAX_ITEMS:
         report.truncated = True
     summarized = {
         key: _clamp(val, key, 1, report)
-        for key, val in list(data.items())[:SUMMARY_MAX_ITEMS]
+        for key, val in list(payload.items())[:SUMMARY_MAX_ITEMS]
     }
     if report.truncated:
         summarized[SUMMARY_TRUNCATED_KEY] = True
