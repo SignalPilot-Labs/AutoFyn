@@ -24,6 +24,11 @@ from claude_agent_sdk.types import (
 from constants import (
     INPUT_CONTENT_MAX_LEN,
     INPUT_SUMMARY_MAX_LEN,
+    SUMMARY_CONTENT_KEYS,
+    SUMMARY_ELLIPSIS,
+    SUMMARY_MAX_DEPTH,
+    SUMMARY_MAX_ITEMS,
+    SUMMARY_TRUNCATED_KEY,
 )
 
 log = logging.getLogger("sandbox.session_utils")
@@ -42,25 +47,40 @@ def parse_agents(raw: dict[str, dict]) -> dict[str, AgentDefinition]:
     }
 
 
+def _clamp(val: Any, key: str, depth: int) -> Any:
+    """Clamp strings in val to their per-key limit, recursing into containers."""
+    if isinstance(val, str):
+        limit = (
+            INPUT_CONTENT_MAX_LEN if key in SUMMARY_CONTENT_KEYS else INPUT_SUMMARY_MAX_LEN
+        )
+        return val if len(val) <= limit else val[:limit] + SUMMARY_ELLIPSIS
+    if depth >= SUMMARY_MAX_DEPTH:
+        return SUMMARY_ELLIPSIS
+    if isinstance(val, dict):
+        return {
+            k: _clamp(v, k, depth + 1)
+            for k, v in list(val.items())[:SUMMARY_MAX_ITEMS]
+        }
+    if isinstance(val, list):
+        return [_clamp(v, key, depth + 1) for v in val[:SUMMARY_MAX_ITEMS]]
+    return val
+
+
 def summarize(data: Any) -> dict:
     """Truncate large values in tool input/output for event log storage."""
     if not isinstance(data, dict):
         raw = json.dumps(data, default=str)
         if len(raw) > INPUT_SUMMARY_MAX_LEN:
-            raw = raw[:INPUT_SUMMARY_MAX_LEN] + "..."
+            raw = raw[:INPUT_SUMMARY_MAX_LEN] + SUMMARY_ELLIPSIS
         return {"_raw": raw}
-    CONTENT_KEYS = {"content", "prompt"}
-    result: dict[str, Any] = {}
-    for key, val in data.items():
-        if isinstance(val, str):
-            limit = INPUT_CONTENT_MAX_LEN if key in CONTENT_KEYS else INPUT_SUMMARY_MAX_LEN
-            if len(val) > limit:
-                result[key] = val[:limit] + "..."
-            else:
-                result[key] = val
-        else:
-            result[key] = val
-    return result
+    summarized = {
+        key: _clamp(val, key, 1) for key, val in list(data.items())[:SUMMARY_MAX_ITEMS]
+    }
+    # Tool payloads nest ({"task": {"output": <transcript>}}), so a size check
+    # on the result — not on top-level strings — is what catches a clamped one.
+    if len(json.dumps(summarized, default=str)) < len(json.dumps(data, default=str)):
+        summarized[SUMMARY_TRUNCATED_KEY] = True
+    return summarized
 
 
 def serialize_message(message: object) -> dict | None:

@@ -3,6 +3,9 @@
 Previously `if round_cost:` used Python truthiness, so `0.0` (falsy) caused
 the rebasing block to be skipped entirely. The fix uses `if round_cost is not None:`
 so zero-cost results still trigger cost correction and token baseline rebasing.
+
+A zero cost is only authoritative when the round spent no tokens — see
+test_zero_cost_with_tokens_does_not_rebase.py for the gateway case where it is not.
 """
 
 from __future__ import annotations

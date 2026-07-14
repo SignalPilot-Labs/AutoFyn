@@ -336,13 +336,20 @@ class StreamDispatcher:
         ResultMessage carries the authoritative cost for THIS round's
         session. We add it to the prior-rounds baseline and rebase so any
         late assistant_messages in this round (rare) can't double-count.
+        A gateway that does not bill through Anthropic reports 0.0 rather
+        than omitting the field, so a zero cost is only authoritative when
+        the round spent no tokens either.
         """
         run_id = self._run.run_id
         session_id = data.get("session_id")
         if session_id:
             await db.save_session_id(run_id, session_id)
         round_cost = data.get("total_cost_usd")
-        if round_cost is not None:
+        spent_tokens = (
+            self._run.total_input_tokens > self._input_baseline
+            or self._run.total_output_tokens > self._output_baseline
+        )
+        if round_cost is not None and not (round_cost == 0.0 and spent_tokens):
             self._run.total_cost = self._cost_baseline + round_cost
             self._cost_baseline = self._run.total_cost
             self._input_baseline = self._run.total_input_tokens

@@ -60,6 +60,11 @@ SECONDS_PER_MINUTE: int = 60
 
 INPUT_SUMMARY_MAX_LEN: int = 1000
 INPUT_CONTENT_MAX_LEN: int = 3000
+SUMMARY_CONTENT_KEYS: frozenset[str] = frozenset({"content", "prompt"})
+SUMMARY_MAX_DEPTH: int = 4
+SUMMARY_MAX_ITEMS: int = 50
+SUMMARY_TRUNCATED_KEY: str = "_truncated"
+SUMMARY_ELLIPSIS: str = "..."
 
 # ── Subagent Attribution ──
 # Tool name the SDK reports for Task subagent invocations. The hook's
