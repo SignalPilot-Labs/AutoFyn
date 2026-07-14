@@ -1,112 +1,157 @@
 /**
  * Regression tests for StartRunModal mounts loaded for wrong sandbox (BUG 4).
  *
- * Root cause: The general data-loading effect (deps: [open, activeRepo, loadMountsForSandbox])
- * called loadMountsForSandbox(selectedSandboxId). This fired on modal open with
- * selectedSandboxId from the previous render cycle (before the reset effect cleared
- * it to null). Then the restoration effect fired asynchronously (after remoteSandboxes
- * loaded) and set selectedSandboxId to the saved sandbox — but the mounts effect
- * did NOT re-fire because selectedSandboxId was not in its dependency array.
+ * Root cause: the general data-loading effect called loadMountsForSandbox with
+ * a selectedSandboxId left over from the previous render, then never re-fired
+ * when the restoration effect set the saved sandbox — so the modal showed one
+ * sandbox's mounts while another was selected.
  *
- * Fix:
- * 1. Remove loadMountsForSandbox(selectedSandboxId) from the general data-loading effect.
- * 2. In the reset-on-open effect, call void loadMountsForSandbox(null) when activeRepo
- *    is set — this loads local-Docker mounts immediately on open.
- * 3. In the restoration effect, call void loadMountsForSandbox(saved) after
- *    setSelectedSandboxId(saved) — this overwrites with remote mounts when a
- *    saved sandbox is restored.
+ * Mounts come from two APIs: fetchRepoMounts (local Docker) and
+ * fetchRemoteMounts (a remote sandbox). Which one runs on open, with which
+ * sandbox id, is the whole bug — so these assert on those calls rather than on
+ * the source text of the effects that make them.
  */
 
-import { describe, it, expect } from "vitest";
-import * as fs from "fs";
-import * as path from "path";
+import { render, waitFor } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { StartRunModal } from "@/components/controls/StartRunModal";
+import type { StartRunModalProps } from "@/components/controls/StartRunModal";
+import * as api from "@/lib/api";
 
-const SRC = fs.readFileSync(
-  path.resolve(__dirname, "../components/controls/StartRunModal.tsx"),
-  "utf-8",
-);
+const REPO = "owner/repo";
+const SANDBOX_ID = "sandbox-abc";
+const LOCAL_MOUNT: api.HostMount[] = [
+  { host_path: "/local", container_path: "/local", mode: "rw" },
+];
+const REMOTE_MOUNT: api.HostMount[] = [
+  { host_path: "/remote", container_path: "/remote", mode: "rw" },
+];
+const REMOTE_SANDBOX: api.RemoteSandboxConfig = {
+  id: SANDBOX_ID,
+  name: "hpc",
+  ssh_target: "user@host",
+  type: "docker",
+  default_start_cmd: "start-remote",
+  queue_timeout: 60,
+  heartbeat_timeout: 60,
+  work_dir: "/work",
+};
+
+vi.mock("@/lib/models", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/models")>();
+  return {
+    ...actual,
+    useModels: () => ({
+      models: [
+        { id: "claude-opus-4-8", label: "Claude Opus 4.8", short: "Opus 4.8", description: "Most capable", context: "1M context", tier: "opus" },
+      ],
+      defaultModel: "claude-opus-4-8",
+      providersByModel: { "claude-opus-4-8": ["anthropic"] },
+      loading: false,
+      refetch: () => {},
+    }),
+  };
+});
+
+vi.mock("@/lib/api", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/api")>();
+  return {
+    ...actual,
+    fetchRepoEnv: vi.fn(async () => ({})),
+    fetchRepoMcpServers: vi.fn(async () => ({})),
+    fetchRepoMounts: vi.fn(async () => LOCAL_MOUNT),
+    fetchRemoteMounts: vi.fn(async () => REMOTE_MOUNT),
+    fetchRemoteSandboxes: vi.fn(async () => []),
+  };
+});
+
+/** Open the modal the way a user does: render closed, then flip open.
+ *
+ * The reset-on-open effect keys on a false -> true transition, so mounting
+ * straight to open={true} never runs it and no mounts load.
+ */
+function openModal(overrides: Partial<StartRunModalProps> = {}): void {
+  const props: Omit<StartRunModalProps, "open"> = {
+    onClose: vi.fn(),
+    onStart: vi.fn(),
+    busy: false,
+    branches: ["main"],
+    defaultBranch: "main",
+    activeRepo: REPO,
+    ...overrides,
+  };
+  const { rerender } = render(<StartRunModal open={false} {...props} />);
+  rerender(<StartRunModal open={true} {...props} />);
+}
 
 describe("StartRunModal: mounts loaded for correct sandbox on open (BUG 4)", () => {
-  it("general data-loading effect does NOT call loadMountsForSandbox", () => {
-    // Find the effect that loads env and MCP (deps: [open, activeRepo])
-    const envFetchIdx = SRC.indexOf("fetchRepoEnv(activeRepo)");
-    expect(envFetchIdx).toBeGreaterThan(-1);
-
-    // Locate the effect containing this call
-    const effectStart = SRC.lastIndexOf("useEffect(() => {", envFetchIdx);
-    const effectEnd = SRC.indexOf("}, [open, activeRepo]);", effectStart);
-    expect(effectEnd).toBeGreaterThan(effectStart);
-
-    const effectBody = SRC.slice(effectStart, effectEnd);
-    // This effect must NOT call loadMountsForSandbox
-    expect(effectBody).not.toContain("loadMountsForSandbox");
+  beforeEach(() => {
+    localStorage.clear();
+    // clearAllMocks wipes implementations, so re-arm them after it, not before.
+    vi.clearAllMocks();
+    vi.mocked(api.fetchRepoEnv).mockResolvedValue({});
+    vi.mocked(api.fetchRepoMcpServers).mockResolvedValue({});
+    vi.mocked(api.fetchRepoMounts).mockResolvedValue(LOCAL_MOUNT);
+    vi.mocked(api.fetchRemoteMounts).mockResolvedValue(REMOTE_MOUNT);
+    vi.mocked(api.fetchRemoteSandboxes).mockResolvedValue([]);
   });
 
-  it("reset-on-open effect calls loadMountsForSandbox(null) when activeRepo is set", () => {
-    // Find the reset-on-open effect (identified by prevOpenRef and !wasOpen && open)
-    const resetEffectIdx = SRC.indexOf("!wasOpen && open");
-    expect(resetEffectIdx).toBeGreaterThan(-1);
+  it("loads local mounts on open when no sandbox is saved", async () => {
+    openModal();
 
-    const effectStart = SRC.lastIndexOf("useEffect(() => {", resetEffectIdx);
-    const effectEnd = SRC.indexOf("}, [open, activeRepo, loadMountsForSandbox]);", effectStart);
-    expect(effectEnd).toBeGreaterThan(effectStart);
-
-    const effectBody = SRC.slice(effectStart, effectEnd);
-    expect(effectBody).toContain("loadMountsForSandbox(null)");
-    expect(effectBody).toContain("if (activeRepo)");
+    await waitFor(() => expect(api.fetchRepoMounts).toHaveBeenCalledWith(REPO));
+    expect(api.fetchRemoteMounts).not.toHaveBeenCalled();
   });
 
-  it("reset-on-open effect has loadMountsForSandbox in its dependency array", () => {
-    const resetEffectIdx = SRC.indexOf("!wasOpen && open");
-    const effectStart = SRC.lastIndexOf("useEffect(() => {", resetEffectIdx);
-    // Must end with the deps array that includes loadMountsForSandbox
-    const depsLine = SRC.slice(effectStart).indexOf("}, [open, activeRepo, loadMountsForSandbox]);");
-    expect(depsLine).toBeGreaterThan(-1);
+  it("does not load mounts when there is no active repo", async () => {
+    openModal({ activeRepo: null });
+
+    await waitFor(() => expect(api.fetchRemoteSandboxes).toHaveBeenCalled());
+    expect(api.fetchRepoMounts).not.toHaveBeenCalled();
+    expect(api.fetchRemoteMounts).not.toHaveBeenCalled();
   });
 
-  it("restoration effect calls loadMountsForSandbox(saved) after setSelectedSandboxId(saved)", () => {
-    // Find the restoration effect (identified by autofyn_last_sandbox localStorage key)
-    const restorationIdx = SRC.indexOf("autofyn_last_sandbox:");
-    expect(restorationIdx).toBeGreaterThan(-1);
+  it("loads mounts for the restored sandbox, not the local default", async () => {
+    localStorage.setItem(`autofyn_last_sandbox:${REPO}`, SANDBOX_ID);
+    vi.mocked(api.fetchRemoteSandboxes).mockResolvedValue([REMOTE_SANDBOX]);
 
-    const effectStart = SRC.lastIndexOf("useEffect(() => {", restorationIdx);
-    const effectEnd = SRC.indexOf("}, [open, activeRepo, remoteSandboxes, loadMountsForSandbox]);", effectStart);
-    expect(effectEnd).toBeGreaterThan(effectStart);
+    openModal();
 
-    const effectBody = SRC.slice(effectStart, effectEnd);
-
-    // Must call loadMountsForSandbox with the saved sandbox id
-    expect(effectBody).toContain("loadMountsForSandbox(saved)");
-
-    // setSelectedSandboxId must come before loadMountsForSandbox
-    const setIdPos = effectBody.indexOf("setSelectedSandboxId(saved)");
-    const loadMountsPos = effectBody.indexOf("loadMountsForSandbox(saved)");
-    expect(setIdPos).toBeGreaterThan(0);
-    expect(loadMountsPos).toBeGreaterThan(setIdPos);
+    // The restoration effect must fetch the saved sandbox's mounts. Before the
+    // fix it kept the local mounts, so the id argument is the regression.
+    await waitFor(() =>
+      expect(api.fetchRemoteMounts).toHaveBeenCalledWith(REPO, SANDBOX_ID),
+    );
   });
 
-  it("restoration effect has loadMountsForSandbox in its dependency array", () => {
-    const restorationIdx = SRC.indexOf("autofyn_last_sandbox:");
-    const effectStart = SRC.lastIndexOf("useEffect(() => {", restorationIdx);
-    const depsLine = SRC.slice(effectStart).indexOf("}, [open, activeRepo, remoteSandboxes, loadMountsForSandbox]);");
-    expect(depsLine).toBeGreaterThan(-1);
+  it("ignores a saved sandbox that no longer exists", async () => {
+    localStorage.setItem(`autofyn_last_sandbox:${REPO}`, "deleted-sandbox");
+    vi.mocked(api.fetchRemoteSandboxes).mockResolvedValue([REMOTE_SANDBOX]);
+
+    openModal();
+
+    // The restoration effect only runs once remoteSandboxes has loaded, so
+    // wait on the cleanup itself rather than on the local-mount fetch.
+    await waitFor(() =>
+      expect(localStorage.getItem(`autofyn_last_sandbox:${REPO}`)).toBeNull(),
+    );
+    expect(api.fetchRemoteMounts).not.toHaveBeenCalled();
   });
 
-  it("loadMountsForSandbox is declared before the reset-on-open effect that uses it", () => {
-    const loadMountsDecl = SRC.indexOf("const loadMountsForSandbox = useCallback");
-    const resetEffectIdx = SRC.indexOf("!wasOpen && open");
-    const resetEffectStart = SRC.lastIndexOf("useEffect(() => {", resetEffectIdx);
+  it("does not load mounts while the modal is closed", async () => {
+    render(
+      <StartRunModal
+        open={false}
+        onClose={vi.fn()}
+        onStart={vi.fn()}
+        busy={false}
+        branches={["main"]}
+        defaultBranch="main"
+        activeRepo={REPO}
+      />,
+    );
 
-    expect(loadMountsDecl).toBeGreaterThan(0);
-    expect(resetEffectStart).toBeGreaterThan(loadMountsDecl);
-  });
-
-  it("handleSandboxSelect still calls loadMountsForSandbox for user-initiated changes", () => {
-    const fnStart = SRC.indexOf("const handleSandboxSelect");
-    expect(fnStart).toBeGreaterThan(-1);
-    const fnEnd = SRC.indexOf("}, [loadMountsForSandbox, activeRepo]);", fnStart);
-    const fnBody = SRC.slice(fnStart, fnEnd);
-
-    expect(fnBody).toContain("loadMountsForSandbox(id)");
+    await waitFor(() => expect(api.fetchRepoMounts).not.toHaveBeenCalled());
+    expect(api.fetchRemoteMounts).not.toHaveBeenCalled();
   });
 });
