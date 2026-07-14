@@ -169,7 +169,7 @@ export function TokenPoolSection({
       <p className="mt-2 text-content text-text-dim">
         {newProvider === "openrouter" ? (
           <>
-            Create a key at <code className={CODE_CHIP}>openrouter.ai/keys</code> to run GPT-5.6. Multiple keys rotate on rate limit.
+            Generate keys at <code className={CODE_CHIP}>openrouter.ai/keys</code> and link it.
           </>
         ) : (
           <>
