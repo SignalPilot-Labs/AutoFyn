@@ -58,14 +58,32 @@ EVENT_LOG_READ_TIMEOUT_SEC: float = 60.0
 EARLY_EXIT_THRESHOLD_MIN: float = _cfg["early_exit_threshold_min"]
 SECONDS_PER_MINUTE: int = 60
 
+# Max bytes in one CLI stdout frame. The SDK's 1 MB default killed the reader
+# on a Task result: the CLI inlines the subagent transcript twice (603 kB ->
+# 1.21 MB). Parsed before any hook, so summarize() cannot shrink it.
+SDK_MAX_BUFFER_BYTES: int = 4 * 1024 * 1024
+
 INPUT_SUMMARY_MAX_LEN: int = 1000
 INPUT_CONTENT_MAX_LEN: int = 3000
+SUMMARY_CONTENT_KEYS: frozenset[str] = frozenset({"content", "prompt"})
+# Levels of nesting walked before a container is replaced by an ellipsis.
+# summarize() seeds the recursion at the payload's own keys, so this counts
+# that first level: 3 means top-level keys plus two levels beneath them.
+SUMMARY_MAX_DEPTH: int = 3
+SUMMARY_MAX_ITEMS: int = 50
+SUMMARY_TRUNCATED_KEY: str = "_truncated"
+SUMMARY_ELLIPSIS: str = "..."
 
 # ── Subagent Attribution ──
 # Tool name the SDK reports for Task subagent invocations. The hook's
 # PreToolUse fires with this name immediately before SubagentStart, and
 # its tool_use_id is the parent link the SubagentStart payload lacks.
 TASK_TOOL_NAME: str = "Agent"
+
+# The CLI's Agent tool backgrounds dispatches by default, handing the
+# orchestrator control before the subagent runs. It then ends its turn without
+# collecting, killing the subagent mid-flight. Every dispatch must block.
+SUBAGENT_RUNS_IN_BACKGROUND: bool = False
 
 # ── Filesystem API ──
 # Max file size the /file_system/read endpoint will return. Larger files

@@ -30,7 +30,7 @@ def _make_run() -> RunContext:
         branch_name="fix/test",
         base_branch="main",
         duration_minutes=60,
-        total_cost=0,
+        total_cost=None,
         total_input_tokens=0,
         total_output_tokens=0,
         cache_creation_input_tokens=0,

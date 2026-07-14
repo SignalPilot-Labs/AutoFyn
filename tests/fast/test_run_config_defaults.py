@@ -22,7 +22,7 @@ class TestLoadRunAgentConfigDefaults:
         assert result.max_rounds == 128
         assert result.tool_call_timeout_sec == 3600
         assert result.session_idle_timeout_sec == 120
-        assert result.subagent_idle_kill_sec == 600
+        assert result.subagent_idle_kill_sec == 900
 
     @pytest.mark.asyncio
     async def test_result_is_frozen(self) -> None:

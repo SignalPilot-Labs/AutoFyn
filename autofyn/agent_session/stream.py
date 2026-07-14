@@ -17,6 +17,8 @@ from utils import db
 from utils.db_logging import log_audit, log_audit_idempotent, log_tool_call_idempotent
 from utils.constants import (
     LOG_PREVIEW_LIMIT,
+    STREAM_EVENT_MESSAGE_DELTA,
+    USAGE_COST_KEY,
     USAGE_EMIT_INTERVAL,
     cost_per_cache_read,
     cost_per_cache_write,
@@ -50,17 +52,24 @@ class StreamDispatcher:
         # Snapshot everything at round start so running cost estimates
         # during this round only measure THIS round's delta — prior
         # rounds' cost and tokens are already accounted for in run.*.
-        self._cost_baseline: float = run.total_cost
+        # None when no prior round reported usage, which is distinct from a
+        # prior round that cost exactly 0.0.
+        self._cost_baseline: float | None = run.total_cost
         self._input_baseline: int = run.total_input_tokens
         self._output_baseline: int = run.total_output_tokens
         self._cache_create_baseline: int = run.cache_creation_input_tokens
         self._cache_read_baseline: int = run.cache_read_input_tokens
+        # Gateway-reported cost accrued this round. None until the gateway
+        # reports at all: a gateway that bills 0.0 is telling us the round was
+        # free, which is not the same as a gateway that never reported.
+        self._round_gateway_cost: float | None = None
         self._message_count: int = 0
         self._latest_context_tokens: int = 0
         self._tools_in_flight: int = 0
         self._sandbox_session_id: str | None = None
         self._dispatch_table: dict[str, EventHandler] = {
             "assistant_message": self._on_assistant_message,
+            "stream_event": self._on_stream_event,
             "tool_use": self._on_tool_use,
             "tool_done": self._on_tool_done,
             "subagent_start": self._on_subagent_start,
@@ -102,6 +111,10 @@ class StreamDispatcher:
 
     async def _on_assistant_message(self, data: dict) -> StreamSignal:
         await self._handle_assistant_message(data)
+        return StreamSignal(kind="continue")
+
+    async def _on_stream_event(self, data: dict) -> StreamSignal:
+        await self._handle_stream_event(data)
         return StreamSignal(kind="continue")
 
     async def _on_tool_use(self, data: dict) -> StreamSignal:
@@ -246,7 +259,18 @@ class StreamDispatcher:
                     )
             elif block_type == "tool_use":
                 log.info("[%s] Tool: %s", self._rid, block.get("name", ""))
-        await self._accumulate_usage(data)
+
+    async def _handle_stream_event(self, data: dict) -> None:
+        """Accumulate settled usage from a message_delta stream event.
+
+        message_delta is the only event both providers populate: Anthropic
+        fills message_start too, but OpenRouter zeroes it and settles usage
+        only at the delta, which also carries the gateway's real cost.
+        """
+        event = data.get("event") or {}
+        if event.get("type") != STREAM_EVENT_MESSAGE_DELTA:
+            return
+        await self._accumulate_usage(event)
 
     def _handle_subagent_start(self, data: dict) -> None:
         """Record a subagent starting in the tracker."""
@@ -333,31 +357,53 @@ class StreamDispatcher:
     async def _handle_result(self, data: dict) -> None:
         """Persist the SDK session id and settle cost.
 
-        ResultMessage carries the authoritative cost for THIS round's
-        session. We add it to the prior-rounds baseline and rebase so any
-        late assistant_messages in this round (rare) can't double-count.
+        ResultMessage carries the authoritative cost for THIS round's session.
+        We add it to the prior-rounds baseline and rebase so any late
+        message_delta in this round (rare) can't double-count. A gateway that
+        billed us directly already reported its real cost per message_delta,
+        and the SDK reports 0.0 for those rounds because it did not bill them —
+        so the gateway's figure wins.
+
+        Discarding the SDK's figure is only safe because a round bills exactly
+        one provider: acquire_and_inject filters the credential pool to the
+        run's provider, and the fallback model resolves through the same one.
+        If a round could ever span two providers, the loser's cost would be
+        dropped here rather than added.
         """
         run_id = self._run.run_id
         session_id = data.get("session_id")
         if session_id:
             await db.save_session_id(run_id, session_id)
         round_cost = data.get("total_cost_usd")
-        if round_cost is not None:
-            self._run.total_cost = self._cost_baseline + round_cost
-            self._cost_baseline = self._run.total_cost
+        if round_cost is not None and self._round_gateway_cost is None:
+            settled = (self._cost_baseline or 0.0) + round_cost
+            self._run.total_cost = settled
+            self._cost_baseline = settled
             self._input_baseline = self._run.total_input_tokens
             self._output_baseline = self._run.total_output_tokens
             self._cache_create_baseline = self._run.cache_creation_input_tokens
             self._cache_read_baseline = self._run.cache_read_input_tokens
         await self._persist_cost()
 
+    def _estimated_round_cost(self) -> float:
+        """Cost of this round's tokens at the configured (Opus upper-bound) rates."""
+        return (
+            (self._run.total_input_tokens - self._input_baseline) * cost_per_input()
+            + (self._run.total_output_tokens - self._output_baseline) * cost_per_output()
+            + (self._run.cache_creation_input_tokens - self._cache_create_baseline)
+            * cost_per_cache_write()
+            + (self._run.cache_read_input_tokens - self._cache_read_baseline)
+            * cost_per_cache_read()
+        )
+
     async def _accumulate_usage(self, data: dict) -> None:
         """Accumulate token usage and emit a throttled usage audit event.
 
-        Running cost estimate uses ONLY this round's delta (current totals
-        minus baselines captured at round start) added to the prior-rounds
-        baseline. ResultMessage replaces this estimate with the SDK's
-        authoritative cost for the round.
+        Running cost uses ONLY this round's delta (current totals minus
+        baselines captured at round start) added to the prior-rounds baseline.
+        A gateway that bills us directly reports what it actually charged, which
+        is preferred over the rate estimate; Anthropic omits it and settles at
+        ResultMessage instead.
         """
         usage = data.get("usage")
         if usage:
@@ -373,20 +419,15 @@ class StreamDispatcher:
             self._run.total_output_tokens += out
             self._run.cache_creation_input_tokens += cache_create
             self._run.cache_read_input_tokens += cache_read
-            round_input = self._run.total_input_tokens - self._input_baseline
-            round_output = self._run.total_output_tokens - self._output_baseline
-            round_cache_create = (
-                self._run.cache_creation_input_tokens - self._cache_create_baseline
+            gateway_cost = usage.get(USAGE_COST_KEY)
+            if gateway_cost is not None:
+                self._round_gateway_cost = (self._round_gateway_cost or 0.0) + gateway_cost
+            round_cost = (
+                self._estimated_round_cost()
+                if self._round_gateway_cost is None
+                else self._round_gateway_cost
             )
-            round_cache_read = (
-                self._run.cache_read_input_tokens - self._cache_read_baseline
-            )
-            self._run.total_cost = self._cost_baseline + (
-                round_input * cost_per_input()
-                + round_output * cost_per_output()
-                + round_cache_create * cost_per_cache_write()
-                + round_cache_read * cost_per_cache_read()
-            )
+            self._run.total_cost = (self._cost_baseline or 0.0) + round_cost
         self._message_count += 1
         if self._message_count % USAGE_EMIT_INTERVAL == 0:
             await log_audit(

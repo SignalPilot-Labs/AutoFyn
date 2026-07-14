@@ -76,7 +76,9 @@ class RunContext:
     base_branch: str
     duration_minutes: float
     github_repo: str
-    total_cost: float = 0.0
+    # None until usage first arrives — a run whose accounting never reported
+    # must not be indistinguishable from one that genuinely cost nothing.
+    total_cost: float | None = None
     total_input_tokens: int = 0
     total_output_tokens: int = 0
     cache_creation_input_tokens: int = 0

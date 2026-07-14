@@ -48,7 +48,9 @@ class Run(Base):
     status: Mapped[str] = mapped_column(String, nullable=False, default=RUN_STATUS_RUNNING)
     pr_url: Mapped[str | None] = mapped_column(String)
     total_tool_calls: Mapped[int] = mapped_column(Integer, default=0)
-    total_cost_usd: Mapped[float] = mapped_column(Float, default=0)
+    # NULL means no usage has been reported yet — distinct from a confirmed
+    # $0.00, so a broken accounting pipeline renders as "—" not as "free".
+    total_cost_usd: Mapped[float | None] = mapped_column(Float, nullable=True)
     total_input_tokens: Mapped[int] = mapped_column(Integer, default=0)
     total_output_tokens: Mapped[int] = mapped_column(Integer, default=0)
     cache_creation_input_tokens: Mapped[int] = mapped_column(Integer, default=0)
@@ -65,6 +67,7 @@ class Run(Base):
     context_tokens: Mapped[int] = mapped_column(Integer, default=0)
     model_name: Mapped[str | None] = mapped_column(String, nullable=True)
     provider_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    effort: Mapped[str | None] = mapped_column(String, nullable=True)
 
     # ── Remote Sandbox ──
     sandbox_id: Mapped[str | None] = mapped_column(String, nullable=True)

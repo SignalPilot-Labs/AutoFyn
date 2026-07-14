@@ -47,3 +47,16 @@ class ToolContext:
     session_id: str | None
     role: str
     duration_ms: int | None
+
+
+@dataclass(slots=True)
+class TruncationReport:
+    """Whether a summarize() pass clamped anything.
+
+    Threaded through the recursion so truncation is reported by the code that
+    performs it. The alternative — comparing serialized sizes — would mean
+    re-serializing the untruncated payload on every tool call, and would miss
+    clamps that don't shrink the JSON.
+    """
+
+    truncated: bool = False
