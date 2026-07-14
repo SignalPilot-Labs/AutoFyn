@@ -59,6 +59,7 @@ def _clamp(val: Any, key: str, depth: int, report: TruncationReport) -> Any:
 
     Sets report.truncated whenever a value is dropped or shortened, so callers
     know a payload was clamped without re-serializing the original to compare.
+    Never changes a value's type — consumers read these payloads by shape.
     """
     if isinstance(val, str):
         limit = (
@@ -69,9 +70,12 @@ def _clamp(val: Any, key: str, depth: int, report: TruncationReport) -> Any:
         report.truncated = True
         return val[:limit] + SUMMARY_ELLIPSIS
     if depth >= SUMMARY_MAX_DEPTH:
-        if isinstance(val, (dict, list)) and val:
+        if isinstance(val, dict) and val:
             report.truncated = True
-            return SUMMARY_ELLIPSIS
+            return {}
+        if isinstance(val, list) and val:
+            report.truncated = True
+            return []
         return val
     if isinstance(val, dict):
         if len(val) > SUMMARY_MAX_ITEMS:
@@ -90,9 +94,7 @@ def _clamp(val: Any, key: str, depth: int, report: TruncationReport) -> Any:
 def summarize(data: Any) -> dict:
     """Truncate large values in tool input/output for event log storage.
 
-    The returned SUMMARY_TRUNCATED_KEY is ours alone: a payload carrying that
-    key of its own is dropped, so the flag always means "summarize clamped
-    this" rather than flipping type with whatever the tool happened to send.
+    Drops any incoming SUMMARY_TRUNCATED_KEY so the flag is always ours.
     """
     report = TruncationReport()
     if not isinstance(data, dict):

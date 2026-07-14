@@ -136,7 +136,9 @@ export function DiffBlock({
   return (
     <div className="rounded border border-border overflow-hidden bg-black/30 max-h-[400px] overflow-y-auto font-mono text-meta">
       {patch.map((hunk, hi) => {
-        const lines = (hunk.lines as string[]) || [];
+        // A truncated payload can carry a non-array here; `|| []` never fires
+        // for a truthy non-array, so .map() crashed the whole feed.
+        const lines = Array.isArray(hunk.lines) ? (hunk.lines as string[]) : [];
         return (
           <div key={hi}>
             <div className="text-text-secondary px-3 py-1 bg-bg-card border-b border-border font-semibold">

@@ -16,8 +16,11 @@ matching test fail. The live race itself only manifests on Postgres.
 
 from __future__ import annotations
 
+import importlib
+import sys
 from collections.abc import AsyncIterator
 from datetime import datetime, timedelta, timezone
+from types import ModuleType
 from typing import Any
 
 import pytest
@@ -28,7 +31,6 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from common.broker import CredentialBroker, SelectedCredential, credential_id
 from common.constants import PROVIDER_ANTHROPIC
 from common.models import Token
-from db.models import CredentialHealth
 
 _ROTATION_KEY = "claude_token_index"
 _TOKENS = [
@@ -44,21 +46,34 @@ def _as_utc(dt: datetime) -> datetime:
     return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
 
 
+def _real_credential_health() -> type:
+    """Return db.models' real CredentialHealth, ignoring any leaked mock stub."""
+    if not isinstance(sys.modules.get("db.models"), ModuleType):
+        sys.modules.pop("db.models", None)
+    return importlib.import_module("db.models").CredentialHealth
+
+
 class TestBrokerConcurrency:
     """The broker's rotation lock and cooldown upsert must survive concurrent runs."""
 
     @pytest_asyncio.fixture
     async def session(self) -> AsyncIterator[AsyncSession]:
-        """Yield an in-memory SQLite AsyncSession with a greatest() shim."""
+        """Yield an in-memory SQLite AsyncSession with a greatest() shim.
+
+        Schema comes from _real_credential_health() so a leaked db.models mock
+        from a dashboard test can't silently build zero tables.
+        """
+        health = _real_credential_health()
+        metadata = health.metadata
         engine = create_async_engine("sqlite+aiosqlite:///:memory:")
 
         @event.listens_for(engine.sync_engine, "connect")
         def _register_greatest(dbapi_conn: Any, _record: object) -> None:
             dbapi_conn.create_function("greatest", 2, lambda a, b: max(a, b))
 
-        tables = [CredentialHealth.metadata.tables[t] for t in ("credential_health", "settings")]
+        tables = [metadata.tables[t] for t in ("credential_health", "settings")]
         async with engine.begin() as conn:
-            await conn.run_sync(lambda c: CredentialHealth.metadata.create_all(c, tables=tables))
+            await conn.run_sync(lambda c: metadata.create_all(c, tables=tables))
         maker = async_sessionmaker(engine, expire_on_commit=False)
         async with maker() as s:
             yield s
@@ -87,7 +102,7 @@ class TestBrokerConcurrency:
         await broker.report_exhausted(_IDS[0], far)
         await broker.report_exhausted(_IDS[0], now + timedelta(minutes=1))
 
-        row = await session.get(CredentialHealth, _IDS[0])
+        row = await session.get(_real_credential_health(), _IDS[0])
         assert row is not None
         assert row.cooldown_until is not None
         assert _as_utc(row.cooldown_until) == far
