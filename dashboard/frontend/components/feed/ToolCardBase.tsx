@@ -66,6 +66,11 @@ export function buildSummary(tool: ToolCall, cat: ToolCategory): string {
       if (shortTo && content) return `→ ${shortTo} · ${content}`;
       return shortTo ? `→ ${shortTo}` : content;
     }
+    case "agent_output": {
+      // TaskOutput input: { block, task_id, timeout }. Show the target task id.
+      const taskId = (input.task_id as string) || "";
+      return taskId ? `← ${taskId.slice(0, 8)}` : "";
+    }
     case "tool_search":
     case "web_search":
       return (input.query as string) || "";

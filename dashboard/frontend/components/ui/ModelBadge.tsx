@@ -21,23 +21,24 @@ interface ModelBadgeProps {
  */
 function legacyFamilyLabel(modelName: string): string | null {
   const lower = modelName.toLowerCase();
-  if (lower.includes("opus")) return "Opus";
-  if (lower.includes("sonnet")) return "Sonnet";
+  if (lower.includes("opus")) return "Claude Opus";
+  if (lower.includes("sonnet")) return "Claude Sonnet";
   return null;
 }
 
 /**
- * Badge showing a model's short name. Metadata comes from the /api/models
- * source of truth via useModels(). For a known model it shows the short name
- * ("Opus 4.8"); for an unrecognized model_name it falls back to the parsed
- * family ("Opus"/"Sonnet"). Returns null when there is no model_name or no
- * recognizable family.
+ * Badge showing a model's full name. Metadata comes from the /api/models
+ * source of truth via useModels(). For a known model it shows the full label
+ * ("Claude Opus 4.8", "GPT-5.6 Sol") — now that families are mixed, the short
+ * name ("Sol"/"Opus 4.8") is ambiguous. For an unrecognized model_name it falls
+ * back to the parsed family ("Claude Opus"/"Claude Sonnet"). Returns null when
+ * there is no model_name or no recognizable family.
  */
 export function ModelBadge({ modelName, showIcon = false, className }: ModelBadgeProps): React.ReactElement | null {
   const { models } = useModels();
   if (!modelName) return null;
   const model = findModel(models, modelName);
-  const label = model ? model.short : legacyFamilyLabel(modelName);
+  const label = model ? model.label : legacyFamilyLabel(modelName);
   if (!label) return null;
   return (
     <Tag

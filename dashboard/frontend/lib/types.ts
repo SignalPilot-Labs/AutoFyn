@@ -194,6 +194,7 @@ export type ToolCategory =
   | "glob"
   | "grep"
   | "agent"
+  | "agent_output"
   | "web_search"
   | "web_fetch"
   | "todo"
@@ -221,6 +222,8 @@ export function getToolCategory(toolName: string): ToolCategory {
   if (name === "glob") return "glob";
   if (name === "grep") return "grep";
   if (name === "agent") return "agent";
+  // TaskOutput — orchestrator collecting a backgrounded subagent's result.
+  if (name === "taskoutput") return "agent_output";
   if (name === "websearch") return "web_search";
   if (name === "webfetch") return "web_fetch";
   if (name === "todowrite") return "todo";
@@ -261,6 +264,7 @@ export const TOOL_COLORS: Record<ToolCategory, ToolMeta> = {
   glob:                  { label: "Glob",          border: "border-l-[#ff88aa]",  bg: "bg-[#ff88aa]/[0.03]",  text: "text-[#ff88aa]",  iconColor: "#ff88aa" },
   grep:                  { label: "Grep",          border: "border-l-[#88ffcc]",  bg: "bg-[#88ffcc]/[0.03]",  text: "text-[#88ffcc]",  iconColor: "#88ffcc" },
   agent:                 { label: "Agent",         border: "border-l-[#ff8844]",  bg: "bg-[#ff8844]/[0.03]",  text: "text-[#ff8844]",  iconColor: "#ff8844" },
+  agent_output:          { label: "Agent Output",  border: "border-l-[#ffaa66]",  bg: "bg-[#ffaa66]/[0.03]",  text: "text-[#ffaa66]",  iconColor: "#ffaa66" },
   web_search:            { label: "WebSearch",     border: "border-l-[#44aaff]",  bg: "bg-[#44aaff]/[0.03]",  text: "text-[#44aaff]",  iconColor: "#44aaff" },
   web_fetch:             { label: "WebFetch",      border: "border-l-[#44ccdd]",  bg: "bg-[#44ccdd]/[0.03]",  text: "text-[#44ccdd]",  iconColor: "#44ccdd" },
   todo:                  { label: "Todo",          border: "border-l-[#aabb44]",  bg: "bg-[#aabb44]/[0.03]",  text: "text-[#aabb44]",  iconColor: "#aabb44" },

@@ -126,6 +126,20 @@ describe("buildSummary", () => {
     expect(summary("SendMessage", { to: "abc12345xyz" })).toBe("→ abc12345");
   });
 
+  it("TaskOutput maps to the agent_output category", () => {
+    expect(getToolCategory("TaskOutput")).toBe("agent_output");
+  });
+
+  it("agent_output: returns ← shortened task id", () => {
+    expect(summary("TaskOutput", { block: true, task_id: "ac6e35d52a87bd706", timeout: 600000 })).toBe(
+      "← ac6e35d5"
+    );
+  });
+
+  it("agent_output: empty when task_id is absent", () => {
+    expect(summary("TaskOutput", { block: true })).toBe("");
+  });
+
   it("web_search: returns query", () => {
     expect(summary("WebSearch", { query: "vitest docs" })).toBe("vitest docs");
   });
