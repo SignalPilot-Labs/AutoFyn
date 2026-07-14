@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from fastapi import FastAPI, HTTPException
 
 from common.constants import providers_for_model
-from db.constants import CLEANABLE_RUN_STATUSES
+from db.constants import CLEANABLE_RUN_STATUSES, DEFAULT_EFFORT
 from endpoints.helpers import merge_tokens_into_env
 from utils import db
 from utils.db_logging import log_audit
@@ -48,6 +48,8 @@ async def _restart_terminal_run(server: "AgentServer", body: ResumeRequest) -> d
 
     merged_env = merge_tokens_into_env(body.env, body.claude_token, body.git_token)
     start_cmd = await server.pool().resolve_start_cmd(body.sandbox_id)
+    # Runs created before effort was persisted have it NULL; DEFAULT_EFFORT is
+    # what they ran at, since that was the only value the resume path could send.
     start_body = StartRequest(
         prompt=prompt,
         max_budget_usd=0,
@@ -55,6 +57,7 @@ async def _restart_terminal_run(server: "AgentServer", body: ResumeRequest) -> d
         base_branch=run_info["base_branch"],
         model=run_info["model_name"],
         provider=provider,
+        effort=run_info.get("effort") or DEFAULT_EFFORT,
         github_repo=github_repo,
         env=merged_env,
         host_mounts=body.host_mounts,

@@ -25,14 +25,12 @@ from sandbox_client.client import SandboxClient
 from agent_session.time_lock import TimeLock
 from utils import db
 from utils.db_logging import log_audit
-from common.constants import MODELS_SUPPORTING_MAX_EFFORT, api_model_for, fallback_model_for
+from common.constants import api_model_for, fallback_model_for, resolve_effort
 from db.constants import RUN_STATUS_RUNNING
 from utils.constants import (
     BRANCH_SLUG_MAX_LEN,
     DEFAULT_AGENT_ROLE,
     DISALLOWED_SESSION_TOOLS,
-    EFFORT_HIGH,
-    EFFORT_MAX,
     MEMORY_DIR,
     RUN_STATE_PATH,
     RUN_STATE_TEMPLATE,
@@ -106,6 +104,8 @@ async def bootstrap_run(
         run_id,
         branch_name,
         model,
+        provider,
+        resolve_effort(model, effort),
         max_budget_usd,
         duration_minutes,
         custom_prompt,
@@ -286,15 +286,12 @@ def _build_base_session_options(
     the round loop before starting each session. The SDK ``model`` fields carry
     the provider's API slug; the AutoFyn id stays on BootstrapResult for tiering.
     """
-    resolved_effort = effort
-    if effort == EFFORT_MAX and model not in MODELS_SUPPORTING_MAX_EFFORT:
-        resolved_effort = EFFORT_HIGH
     return {
         "model": api_model_for(model, provider),
         "fallback_model": (
             api_model_for(fallback_model, provider) if fallback_model is not None else None
         ),
-        "effort": resolved_effort,
+        "effort": resolve_effort(model, effort),
         "include_partial_messages": True,
         "permission_mode": SESSION_PERMISSION_MODE,
         "disallowed_tools": DISALLOWED_SESSION_TOOLS,
@@ -321,17 +318,25 @@ async def _log_run_started(
     run_id: str,
     branch: str,
     model: str,
+    provider: str,
+    effort: str,
     budget: float,
     duration: float,
     custom_prompt: str,
 ) -> None:
-    """Emit run_started and prompt_submitted audit events."""
+    """Emit run_started and prompt_submitted audit events.
+
+    Records the resolved effort, not the requested one, so a max->high
+    downgrade is visible rather than silent.
+    """
     await log_audit(
         run_id,
         "run_started",
         {
             "branch": branch,
             "model": model,
+            "provider": provider,
+            "effort": effort,
             "max_budget_usd": budget,
             "duration_minutes": duration,
             "has_custom_prompt": bool(custom_prompt),

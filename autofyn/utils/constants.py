@@ -64,9 +64,6 @@ SESSION_PERMISSION_MODE = "bypassPermissions"
 # agent loop waiting for a human response that never arrives in a headless
 # run — banned for orchestrator and subagents alike.
 DISALLOWED_SESSION_TOOLS: list[str] = ["AskUserQuestion"]
-# Effort level strings used in session options.
-EFFORT_MAX: str = "max"
-EFFORT_HIGH: str = "high"
 # Extra directories to make available inside the sandbox session.
 SESSION_ADD_DIRS: list[str] = ["/opt/autofyn/.claude/skills"]
 # Setting sources passed to the sandbox session start request.

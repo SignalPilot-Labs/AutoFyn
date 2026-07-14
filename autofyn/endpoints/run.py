@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 
 from fastapi import FastAPI, HTTPException
 
+from common.constants import resolve_effort
 from db.constants import RUN_STATUS_STARTING
 from endpoints.helpers import merge_tokens_into_env
 from prompts.loader import load_markdown
@@ -82,6 +83,7 @@ def register_run_routes(app: FastAPI, server: "AgentServer") -> None:
                 body.github_repo,
                 body.model,
                 body.provider,
+                resolve_effort(body.model, body.effort),
             )
 
             await log_audit(run_id, "run_starting", {

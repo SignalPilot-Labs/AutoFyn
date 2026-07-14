@@ -52,7 +52,10 @@ class StreamDispatcher:
         # Snapshot everything at round start so running cost estimates
         # during this round only measure THIS round's delta — prior
         # rounds' cost and tokens are already accounted for in run.*.
-        self._cost_baseline: float = run.total_cost
+        # Prior rounds' cost, or 0.0 when none has been reported yet: the
+        # baseline is an arithmetic starting point, while run.total_cost stays
+        # None until usage actually arrives so "unknown" survives to the DB.
+        self._cost_baseline: float = run.total_cost or 0.0
         self._input_baseline: int = run.total_input_tokens
         self._output_baseline: int = run.total_output_tokens
         self._cache_create_baseline: int = run.cache_creation_input_tokens
@@ -367,8 +370,9 @@ class StreamDispatcher:
             await db.save_session_id(run_id, session_id)
         round_cost = data.get("total_cost_usd")
         if round_cost is not None and not self._round_gateway_cost:
-            self._run.total_cost = self._cost_baseline + round_cost
-            self._cost_baseline = self._run.total_cost
+            settled = self._cost_baseline + round_cost
+            self._run.total_cost = settled
+            self._cost_baseline = settled
             self._input_baseline = self._run.total_input_tokens
             self._output_baseline = self._run.total_output_tokens
             self._cache_create_baseline = self._run.cache_creation_input_tokens

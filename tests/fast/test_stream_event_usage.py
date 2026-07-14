@@ -89,7 +89,7 @@ class TestStreamEventUsage:
         assert run.total_input_tokens == 3
         assert run.total_output_tokens == 8
         assert run.cache_read_input_tokens == 8177
-        assert run.total_cost > 0
+        assert run.total_cost is not None and run.total_cost > 0
 
     @pytest.mark.asyncio
     async def test_message_start_is_ignored(self) -> None:
@@ -104,7 +104,7 @@ class TestStreamEventUsage:
         run = dispatcher._run
         assert run.total_input_tokens == 0
         assert run.total_output_tokens == 0
-        assert run.total_cost == 0
+        assert run.total_cost is None
 
     @pytest.mark.asyncio
     async def test_gateway_cost_survives_zero_cost_result(self) -> None:
