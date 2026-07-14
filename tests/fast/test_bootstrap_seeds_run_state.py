@@ -45,6 +45,7 @@ class TestBootstrapSeedsRunState:
             mock_db.get_run_branch_name = AsyncMock(return_value=None)
             mock_db.update_run_branch = AsyncMock()
             mock_db.get_run_for_resume = AsyncMock(return_value=None)
+            mock_db.update_run_effort = AsyncMock()
 
             await bootstrap_run(
                 sandbox=sandbox,
@@ -78,10 +79,11 @@ class TestBootstrapSeedsRunState:
             mock_db.get_run_branch_name = AsyncMock(return_value="autofyn/existing")
             mock_db.update_run_status = AsyncMock()
             mock_db.get_run_for_resume = AsyncMock(return_value={
-                "total_cost_usd": 0, "total_input_tokens": 0,
+                "total_cost_usd": None, "total_input_tokens": 0,
                 "total_output_tokens": 0, "cache_creation_input_tokens": 0,
                 "cache_read_input_tokens": 0,
             })
+            mock_db.update_run_effort = AsyncMock()
 
             # Simulate archiver restoring rounds (starting_round > 0)
             with patch.object(
@@ -124,6 +126,7 @@ class TestBootstrapSeedsRunState:
             mock_db.get_run_branch_name = AsyncMock(return_value=None)
             mock_db.update_run_branch = AsyncMock()
             mock_db.get_run_for_resume = AsyncMock(return_value=None)
+            mock_db.update_run_effort = AsyncMock()
 
             await bootstrap_run(
                 sandbox=sandbox,

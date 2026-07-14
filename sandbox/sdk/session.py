@@ -15,6 +15,7 @@ from claude_agent_sdk.types import (
     ToolPermissionContext,
 )
 
+from constants import SDK_MAX_BUFFER_BYTES
 from sdk.event_log import SessionEventLog, SessionEventLogOverflow, SESSION_EVENT_LOG_MAX_BYTES
 from sdk.gate import SessionGate
 from sdk.hooks import SessionHooks
@@ -135,6 +136,7 @@ class Session:
             mcp_servers=mcp,
             agents=agents,
             hooks=self._hooks.build_hooks(),
+            max_buffer_size=SDK_MAX_BUFFER_BYTES,
         )
 
     async def _check_mcp_status(self, client: ClaudeSDKClient) -> None:

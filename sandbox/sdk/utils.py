@@ -24,61 +24,84 @@ from claude_agent_sdk.types import (
 from constants import (
     INPUT_CONTENT_MAX_LEN,
     INPUT_SUMMARY_MAX_LEN,
+    SUBAGENT_RUNS_IN_BACKGROUND,
     SUMMARY_CONTENT_KEYS,
     SUMMARY_ELLIPSIS,
     SUMMARY_MAX_DEPTH,
     SUMMARY_MAX_ITEMS,
     SUMMARY_TRUNCATED_KEY,
 )
+from models import TruncationReport
 
 log = logging.getLogger("sandbox.session_utils")
 
 
 def parse_agents(raw: dict[str, dict]) -> dict[str, AgentDefinition]:
-    """Convert plain dicts from the agent into AgentDefinition dataclasses."""
+    """Convert plain dicts from the agent into AgentDefinition dataclasses.
+
+    Pins every subagent to synchronous dispatch: the orchestrator must have the
+    subagent's report in hand before it can end its turn.
+    """
     return {
         name: AgentDefinition(
             description=defn["description"],
             prompt=defn["prompt"],
             model=defn.get("model"),
             tools=defn.get("tools"),
+            background=SUBAGENT_RUNS_IN_BACKGROUND,
         )
         for name, defn in raw.items()
     }
 
 
-def _clamp(val: Any, key: str, depth: int) -> Any:
-    """Clamp strings in val to their per-key limit, recursing into containers."""
+def _clamp(val: Any, key: str, depth: int, report: TruncationReport) -> Any:
+    """Clamp strings in val to their per-key limit, recursing into containers.
+
+    Sets report.truncated whenever a value is dropped or shortened, so callers
+    know a payload was clamped without re-serializing the original to compare.
+    """
     if isinstance(val, str):
         limit = (
             INPUT_CONTENT_MAX_LEN if key in SUMMARY_CONTENT_KEYS else INPUT_SUMMARY_MAX_LEN
         )
-        return val if len(val) <= limit else val[:limit] + SUMMARY_ELLIPSIS
+        if len(val) <= limit:
+            return val
+        report.truncated = True
+        return val[:limit] + SUMMARY_ELLIPSIS
     if depth >= SUMMARY_MAX_DEPTH:
-        return SUMMARY_ELLIPSIS
+        if isinstance(val, (dict, list)) and val:
+            report.truncated = True
+            return SUMMARY_ELLIPSIS
+        return val
     if isinstance(val, dict):
+        if len(val) > SUMMARY_MAX_ITEMS:
+            report.truncated = True
         return {
-            k: _clamp(v, k, depth + 1)
+            k: _clamp(v, k, depth + 1, report)
             for k, v in list(val.items())[:SUMMARY_MAX_ITEMS]
         }
     if isinstance(val, list):
-        return [_clamp(v, key, depth + 1) for v in val[:SUMMARY_MAX_ITEMS]]
+        if len(val) > SUMMARY_MAX_ITEMS:
+            report.truncated = True
+        return [_clamp(v, key, depth + 1, report) for v in val[:SUMMARY_MAX_ITEMS]]
     return val
 
 
 def summarize(data: Any) -> dict:
     """Truncate large values in tool input/output for event log storage."""
+    report = TruncationReport()
     if not isinstance(data, dict):
         raw = json.dumps(data, default=str)
         if len(raw) > INPUT_SUMMARY_MAX_LEN:
             raw = raw[:INPUT_SUMMARY_MAX_LEN] + SUMMARY_ELLIPSIS
         return {"_raw": raw}
+    if len(data) > SUMMARY_MAX_ITEMS:
+        report.truncated = True
     summarized = {
-        key: _clamp(val, key, 1) for key, val in list(data.items())[:SUMMARY_MAX_ITEMS]
+        key: _clamp(val, key, 1, report)
+        for key, val in list(data.items())[:SUMMARY_MAX_ITEMS]
     }
-    # Tool payloads nest ({"task": {"output": <transcript>}}), so a size check
-    # on the result — not on top-level strings — is what catches a clamped one.
-    if len(json.dumps(summarized, default=str)) < len(json.dumps(data, default=str)):
+    if report.truncated:
         summarized[SUMMARY_TRUNCATED_KEY] = True
     return summarized
 
@@ -86,6 +109,8 @@ def summarize(data: Any) -> dict:
 def serialize_message(message: object) -> dict | None:
     """Convert SDK message to a JSON-serializable event dict."""
     if isinstance(message, StreamEvent):
+        # Always None in practice — subagent partials don't surface — but pass
+        # the SDK's field through rather than assert what it can never carry.
         return {
             "event": "stream_event",
             "data": {

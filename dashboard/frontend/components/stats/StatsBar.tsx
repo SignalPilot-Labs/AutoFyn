@@ -10,14 +10,16 @@ const EMPTY_EVENTS: FeedEvent[] = [];
 function computeLiveStats(events: FeedEvent[]) {
   let toolCount = 0;
   let contextTokens = 0;
-  let costUsd = 0;
+  // null until a usage event reports a cost — the agent sends null when no
+  // usage has settled, and collapsing that to 0 here would hide it.
+  let costUsd: number | null = null;
 
   for (const e of events) {
     if (e._kind === "tool") {
       toolCount++;
     } else if (e._kind === "usage") {
-      contextTokens = e.data.context_tokens || 0;
-      costUsd = e.data.total_cost_usd || 0;
+      contextTokens = e.data.context_tokens;
+      costUsd = e.data.total_cost_usd;
     }
   }
 
@@ -40,12 +42,12 @@ export const NO_DATA = "—";
  */
 export function formatCostStat(
   settled: number | null | undefined,
-  liveCost: number,
+  liveCost: number | null,
 ): { value: string; accent: string } {
   if (settled !== null && settled !== undefined) {
     return { value: `$${settled.toFixed(2)}`, accent: "text-[#00ff88]" };
   }
-  if (liveCost > 0) {
+  if (liveCost !== null && liveCost > 0) {
     return { value: `~$${liveCost.toFixed(2)}`, accent: "text-[#00ff88]/70" };
   }
   return { value: NO_DATA, accent: "text-text-dim" };

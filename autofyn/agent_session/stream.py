@@ -52,17 +52,17 @@ class StreamDispatcher:
         # Snapshot everything at round start so running cost estimates
         # during this round only measure THIS round's delta — prior
         # rounds' cost and tokens are already accounted for in run.*.
-        # Prior rounds' cost, or 0.0 when none has been reported yet: the
-        # baseline is an arithmetic starting point, while run.total_cost stays
-        # None until usage actually arrives so "unknown" survives to the DB.
-        self._cost_baseline: float = run.total_cost or 0.0
+        # None when no prior round reported usage, which is distinct from a
+        # prior round that cost exactly 0.0.
+        self._cost_baseline: float | None = run.total_cost
         self._input_baseline: int = run.total_input_tokens
         self._output_baseline: int = run.total_output_tokens
         self._cache_create_baseline: int = run.cache_creation_input_tokens
         self._cache_read_baseline: int = run.cache_read_input_tokens
-        # Gateway-reported cost accrued this round; a dispatcher is per-round, so
-        # this starts at zero and only grows while the round runs.
-        self._round_gateway_cost: float = 0.0
+        # Gateway-reported cost accrued this round. None until the gateway
+        # reports at all: a gateway that bills 0.0 is telling us the round was
+        # free, which is not the same as a gateway that never reported.
+        self._round_gateway_cost: float | None = None
         self._message_count: int = 0
         self._latest_context_tokens: int = 0
         self._tools_in_flight: int = 0
@@ -357,20 +357,20 @@ class StreamDispatcher:
     async def _handle_result(self, data: dict) -> None:
         """Persist the SDK session id and settle cost.
 
-        ResultMessage carries the authoritative cost for THIS round's
-        session. We add it to the prior-rounds baseline and rebase so any
-        late assistant_messages in this round (rare) can't double-count.
-        A gateway that billed us directly already reported its real cost per
-        message_delta, and the SDK reports 0.0 for those rounds because it did
-        not bill them — so the gateway's figure wins.
+        ResultMessage carries the authoritative cost for THIS round's session.
+        We add it to the prior-rounds baseline and rebase so any late
+        message_delta in this round (rare) can't double-count. A gateway that
+        billed us directly already reported its real cost per message_delta,
+        and the SDK reports 0.0 for those rounds because it did not bill them —
+        so the gateway's figure wins.
         """
         run_id = self._run.run_id
         session_id = data.get("session_id")
         if session_id:
             await db.save_session_id(run_id, session_id)
         round_cost = data.get("total_cost_usd")
-        if round_cost is not None and not self._round_gateway_cost:
-            settled = self._cost_baseline + round_cost
+        if round_cost is not None and self._round_gateway_cost is None:
+            settled = (self._cost_baseline or 0.0) + round_cost
             self._run.total_cost = settled
             self._cost_baseline = settled
             self._input_baseline = self._run.total_input_tokens
@@ -415,12 +415,13 @@ class StreamDispatcher:
             self._run.cache_read_input_tokens += cache_read
             gateway_cost = usage.get(USAGE_COST_KEY)
             if gateway_cost is not None:
-                self._round_gateway_cost += gateway_cost
-            self._run.total_cost = self._cost_baseline + (
-                self._round_gateway_cost
-                if self._round_gateway_cost
-                else self._estimated_round_cost()
+                self._round_gateway_cost = (self._round_gateway_cost or 0.0) + gateway_cost
+            round_cost = (
+                self._estimated_round_cost()
+                if self._round_gateway_cost is None
+                else self._round_gateway_cost
             )
+            self._run.total_cost = (self._cost_baseline or 0.0) + round_cost
         self._message_count += 1
         if self._message_count % USAGE_EMIT_INTERVAL == 0:
             await log_audit(

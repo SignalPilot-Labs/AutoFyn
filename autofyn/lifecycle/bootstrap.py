@@ -72,9 +72,12 @@ async def bootstrap_run(
         raise RuntimeError("bootstrap_run requires a non-empty task prompt")
 
     fallback_model = fallback_model_for(model)
+    # Resolve once: the session, the row, and the audit must all describe the
+    # same effort, and only the post-downgrade value is what actually runs.
+    resolved_effort = resolve_effort(model, effort)
 
     branch_name, is_resume, run_config, subagent_config = await _resolve_branch_and_clone(
-        sandbox, run_id, custom_prompt, github_repo, base_branch
+        sandbox, run_id, custom_prompt, github_repo, base_branch, resolved_effort
     )
 
     run = await _build_run_context(
@@ -95,7 +98,7 @@ async def bootstrap_run(
         provider=provider,
         fallback_model=fallback_model,
         max_budget_usd=max_budget_usd,
-        effort=effort,
+        effort=resolved_effort,
         run_start_time=run_start_time,
         mcp_servers=mcp_servers,
     )
@@ -105,7 +108,7 @@ async def bootstrap_run(
         branch_name,
         model,
         provider,
-        resolve_effort(model, effort),
+        resolved_effort,
         max_budget_usd,
         duration_minutes,
         custom_prompt,
@@ -143,8 +146,9 @@ async def _resolve_branch_and_clone(
     custom_prompt: str,
     github_repo: str,
     base_branch: str,
+    effort: str,
 ) -> tuple[str, bool, RunAgentConfig, SubagentConfig]:
-    """Resolve the working branch, clone the repo, persist branch/status to DB.
+    """Resolve the working branch, clone the repo, persist branch/status/effort.
 
     Returns (branch_name, is_resume, run_config, subagent_config).
     """
@@ -167,6 +171,10 @@ async def _resolve_branch_and_clone(
         await db.update_run_status(run_id, RUN_STATUS_RUNNING)
     else:
         await db.update_run_branch(run_id, branch_name)
+    # Both paths, not just /start: resume rebuilds the request from the DB row,
+    # so this backfills rows predating the column instead of leaving them NULL
+    # and re-resolving to DEFAULT_EFFORT on every future resume.
+    await db.update_run_effort(run_id, effort)
     return branch_name, is_resume, run_config, subagent_config
 
 
@@ -199,8 +207,11 @@ async def _build_run_context(
 ) -> RunContext:
     """Build the RunContext, seeding cost/token totals from the DB on resume."""
     # On resume, seed cost/token accumulators from the DB so teardown
-    # doesn't overwrite the previous run's totals with zeros.
+    # doesn't overwrite the previous run's totals with zeros. Cost is the
+    # exception: NULL means no usage was ever reported, and coercing that to
+    # 0.0 here would relabel it as a confirmed $0.00 on the first resume.
     prior = await db.get_run_for_resume(run_id) if is_resume else None
+    prior_cost = prior["total_cost_usd"] if prior else None
     return RunContext(
         run_id=run_id,
         agent_role=DEFAULT_AGENT_ROLE,
@@ -208,7 +219,7 @@ async def _build_run_context(
         base_branch=base_branch,
         duration_minutes=duration_minutes,
         github_repo=github_repo,
-        total_cost=float(prior["total_cost_usd"] or 0) if prior else 0.0,
+        total_cost=float(prior_cost) if prior_cost is not None else None,
         total_input_tokens=int(prior["total_input_tokens"] or 0) if prior else 0,
         total_output_tokens=int(prior["total_output_tokens"] or 0) if prior else 0,
         cache_creation_input_tokens=int(prior["cache_creation_input_tokens"] or 0) if prior else 0,
@@ -285,13 +296,14 @@ def _build_base_session_options(
     The orchestrator system prompt is rebuilt per round and spliced in by
     the round loop before starting each session. The SDK ``model`` fields carry
     the provider's API slug; the AutoFyn id stays on BootstrapResult for tiering.
+    ``effort`` must already be resolved by the caller.
     """
     return {
         "model": api_model_for(model, provider),
         "fallback_model": (
             api_model_for(fallback_model, provider) if fallback_model is not None else None
         ),
-        "effort": resolve_effort(model, effort),
+        "effort": effort,
         "include_partial_messages": True,
         "permission_mode": SESSION_PERMISSION_MODE,
         "disallowed_tools": DISALLOWED_SESSION_TOOLS,

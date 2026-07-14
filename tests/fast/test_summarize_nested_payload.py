@@ -10,18 +10,14 @@ where a healthy Agent row is ~4 kB. Clamping now recurses into dicts and lists.
 from __future__ import annotations
 
 import json
-import sys
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "sandbox"))
-
-from constants import (  # noqa: E402
+from constants import (
     INPUT_SUMMARY_MAX_LEN,
     SUMMARY_MAX_DEPTH,
     SUMMARY_MAX_ITEMS,
     SUMMARY_TRUNCATED_KEY,
 )
-from sdk.utils import summarize  # noqa: E402
+from sdk.utils import summarize
 
 
 class TestSummarizeNestedPayload:
@@ -93,3 +89,45 @@ class TestSummarizeNestedPayload:
 
         assert len(out["task"]) == SUMMARY_MAX_ITEMS
         assert out[SUMMARY_TRUNCATED_KEY] is True
+
+    def test_barely_over_limit_is_still_flagged(self) -> None:
+        """A clamp that barely shrinks the payload must still be reported.
+
+        Inferring truncation by comparing serialized sizes missed this: cutting
+        1001 chars to 1000 and appending "..." nets out the same length, so the
+        flag was silently dropped for originals in a narrow band past the limit.
+        """
+        payload = {"task": {"output": "A" * (INPUT_SUMMARY_MAX_LEN + 1)}}
+
+        out = summarize(payload)
+
+        assert len(out["task"]["output"]) == INPUT_SUMMARY_MAX_LEN + 3
+        assert out[SUMMARY_TRUNCATED_KEY] is True
+
+    def test_escaped_content_that_inflates_is_flagged(self) -> None:
+        """Truncation must be reported even when escaping inflates the JSON.
+
+        A payload of quotes serializes to roughly twice its length, so the
+        clamped result could serialize longer than the original — the size
+        comparison then read that as "nothing was truncated".
+        """
+        payload = {"task": {"output": '"' * (INPUT_SUMMARY_MAX_LEN + 1)}}
+
+        out = summarize(payload)
+
+        assert out[SUMMARY_TRUNCATED_KEY] is True
+
+    def test_cyclic_payload_does_not_raise(self) -> None:
+        """A self-referential payload must clamp, not crash.
+
+        summarize runs inside a PreToolUse hook, so raising here would break the
+        tool call rather than just its logging. The depth bound already handled
+        cycles; serializing the original to measure it was what raised.
+        """
+        cycle: dict = {"name": "loop"}
+        cycle["self"] = cycle
+
+        out = summarize({"task": cycle})
+
+        assert out[SUMMARY_TRUNCATED_KEY] is True
+        assert json.dumps(out)

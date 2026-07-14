@@ -20,6 +20,7 @@ from sandbox_client.client import SandboxClient
 from utils import db
 from utils.db_logging import log_audit
 from utils.constants import (
+    COST_UNKNOWN,
     PR_BODY_MAX_CHARS,
     PR_BODY_TRUNCATION_MARKER,
     RUN_STATE_PATH,
@@ -65,9 +66,10 @@ async def finalize_run(
         run.cache_creation_input_tokens,
         run.cache_read_input_tokens,
     )
+    cost = COST_UNKNOWN if run.total_cost is None else f"${run.total_cost:.2f}"
     log.info(
-        "Run complete: status=%s cost=$%.2f pr=%s",
-        resolved_status, run.total_cost, pr_url or "-",
+        "Run complete: status=%s cost=%s pr=%s",
+        resolved_status, cost, pr_url or "-",
     )
     return pr_url
 

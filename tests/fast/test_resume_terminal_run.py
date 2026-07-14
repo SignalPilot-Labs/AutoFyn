@@ -19,6 +19,7 @@ from config.constants import SANDBOX_KIND_DOCKER, SandboxResources
 from endpoints.control import _restart_terminal_run
 from endpoints.registry import register_routes
 from common.constants import PROVIDER_ANTHROPIC
+from db.constants import DEFAULT_EFFORT
 from lifecycle.bootstrap import bootstrap_run
 from utils.models_http import ResumeRequest
 
@@ -45,6 +46,7 @@ def _mock_run_info(branch_name: str | None) -> dict:
         "cache_read_input_tokens": 0,
         "model_name": "claude-sonnet-4-6",
         "provider_name": PROVIDER_ANTHROPIC,
+        "effort": DEFAULT_EFFORT,
     }
 
 
@@ -183,6 +185,7 @@ class TestBootstrapResumesBranch:
             patch("lifecycle.bootstrap.db.get_run_branch_name", new_callable=AsyncMock, return_value="autofyn/existing-branch"),
             patch("lifecycle.bootstrap.db.update_run_status", new_callable=AsyncMock) as mock_status,
             patch("lifecycle.bootstrap.db.update_run_branch", new_callable=AsyncMock) as mock_branch,
+            patch("lifecycle.bootstrap.db.update_run_effort", new_callable=AsyncMock),
             patch("lifecycle.bootstrap.db.get_run_for_resume", new_callable=AsyncMock, return_value=prior_info),
         ):
             result = await bootstrap_run(
@@ -225,6 +228,7 @@ class TestBootstrapResumesBranch:
             patch("lifecycle.bootstrap.db.get_run_branch_name", new_callable=AsyncMock, return_value=None),
             patch("lifecycle.bootstrap.db.update_run_status", new_callable=AsyncMock) as mock_status,
             patch("lifecycle.bootstrap.db.update_run_branch", new_callable=AsyncMock) as mock_branch,
+            patch("lifecycle.bootstrap.db.update_run_effort", new_callable=AsyncMock),
         ):
             await bootstrap_run(
                 sandbox=mock_sandbox,
@@ -262,6 +266,7 @@ class TestBootstrapResumesBranch:
             patch("lifecycle.bootstrap.db.get_run_branch_name", new_callable=AsyncMock, return_value=None),
             patch("lifecycle.bootstrap.db.update_run_status", new_callable=AsyncMock) as mock_status,
             patch("lifecycle.bootstrap.db.update_run_branch", new_callable=AsyncMock) as mock_branch,
+            patch("lifecycle.bootstrap.db.update_run_effort", new_callable=AsyncMock),
         ):
             await bootstrap_run(
                 sandbox=mock_sandbox,
@@ -384,6 +389,7 @@ class TestBootstrapPreservesCosts:
         with (
             patch("lifecycle.bootstrap.db.get_run_branch_name", new_callable=AsyncMock, return_value="autofyn/existing-branch"),
             patch("lifecycle.bootstrap.db.update_run_status", new_callable=AsyncMock),
+            patch("lifecycle.bootstrap.db.update_run_effort", new_callable=AsyncMock),
             patch("lifecycle.bootstrap.db.get_run_for_resume", new_callable=AsyncMock, return_value=prior_info),
         ):
             result = await bootstrap_run(
@@ -422,6 +428,7 @@ class TestBootstrapPreservesCosts:
         with (
             patch("lifecycle.bootstrap.db.get_run_branch_name", new_callable=AsyncMock, return_value=None),
             patch("lifecycle.bootstrap.db.update_run_branch", new_callable=AsyncMock),
+            patch("lifecycle.bootstrap.db.update_run_effort", new_callable=AsyncMock),
         ):
             await bootstrap_run(
                 sandbox=mock_sandbox,

@@ -67,6 +67,18 @@ async def create_run_starting(
         await s.commit()
 
 
+async def update_run_effort(run_id: str, effort: str) -> None:
+    """Record the effort the session actually runs at.
+
+    Written on every bootstrap, not just at /start: resume rebuilds the request
+    from the DB row, so this is what backfills rows predating the column and
+    keeps the row honest when a resumed run resolves to a different effort.
+    """
+    async with get_session_factory()() as s:
+        await s.execute(update(Run).where(Run.id == run_id).values(effort=effort))
+        await s.commit()
+
+
 async def update_run_branch(run_id: str, branch_name: str) -> None:
     """Set the branch name once git setup completes."""
     async with get_session_factory()() as s:
@@ -268,14 +280,18 @@ async def finish_run(
 @swallow_errors
 async def update_run_cost(
     run_id: str,
-    total_cost_usd: float,
+    total_cost_usd: float | None,
     total_input_tokens: int,
     total_output_tokens: int,
     cache_creation_input_tokens: int,
     cache_read_input_tokens: int,
     context_tokens: int,
 ) -> None:
-    """Persist current cost/token values mid-run. Called at each SDK round boundary."""
+    """Persist current cost/token values mid-run. Called at each SDK round boundary.
+
+    Cost is None until usage settles; the column is nullable to keep that
+    distinct from a confirmed $0.00.
+    """
     async with get_session_factory()() as s:
         await s.execute(
             update(Run)

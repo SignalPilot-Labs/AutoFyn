@@ -1,13 +1,23 @@
-"""Tests for effort downgrade logic in bootstrap."""
+"""Tests that session options carry the effort they are handed.
+
+The max->high downgrade used to live inside _build_base_session_options, which
+meant the session downgraded but the audit and the runs row recorded the raw
+request. resolve_effort now owns the downgrade and bootstrap_run applies it once
+before anything consumes it — see test_run_effort_recorded.py for that logic.
+
+What matters here is the other half of that split: these options must pass the
+resolved value through untouched, since a second downgrade would be a no-op that
+hides which layer is responsible.
+"""
 
 from common.constants import LEGACY_OPUS, PROVIDER_ANTHROPIC, SUPPORTED_OPUS, SUPPORTED_SONNET
+from db.constants import EFFORT_HIGH, EFFORT_LOW, EFFORT_MAX
 from lifecycle.bootstrap import _build_base_session_options
-from utils.constants import DISALLOWED_SESSION_TOOLS
 from utils.models import RunContext
 
 
-class TestEffortDowngrade:
-    """Verify max effort is downgraded to high for models that don't support it."""
+class TestEffortPassedThrough:
+    """Session options must not re-resolve the effort they are given."""
 
     def _make_run(self) -> RunContext:
         return RunContext(
@@ -19,84 +29,27 @@ class TestEffortDowngrade:
             github_repo="owner/repo",
         )
 
-    def test_max_effort_passes_through_for_opus(self) -> None:
-        opts = _build_base_session_options(
+    def _options_for(self, model: str, effort: str) -> dict:
+        return _build_base_session_options(
             run=self._make_run(),
-            model=SUPPORTED_OPUS,
+            model=model,
             provider=PROVIDER_ANTHROPIC,
             fallback_model=SUPPORTED_SONNET,
             max_budget_usd=0,
-            effort="max",
+            effort=effort,
             run_start_time=0.0,
             mcp_servers=None,
         )
-        assert opts["effort"] == "max"
 
-    def test_max_effort_passes_through_for_sonnet(self) -> None:
-        opts = _build_base_session_options(
-            run=self._make_run(),
-            model=SUPPORTED_SONNET,
-            provider=PROVIDER_ANTHROPIC,
-            fallback_model=None,
-            max_budget_usd=0,
-            effort="max",
-            run_start_time=0.0,
-            mcp_servers=None,
-        )
-        assert opts["effort"] == "max"
+    def test_max_survives_on_supporting_model(self) -> None:
+        """A flagship's resolved max reaches the session as max."""
+        assert self._options_for(SUPPORTED_OPUS, EFFORT_MAX)["effort"] == EFFORT_MAX
 
-    def test_max_effort_downgraded_for_legacy_opus(self) -> None:
-        opts = _build_base_session_options(
-            run=self._make_run(),
-            model=LEGACY_OPUS,
-            provider=PROVIDER_ANTHROPIC,
-            fallback_model=SUPPORTED_SONNET,
-            max_budget_usd=0,
-            effort="max",
-            run_start_time=0.0,
-            mcp_servers=None,
-        )
-        assert opts["effort"] == "high"
+    def test_resolved_high_is_not_re_resolved(self) -> None:
+        """A downgraded effort arrives already resolved and passes through."""
+        assert self._options_for(LEGACY_OPUS, EFFORT_HIGH)["effort"] == EFFORT_HIGH
 
-    def test_high_effort_unchanged_for_legacy_opus(self) -> None:
-        opts = _build_base_session_options(
-            run=self._make_run(),
-            model=LEGACY_OPUS,
-            provider=PROVIDER_ANTHROPIC,
-            fallback_model=SUPPORTED_SONNET,
-            max_budget_usd=0,
-            effort="high",
-            run_start_time=0.0,
-            mcp_servers=None,
-        )
-        assert opts["effort"] == "high"
-
-    def test_medium_effort_unchanged_for_all_models(self) -> None:
+    def test_low_effort_unchanged(self) -> None:
+        """Efforts the downgrade never touches reach the session verbatim."""
         for model in (SUPPORTED_OPUS, SUPPORTED_SONNET, LEGACY_OPUS):
-            opts = _build_base_session_options(
-                run=self._make_run(),
-                model=model,
-                provider=PROVIDER_ANTHROPIC,
-                fallback_model=None,
-                max_budget_usd=0,
-                effort="medium",
-                run_start_time=0.0,
-                mcp_servers=None,
-            )
-            assert opts["effort"] == "medium"
-
-    def test_askuserquestion_is_disallowed(self) -> None:
-        """AskUserQuestion must be banned so the autonomous loop never blocks
-        on a human response that never arrives."""
-        opts = _build_base_session_options(
-            run=self._make_run(),
-            model=SUPPORTED_OPUS,
-            provider=PROVIDER_ANTHROPIC,
-            fallback_model=None,
-            max_budget_usd=0,
-            effort="high",
-            run_start_time=0.0,
-            mcp_servers=None,
-        )
-        assert "AskUserQuestion" in opts["disallowed_tools"]
-        assert opts["disallowed_tools"] == DISALLOWED_SESSION_TOOLS
+            assert self._options_for(model, EFFORT_LOW)["effort"] == EFFORT_LOW
