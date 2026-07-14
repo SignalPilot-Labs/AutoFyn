@@ -14,7 +14,7 @@
  * model list.
  */
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { fetchModels } from "@/lib/api";
 import type { ModelInfo } from "@/lib/api";
@@ -25,38 +25,43 @@ interface ModelsContextValue {
   models: ModelInfo[];
   /** Default model id from the backend, or "" until loaded. */
   defaultModel: string;
+  /** model id -> providers the user has keys for that can serve it. */
+  providersByModel: Record<string, string[]>;
   loading: boolean;
+  /** Re-fetch models + providersByModel (a token-pool snapshot) from the backend. */
+  refetch: () => void;
 }
 
 const ModelsContext = createContext<ModelsContextValue>({
   models: [],
   defaultModel: "",
+  providersByModel: {},
   loading: true,
+  refetch: () => {},
 });
 
 export function ModelsProvider({ children }: { children: ReactNode }): React.ReactElement {
   const [models, setModels] = useState<ModelInfo[]>([]);
   const [defaultModel, setDefaultModel] = useState<string>("");
+  const [providersByModel, setProvidersByModel] = useState<Record<string, string[]>>({});
   const [loading, setLoading] = useState<boolean>(true);
 
-  useEffect(() => {
-    let cancelled = false;
-    fetchModels()
+  const refetch = useCallback((): void => {
+    void fetchModels()
       .then((res) => {
-        if (cancelled) return;
         setModels(res.models);
         setDefaultModel(res.default);
+        setProvidersByModel(res.providers_by_model);
       })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
+      .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
   return (
-    <ModelsContext.Provider value={{ models, defaultModel, loading }}>
+    <ModelsContext.Provider value={{ models, defaultModel, providersByModel, loading, refetch }}>
       {children}
     </ModelsContext.Provider>
   );

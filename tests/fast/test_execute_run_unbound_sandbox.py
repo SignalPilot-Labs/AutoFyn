@@ -12,6 +12,7 @@ import pytest
 os.environ.setdefault("AGENT_INTERNAL_SECRET", "test-secret")
 os.environ.setdefault("SANDBOX_INTERNAL_SECRET", "test-sandbox-secret")
 
+from common.constants import PROVIDER_ANTHROPIC
 from server import AgentServer
 from utils.models import ActiveRun
 from utils.models_http import StartRequest
@@ -23,6 +24,7 @@ def _make_active_run(run_id: str) -> ActiveRun:
 
 def _make_body() -> StartRequest:
     return StartRequest(
+        provider=PROVIDER_ANTHROPIC,
         max_budget_usd=0,
         github_repo="owner/repo",
         prompt="fix the bug",

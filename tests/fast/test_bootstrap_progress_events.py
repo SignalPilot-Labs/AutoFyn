@@ -18,6 +18,7 @@ os.environ.setdefault("SANDBOX_INTERNAL_SECRET", "test")
 with patch("docker.from_env", return_value=MagicMock()):
     from server import AgentServer, app
 
+from common.constants import PROVIDER_ANTHROPIC
 from utils.constants import ENV_KEY_GIT_TOKEN, INTERNAL_SECRET_HEADER
 from utils.models import ActiveRun
 from utils.models_http import StartRequest
@@ -35,6 +36,7 @@ def _make_server() -> AgentServer:
 def _make_body(sentinel_token: str) -> StartRequest:
     """Build a minimal StartRequest for testing."""
     return StartRequest(
+        provider=PROVIDER_ANTHROPIC,
         github_repo="owner/repo",
         prompt="fix the bug",
         max_budget_usd=0,
@@ -68,6 +70,7 @@ class TestRunStartingEvent:
                     json={
                         "github_repo": "owner/repo",
                         "prompt": "fix it",
+                        "provider": PROVIDER_ANTHROPIC,
                         "max_budget_usd": 0,
                         "duration_minutes": 30,
                         "git_token": "ghp_test",
@@ -110,6 +113,7 @@ class TestRunStartingEvent:
                     json={
                         "github_repo": "owner/repo",
                         "prompt": "fix it",
+                        "provider": PROVIDER_ANTHROPIC,
                         "max_budget_usd": 0,
                         "duration_minutes": 30,
                         "git_token": "ghp_test",
@@ -225,8 +229,8 @@ class TestRepoClonedEvent:
                     base_branch="main",
                     github_repo="owner/repo",
                     model="claude-opus-4-8",
+                    provider=PROVIDER_ANTHROPIC,
                     effort="high",
-
                     mcp_servers=None,
                 )
 

@@ -6,7 +6,8 @@ describe the shape of HTTP request bodies and response payloads.
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from db.constants import DEFAULT_BASE_BRANCH, DEFAULT_EFFORT, DEFAULT_MODEL, STARTER_PRESET_KEYS, VALID_EFFORTS, VALID_MODELS, validate_github_repo, validate_prompt_length
+from common.constants import DEFAULT_MODEL, VALID_MODELS, providers_for_model
+from db.constants import DEFAULT_BASE_BRANCH, DEFAULT_EFFORT, STARTER_PRESET_KEYS, VALID_EFFORTS, validate_github_repo, validate_prompt_length
 from utils.constants import INJECT_PAYLOAD_MAX_LEN
 
 
@@ -19,6 +20,7 @@ class StartRequest(BaseModel):
     duration_minutes: float = 0
     base_branch: str = DEFAULT_BASE_BRANCH
     model: str = DEFAULT_MODEL
+    provider: str
     effort: str = DEFAULT_EFFORT
     claude_token: str | None = Field(default=None, repr=False)
     git_token: str | None = Field(default=None, repr=False)
@@ -90,6 +92,13 @@ class StartRequest(BaseModel):
         """Ensure prompt and preset are mutually exclusive."""
         if self.prompt and self.preset:
             raise ValueError("Cannot set both prompt and preset")
+        return self
+
+    @model_validator(mode="after")
+    def provider_serves_model(self) -> "StartRequest":
+        """The picked provider must actually serve the picked model."""
+        if self.provider not in providers_for_model(self.model):
+            raise ValueError(f"provider '{self.provider}' does not serve model '{self.model}'")
         return self
 
 

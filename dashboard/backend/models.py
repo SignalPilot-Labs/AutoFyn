@@ -1,9 +1,10 @@
 """Pydantic request models and path validators for the dashboard API."""
 
 from fastapi import Path
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
-from db.constants import DEFAULT_EFFORT, DEFAULT_MODEL, DEFAULT_PROVIDER, ENV_VAR_KEY_RE, ENV_VAR_MAX_KEY_LEN, ENV_VAR_MAX_VALUE_LEN, GITHUB_REPO_MAX_LEN, GITHUB_REPO_PATTERN, MAX_ENV_VARS, MAX_HOST_MOUNTS, MAX_MCP_SERVERS, MAX_SUBAGENTS, TOKEN_LABEL_MAX_LEN, TOKEN_VALUE_MAX_LEN, VALID_EFFORTS_PATTERN, VALID_MODELS_PATTERN, VALID_PRESET_PATTERN, VALID_PROVIDERS_PATTERN, validate_prompt_length
+from common.constants import DEFAULT_MODEL, DEFAULT_PROVIDER, VALID_MODELS_PATTERN, VALID_PROVIDERS_PATTERN, providers_for_model
+from db.constants import DEFAULT_EFFORT, ENV_VAR_KEY_RE, ENV_VAR_MAX_KEY_LEN, ENV_VAR_MAX_VALUE_LEN, GITHUB_REPO_MAX_LEN, GITHUB_REPO_PATTERN, MAX_ENV_VARS, MAX_HOST_MOUNTS, MAX_MCP_SERVERS, MAX_SUBAGENTS, TOKEN_LABEL_MAX_LEN, TOKEN_VALUE_MAX_LEN, VALID_EFFORTS_PATTERN, VALID_PRESET_PATTERN, validate_prompt_length
 
 
 RunId = Path(min_length=36, max_length=36, pattern=r"^[0-9a-f\-]{36}$")
@@ -31,6 +32,7 @@ class StartRunRequest(BaseModel):
     duration_minutes: float = Field(default=0, ge=0, description="Session duration in minutes. 0 = unlimited.")
     base_branch: str = Field(default="main", min_length=1, max_length=256, description="Branch to base the work on.")
     model: str = Field(default=DEFAULT_MODEL, pattern=VALID_MODELS_PATTERN, description="Claude model to use.")
+    provider: str = Field(pattern=VALID_PROVIDERS_PATTERN, description="Provider serving the model for this run.")
     effort: str = Field(default=DEFAULT_EFFORT, pattern=VALID_EFFORTS_PATTERN, description="Thinking effort level.")
     repo: str | None = Field(None, description="Active repo slug for per-repo env vars lookup.")
     sandbox_id: str | None = Field(default=None, description="UUID of remote sandbox config. None for local Docker.")
@@ -41,6 +43,13 @@ class StartRunRequest(BaseModel):
     def prompt_max_length(cls, v: str | None) -> str | None:
         """Validate prompt length."""
         return validate_prompt_length(v)
+
+    @model_validator(mode="after")
+    def provider_serves_model(self) -> "StartRunRequest":
+        """Reject a provider that cannot serve the selected model."""
+        if self.provider not in providers_for_model(self.model):
+            raise ValueError(f"provider '{self.provider}' does not serve model '{self.model}'")
+        return self
 
 
 class UpdateSettingsRequest(BaseModel):

@@ -12,24 +12,27 @@ The orchestrator calls these subagents by name via the SDK's Agent tool.
 
 from config.constants import SandboxResources, SubagentSpec
 from prompts.loader import load_markdown, render_environment, render_subagent_budget
-from db.constants import SUPPORTED_SONNET
-from utils.constants import TIER_OPUS
+from common.constants import (
+    TIER_OPUS,
+    TIER_SONNET,
+    api_model_for,
+    tier_for_model,
+    tier_model_for,
+)
 
 
-def _resolve_subagent_model(tier: str, user_model: str) -> str:
-    """Resolve a subagent tier to a concrete model ID based on user selection.
+def _resolve_subagent_model(tier: str, user_model: str, provider: str) -> str:
+    """Resolve a subagent tier to the provider's API slug for its model.
 
-    - User picks an opus model → opus-tier subagents get that model,
-      sonnet-tier subagents get SUPPORTED_SONNET.
-    - User picks a sonnet model → ALL subagents (including opus-tier) get
-      that sonnet model. Sonnet runs are cost-conscious — no opus anywhere.
+    Tiers are roles: opus = flagship, sonnet = workhorse. The run's provider is
+    user-picked. An opus-class run gives opus-tier subagents the user's model and
+    sonnet-tier subagents the workhorse; a sonnet-class run gives every tier the
+    user's model (cost-conscious). The result is the provider's API slug, since
+    the subagent ``model`` field feeds the SDK directly.
     """
-    is_sonnet_run = "sonnet" in user_model
-    if is_sonnet_run:
-        return user_model
-    if tier == TIER_OPUS:
-        return user_model
-    return SUPPORTED_SONNET
+    if tier_for_model(user_model) == TIER_SONNET or tier == TIER_OPUS:
+        return api_model_for(user_model, provider)
+    return api_model_for(tier_model_for(provider, TIER_SONNET), provider)
 
 
 def enabled_subagents(
@@ -56,6 +59,7 @@ def build_agent_defs(
     host_mounts: list[dict[str, str]] | None,
     user_env_keys: list[str],
     user_model: str,
+    provider: str,
     tool_call_timeout_sec: int,
     base_branch: str,
     disabled_subagents: list[str] | None,
@@ -117,7 +121,7 @@ def build_agent_defs(
         result[spec.name] = {
             "description": spec.description,
             "prompt": "\n\n".join(prompt_parts),
-            "model": _resolve_subagent_model(spec.model, user_model),
+            "model": _resolve_subagent_model(spec.model, user_model, provider),
             "tools": list(spec.tools),
         }
     return result

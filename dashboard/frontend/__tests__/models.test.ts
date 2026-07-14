@@ -2,7 +2,7 @@
  * Tests for the model helpers in lib/models.tsx.
  *
  * The model list + metadata now come from /api/models at runtime (single
- * source of truth = db/constants.py). The frontend hardcodes no model list,
+ * source of truth = common/constants.py). The frontend hardcodes no model list,
  * so these tests cover only the pure helpers: looking a model up by id and
  * resolving the initial selection from a stored choice + backend default.
  *

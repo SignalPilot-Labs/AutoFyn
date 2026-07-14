@@ -5,7 +5,7 @@
 import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import type { PoolToken } from "@/lib/types";
-import { TOKEN_LABEL_MAX_LEN, TOKEN_NAME_PLACEHOLDER, CREDENTIAL_PROVIDERS } from "@/lib/constants";
+import { TOKEN_LABEL_MAX_LEN, TOKEN_NAME_PLACEHOLDER, TOKEN_PLACEHOLDERS, CREDENTIAL_PROVIDERS } from "@/lib/constants";
 import { ListRow } from "@/components/ui/ListRow";
 import { IconLock, IconCheck, IconPlus } from "@/components/ui/icons";
 import { ProviderSelector } from "@/components/settings/ProviderSelector";
@@ -16,6 +16,9 @@ const FIELD_BOX =
   "bg-black/30 border border-border rounded px-3 py-2 text-content";
 const FIELD_FOCUS =
   "placeholder:text-text-secondary focus-visible:outline-none focus-visible:border-[#00ff88]/30 focus-visible:ring-1 focus-visible:ring-[#00ff88]/40 transition-all";
+// Inline command/URL chip in the help text — uses the `info` design token
+// (globals.css --color-info), shared by both provider branches.
+const CODE_CHIP = "text-info bg-info/[0.06] px-1 py-0.5 rounded";
 
 interface TokenPoolSectionProps {
   tokens: PoolToken[];
@@ -144,7 +147,7 @@ export function TokenPoolSection({
           value={newToken}
           onChange={(e) => { onNewTokenChange(e.target.value); }}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); onAddToken(); } }}
-          placeholder="sk-ant-oat01-..."
+          placeholder={TOKEN_PLACEHOLDERS[newProvider] ?? "Token"}
           className={`${FIELD_BOX} ${FIELD_FOCUS} flex-1 text-accent-hover font-mono`}
           autoComplete="off"
           spellCheck={false}
@@ -164,7 +167,15 @@ export function TokenPoolSection({
       )}
 
       <p className="mt-2 text-content text-text-dim">
-        Run <code className="text-[#88ccff] bg-[#88ccff]/[0.06] px-1 py-0.5 rounded">claude setup-token</code> to generate tokens. Multiple keys rotate on rate limit.
+        {newProvider === "openrouter" ? (
+          <>
+            Generate keys at <code className={CODE_CHIP}>openrouter.ai/keys</code> and link it.
+          </>
+        ) : (
+          <>
+            Run <code className={CODE_CHIP}>claude setup-token</code> to generate tokens. Multiple keys rotate on rate limit.
+          </>
+        )}
       </p>
     </div>
   );

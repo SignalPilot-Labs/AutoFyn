@@ -9,7 +9,7 @@ an explicit provider keep it.
 from __future__ import annotations
 
 from common.models import Token, parse_token_pool
-from db.constants import DEFAULT_PROVIDER
+from common.constants import DEFAULT_PROVIDER
 
 
 class TestParseTokenPool:

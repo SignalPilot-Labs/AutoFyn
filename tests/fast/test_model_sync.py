@@ -1,7 +1,7 @@
 """Verify the /api/models payload contract the frontend depends on.
 
 The dashboard fetches its model list from /api/models at runtime, so
-db.constants.SUPPORTED_MODELS is the single source of truth — there is no
+common.constants.SUPPORTED_MODELS is the single source of truth — there is no
 TypeScript model list to keep in sync. This test guards the payload shape the
 frontend's ModelInfo interface (dashboard/frontend/lib/api.ts) consumes:
 every model carries the same fields, the ids match VALID_MODELS, and the
@@ -11,10 +11,19 @@ default is a real model.
 import re
 from pathlib import Path
 
-from db.constants import SUPPORTED_MODELS, VALID_MODELS, DEFAULT_MODEL
+from common.constants import MODEL_PROVIDER_SLUGS, SUPPORTED_MODELS, VALID_MODELS, DEFAULT_MODEL
 
-# Fields the frontend ModelInfo interface reads off each model.
-_REQUIRED_MODEL_FIELDS = {"id", "label", "short", "description", "context", "tier"}
+# Fields the frontend ModelInfo interface reads off each model. A model is no
+# longer tied to one provider/api_model here — provider routing lives in
+# MODEL_PROVIDER_SLUGS and is offered per run.
+_REQUIRED_MODEL_FIELDS = {
+    "id",
+    "label",
+    "short",
+    "description",
+    "context",
+    "tier",
+}
 
 TS_API_PATH = Path("dashboard/frontend/lib/api.ts")
 
@@ -38,6 +47,13 @@ class TestModelPayloadContract:
     def test_default_is_a_known_model(self) -> None:
         """DEFAULT_MODEL must be one of the served models."""
         assert DEFAULT_MODEL in {m["id"] for m in SUPPORTED_MODELS}
+
+    def test_every_model_has_provider_slugs(self) -> None:
+        """Every served model must have a MODEL_PROVIDER_SLUGS routing entry,
+        and every routing entry must correspond to a served model — so no model
+        ships without provider routing and no orphan routing lingers."""
+        payload_ids = {m["id"] for m in SUPPORTED_MODELS}
+        assert payload_ids == set(MODEL_PROVIDER_SLUGS)
 
     def test_ts_modelinfo_fields_match_payload(self) -> None:
         """The TypeScript ModelInfo interface must declare exactly the fields

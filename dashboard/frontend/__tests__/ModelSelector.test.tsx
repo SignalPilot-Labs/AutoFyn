@@ -20,7 +20,9 @@ vi.mock("@/lib/models", async (importOriginal) => {
         { id: "claude-opus-4-5", label: "Claude Opus 4.5", short: "Opus 4.5", description: "d", context: "200K context", tier: "legacy" },
       ],
       defaultModel: "claude-opus-4-8",
+      providersByModel: {},
       loading: false,
+      refetch: () => {},
     }),
   };
 });
@@ -65,11 +67,5 @@ describe("ModelSelector", () => {
       .getAllByRole("option")
       .find((o) => o.getAttribute("aria-selected") === "true");
     expect(selectedOption).toHaveTextContent("Claude Opus 4.8");
-  });
-
-  it("renders a provider header above the models", () => {
-    render(<ModelSelector value="claude-fable-5" onChange={() => {}} />);
-    fireEvent.click(screen.getByLabelText("Model"));
-    expect(screen.getByText("Anthropic")).toBeInTheDocument();
   });
 });

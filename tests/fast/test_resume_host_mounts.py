@@ -16,6 +16,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from common.constants import PROVIDER_ANTHROPIC
 from endpoints.control import _restart_terminal_run
 from utils.models_http import ResumeRequest, StartRequest
 
@@ -77,6 +78,7 @@ class TestRestartTerminalRunHostMounts:
             "custom_prompt": "original prompt",
             "github_repo": "org/repo",
             "model_name": "claude-opus-4-8",
+            "provider_name": PROVIDER_ANTHROPIC,
             "base_branch": "main",
             "duration_minutes": 30.0,
         }

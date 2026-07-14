@@ -27,7 +27,7 @@ from backend.utils import (
     remove_token_from_pool,
 )
 from common.models import Token
-from db.constants import PROVIDER_ANTHROPIC
+from common.constants import PROVIDER_ANTHROPIC
 
 
 def _make_session_with_pool(tokens: list[str], encrypted_blob: str = "enc-blob") -> MagicMock:
