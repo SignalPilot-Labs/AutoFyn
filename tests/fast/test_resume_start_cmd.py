@@ -8,6 +8,7 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from common.constants import PROVIDER_ANTHROPIC
+from db.constants import DEFAULT_EFFORT
 from endpoints.control import _restart_terminal_run
 from tests.fast.helpers import make_server
 from utils.models_http import ResumeRequest
@@ -31,6 +32,7 @@ def _mock_run_info() -> dict:
         "cache_read_input_tokens": 0,
         "model_name": "claude-sonnet-4-6",
         "provider_name": PROVIDER_ANTHROPIC,
+        "effort": DEFAULT_EFFORT,
     }
 
 

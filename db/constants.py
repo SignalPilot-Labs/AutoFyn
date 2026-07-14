@@ -92,8 +92,12 @@ TOKEN_VALUE_MAX_LEN: int = 4096
 TOKEN_LABEL_MAX_LEN: int = 16
 
 # ── Effort ──
-VALID_EFFORTS: tuple[str, ...] = ("low", "medium", "high", "max")
-DEFAULT_EFFORT: str = "high"
+EFFORT_LOW: str = "low"
+EFFORT_MEDIUM: str = "medium"
+EFFORT_HIGH: str = "high"
+EFFORT_MAX: str = "max"
+VALID_EFFORTS: tuple[str, ...] = (EFFORT_LOW, EFFORT_MEDIUM, EFFORT_HIGH, EFFORT_MAX)
+DEFAULT_EFFORT: str = EFFORT_HIGH
 DEFAULT_BASE_BRANCH: str = "main"
 VALID_EFFORTS_PATTERN: str = f"^({'|'.join(VALID_EFFORTS)})$"
 

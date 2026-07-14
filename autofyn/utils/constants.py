@@ -64,9 +64,6 @@ SESSION_PERMISSION_MODE = "bypassPermissions"
 # agent loop waiting for a human response that never arrives in a headless
 # run — banned for orchestrator and subagents alike.
 DISALLOWED_SESSION_TOOLS: list[str] = ["AskUserQuestion"]
-# Effort level strings used in session options.
-EFFORT_MAX: str = "max"
-EFFORT_HIGH: str = "high"
 # Extra directories to make available inside the sandbox session.
 SESSION_ADD_DIRS: list[str] = ["/opt/autofyn/.claude/skills"]
 # Setting sources passed to the sandbox session start request.
@@ -161,6 +158,9 @@ INJECT_PAYLOAD_MAX_LEN = 50000
 
 # ── Usage Tracking ──
 USAGE_EMIT_INTERVAL = 10  # Emit usage audit event every N assistant messages
+STREAM_EVENT_MESSAGE_DELTA = "message_delta"  # Stream event carrying settled usage
+USAGE_COST_KEY = "cost"  # Gateway-reported cost, present only on OpenRouter
+COST_UNKNOWN = "unknown"  # Logged in place of a figure when no usage settled
 
 # ── SSE Event Processing ──
 SSE_TRIM_INTERVAL = 100  # Trim processed events from sandbox memory every N events

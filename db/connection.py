@@ -84,6 +84,8 @@ async def run_migrations() -> None:
         await _migrate_context_tokens_column(conn)
         await _migrate_model_name_column(conn)
         await _migrate_provider_name_column(conn)
+        await _migrate_effort_column(conn)
+        await _migrate_total_cost_nullable(conn)
         await _migrate_branch_name_nullable(conn)
         await _migrate_idempotency_key_columns(conn)
         await _migrate_sandbox_snapshot_columns(conn)
@@ -163,6 +165,39 @@ async def _migrate_provider_name_column(conn) -> None:
             "ALTER TABLE runs ADD COLUMN provider_name VARCHAR"
         ))
         log.info("Added column runs.provider_name")
+
+
+async def _migrate_effort_column(conn) -> None:
+    """Add effort column to runs table if it doesn't exist."""
+    result = await conn.execute(text(
+        "SELECT 1 FROM information_schema.columns "
+        "WHERE table_name = 'runs' AND column_name = 'effort'"
+    ))
+    if result.first() is None:
+        await conn.execute(text("ALTER TABLE runs ADD COLUMN effort VARCHAR"))
+        log.info("Added column runs.effort")
+
+
+async def _migrate_total_cost_nullable(conn) -> None:
+    """Make total_cost_usd nullable so unknown cost is not stored as 0.
+
+    The column was NOT NULL DEFAULT 0, so a run whose usage never arrived was
+    indistinguishable from a genuinely free one and rendered a confident
+    $0.00. Existing rows keep their values — only new runs start as NULL.
+    """
+    result = await conn.execute(text(
+        "SELECT is_nullable FROM information_schema.columns "
+        "WHERE table_name = 'runs' AND column_name = 'total_cost_usd'"
+    ))
+    row = result.first()
+    if row and row[0] == "NO":
+        await conn.execute(text(
+            "ALTER TABLE runs ALTER COLUMN total_cost_usd DROP NOT NULL"
+        ))
+        await conn.execute(text(
+            "ALTER TABLE runs ALTER COLUMN total_cost_usd DROP DEFAULT"
+        ))
+        log.info("Migrated runs.total_cost_usd to nullable")
 
 
 async def _migrate_branch_name_nullable(conn) -> None:

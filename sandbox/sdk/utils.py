@@ -24,49 +24,106 @@ from claude_agent_sdk.types import (
 from constants import (
     INPUT_CONTENT_MAX_LEN,
     INPUT_SUMMARY_MAX_LEN,
+    SUBAGENT_RUNS_IN_BACKGROUND,
+    SUMMARY_CONTENT_KEYS,
+    SUMMARY_ELLIPSIS,
+    SUMMARY_MAX_DEPTH,
+    SUMMARY_MAX_ITEMS,
+    SUMMARY_TRUNCATED_KEY,
 )
+from models import TruncationReport
 
 log = logging.getLogger("sandbox.session_utils")
 
 
 def parse_agents(raw: dict[str, dict]) -> dict[str, AgentDefinition]:
-    """Convert plain dicts from the agent into AgentDefinition dataclasses."""
+    """Convert plain dicts from the agent into AgentDefinition dataclasses.
+
+    Pins every subagent to synchronous dispatch: the orchestrator must have the
+    subagent's report in hand before it can end its turn.
+    """
     return {
         name: AgentDefinition(
             description=defn["description"],
             prompt=defn["prompt"],
             model=defn.get("model"),
             tools=defn.get("tools"),
+            background=SUBAGENT_RUNS_IN_BACKGROUND,
         )
         for name, defn in raw.items()
     }
 
 
+def _clamp(val: Any, key: str, depth: int, report: TruncationReport) -> Any:
+    """Clamp strings in val to their per-key limit, recursing into containers.
+
+    Sets report.truncated whenever a value is dropped or shortened, so callers
+    know a payload was clamped without re-serializing the original to compare.
+    """
+    if isinstance(val, str):
+        limit = (
+            INPUT_CONTENT_MAX_LEN if key in SUMMARY_CONTENT_KEYS else INPUT_SUMMARY_MAX_LEN
+        )
+        if len(val) <= limit:
+            return val
+        report.truncated = True
+        return val[:limit] + SUMMARY_ELLIPSIS
+    if depth >= SUMMARY_MAX_DEPTH:
+        if isinstance(val, (dict, list)) and val:
+            report.truncated = True
+            return SUMMARY_ELLIPSIS
+        return val
+    if isinstance(val, dict):
+        if len(val) > SUMMARY_MAX_ITEMS:
+            report.truncated = True
+        return {
+            k: _clamp(v, k, depth + 1, report)
+            for k, v in list(val.items())[:SUMMARY_MAX_ITEMS]
+        }
+    if isinstance(val, list):
+        if len(val) > SUMMARY_MAX_ITEMS:
+            report.truncated = True
+        return [_clamp(v, key, depth + 1, report) for v in val[:SUMMARY_MAX_ITEMS]]
+    return val
+
+
 def summarize(data: Any) -> dict:
-    """Truncate large values in tool input/output for event log storage."""
+    """Truncate large values in tool input/output for event log storage.
+
+    The returned SUMMARY_TRUNCATED_KEY is ours alone: a payload carrying that
+    key of its own is dropped, so the flag always means "summarize clamped
+    this" rather than flipping type with whatever the tool happened to send.
+    """
+    report = TruncationReport()
     if not isinstance(data, dict):
         raw = json.dumps(data, default=str)
         if len(raw) > INPUT_SUMMARY_MAX_LEN:
-            raw = raw[:INPUT_SUMMARY_MAX_LEN] + "..."
+            raw = raw[:INPUT_SUMMARY_MAX_LEN] + SUMMARY_ELLIPSIS
         return {"_raw": raw}
-    CONTENT_KEYS = {"content", "prompt"}
-    result: dict[str, Any] = {}
-    for key, val in data.items():
-        if isinstance(val, str):
-            limit = INPUT_CONTENT_MAX_LEN if key in CONTENT_KEYS else INPUT_SUMMARY_MAX_LEN
-            if len(val) > limit:
-                result[key] = val[:limit] + "..."
-            else:
-                result[key] = val
-        else:
-            result[key] = val
-    return result
+    payload = {k: v for k, v in data.items() if k != SUMMARY_TRUNCATED_KEY}
+    if len(payload) != len(data) or len(payload) > SUMMARY_MAX_ITEMS:
+        report.truncated = True
+    summarized = {
+        key: _clamp(val, key, 1, report)
+        for key, val in list(payload.items())[:SUMMARY_MAX_ITEMS]
+    }
+    if report.truncated:
+        summarized[SUMMARY_TRUNCATED_KEY] = True
+    return summarized
 
 
 def serialize_message(message: object) -> dict | None:
     """Convert SDK message to a JSON-serializable event dict."""
     if isinstance(message, StreamEvent):
-        return {"event": "stream_event", "data": {"event": message.event or {}}}
+        # Always None in practice — subagent partials don't surface — but pass
+        # the SDK's field through rather than assert what it can never carry.
+        return {
+            "event": "stream_event",
+            "data": {
+                "event": message.event or {},
+                "parent_tool_use_id": message.parent_tool_use_id,
+            },
+        }
     if isinstance(message, AssistantMessage):
         blocks = []
         for block in message.content:

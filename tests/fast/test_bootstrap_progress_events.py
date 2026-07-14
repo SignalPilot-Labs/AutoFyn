@@ -216,6 +216,7 @@ class TestRepoClonedEvent:
             patch("lifecycle.bootstrap.log_audit", side_effect=capture_log_audit),
             patch("lifecycle.bootstrap.db.get_run_branch_name", AsyncMock(return_value=None)),
             patch("lifecycle.bootstrap.db.update_run_branch", AsyncMock()),
+            patch("lifecycle.bootstrap.db.update_run_effort", AsyncMock()),
             patch("lifecycle.bootstrap.load_run_agent_config", AsyncMock(return_value=None)),
         ):
             from lifecycle.bootstrap import bootstrap_run

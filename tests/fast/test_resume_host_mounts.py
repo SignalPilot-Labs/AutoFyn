@@ -17,6 +17,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from common.constants import PROVIDER_ANTHROPIC
+from db.constants import DEFAULT_EFFORT
 from endpoints.control import _restart_terminal_run
 from utils.models_http import ResumeRequest, StartRequest
 
@@ -81,6 +82,7 @@ class TestRestartTerminalRunHostMounts:
             "provider_name": PROVIDER_ANTHROPIC,
             "base_branch": "main",
             "duration_minutes": 30.0,
+            "effort": DEFAULT_EFFORT,
         }
 
         server = MagicMock()

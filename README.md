@@ -2,9 +2,9 @@
 
 <h1>AutoFyn</h1>
 
-**Run Claude in self-improving loops to optimize measurable goals.**
+**Long-horizon agent that improves through expert iteration in context space.**
 
-built the [#1 Spider 2.0 DBT agent](https://github.com/SignalPilot-Labs/SignalPilot) · found 197 vulnerabilities across popular OSS · improved Caveman compression from 44% to 54%
+found 197 vulnerabilities across popular software · [improved the upper bound](https://github.com/Neehan/zhang-zagier-82a) for an open math problem · built the [#1 Spider 2.0 DBT agent](https://github.com/SignalPilot-Labs/SignalPilot)
 
 <img src="assets/ui.png" width="800" alt="AutoFyn Monitor" />
 
@@ -18,9 +18,13 @@ built the [#1 Spider 2.0 DBT agent](https://github.com/SignalPilot-Labs/SignalPi
 
 ---
 
-Give it a repo, a goal, and a time limit. Walk away. Come back to a PR.
+AutoFyn works on goals that have verifiable rewards. For instance: find a working exploit against a live system. The agent proposes one, and it either fires or it doesn't. The final outcome is objective and not opinionated.
 
-Each round runs Claude in a sandboxed Docker container with fresh context. A persistent run state tracks the goal, eval history, and learned rules across rounds — the agent measures progress, learns from failures, and improves instead of degrading.
+As a result, the agent frequently receives verified feedback instead of self-grading, which is gameable. And every round starts from an empty context, seeded only with what was written to disk, so nothing accumulates and nothing rots.
+
+Either alone falls short. Clear the context but skip the verifier and each round reloads what the last one merely believed, compounding its own mistakes. Verify but let context grow and the agent rots before it finishes. Together, the agent starts clean every round and starts from facts, so it can work for hours instead of drifting. We found the pattern holds across domains: vulnerability finding, math research, and topping data-science benchmarks.
+
+Give AutoFyn a repo, a goal, and a time limit. Walk away. Come back to a PR.
 
 ## Results
 
@@ -44,6 +48,10 @@ Each round runs Claude in a sandboxed Docker container with fresh context. A per
 
 - **[SignalPilot](https://github.com/SignalPilot-Labs/SignalPilot)** — built a data analysis agent from scratch, #1 on the [Spider 2.0 dbt benchmark](https://spider2-sql.github.io/).
 - **[Caveman](https://github.com/tempcollab/caveman)** — optimized the prompt compression skill by +10% without quality loss ([write-up](https://github.com/tempcollab/caveman/blob/main/docs/improving-caveman-with-autofyn.md)).
+
+### Math
+
+- **[Zhang–Zagier height](https://github.com/Neehan/zhang-zagier-82a)** — improved the upper bound on the essential minimum (Tao's constant 82a) from Doche's 0.25443677 to a certified 0.2538893183, via a machine-searched ladder of adjoined blocks. Since superseded by [Gri26]'s 0.2536331090.
 
 ## Quick start
 
@@ -86,7 +94,7 @@ LLM agents that run in a loop hit three failure modes:
 - **No learning** — mistakes repeat because nothing carries between iterations.
 - **No compass** — the agent can't tell whether it's making progress or going in circles.
 
-AutoFyn's round loop addresses each one by simulating an [**expert iteration**](https://arxiv.org/abs/1705.08439) in LLM context space, not the weight space. Each round the LLM proposes a plan and a build, and an *expert* grades the raw proposal; the verified outcome and the learnings are distilled into context with a persistent `run_state.md`, and subagent specific memory files. Unlike AlphaZero, the expert isn't a search: it's a metric that reviewer subagents run, such as a test suite or a benchmarking script. And it's **objective** — a test suite passes or it doesn't, a live exploit fires or it doesn't, the benchmark score moves or it doesn't — so the LLM can't talk itself into false progress or spin in a loop. The key components of the system are:
+AutoFyn's round loop addresses each one by simulating an [**expert iteration**](https://arxiv.org/abs/1705.08439) in LLM context space, not the weight space. Every round starts from an empty context window, seeded only with what was explicitly written to disk: `run_state.md` and the subagent memory files. From there the LLM proposes a plan and a build, an *expert* grades the raw proposal, and the verified outcome and the learnings are distilled back to those files for the next round to read. Unlike AlphaZero, the expert isn't a search — it's a metric that reviewer subagents run, such as a test suite or a benchmarking script. The key components of the system are:
 
 - **State, not context.** Each round gets a clean context window. Cross-round knowledge lives in `/tmp/memory/` — `run_state.md` (goal, eval history, rules) and per-subagent rule files. Context never degrades because it never accumulates.
 - **Objective reward signal.** Every round ends with a real eval: run the benchmark, execute the exploit, check the test suite. The signal is sparse and binary — a bound improves or it doesn't, an exploit fires or it doesn't — but it's grounded, not a model's opinion, and that's what the loop optimizes against. The result is appended to eval history so the orchestrator can track progress across rounds.

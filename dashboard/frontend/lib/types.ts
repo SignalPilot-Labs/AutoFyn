@@ -78,7 +78,8 @@ export interface UsageEvent {
   total_output_tokens: number;
   cache_creation_input_tokens: number;
   cache_read_input_tokens: number;
-  total_cost_usd: number;
+  // null until usage settles — the agent reports unknown rather than $0.00.
+  total_cost_usd: number | null;
   ts: string;
 }
 

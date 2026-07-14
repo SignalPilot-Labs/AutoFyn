@@ -20,6 +20,8 @@ map into those roles (Sol plays the opus role, Terra the sonnet role) so a
 developer's tier intent is preserved across providers.
 """
 
+from db.constants import EFFORT_HIGH, EFFORT_MAX
+
 # ── Providers ──
 PROVIDER_ANTHROPIC: str = "anthropic"
 PROVIDER_OPENROUTER: str = "openrouter"
@@ -142,6 +144,13 @@ MODEL_PROVIDER_SLUGS: dict[str, dict[str, str]] = {
 MODELS_SUPPORTING_MAX_EFFORT: frozenset[str] = frozenset(
     {SUPPORTED_FABLE, SUPPORTED_OPUS, SUPPORTED_SONNET, SUPPORTED_GPT_SOL}
 )
+
+
+def resolve_effort(model: str, effort: str) -> str:
+    """Return the effort the model will actually run at, downgrading max if unsupported."""
+    if effort == EFFORT_MAX and model not in MODELS_SUPPORTING_MAX_EFFORT:
+        return EFFORT_HIGH
+    return effort
 
 # Per-provider flagship (opus role) and workhorse (sonnet role) model IDs.
 # The subagent tier resolver maps an opus-tier subagent to the flagship and a
