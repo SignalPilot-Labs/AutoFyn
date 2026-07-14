@@ -21,17 +21,31 @@ import pytest
 
 
 def _import_streaming_module() -> object:
-    """Import backend.endpoints.streaming with auth + db stubbed out."""
+    """Import backend.endpoints.streaming with auth + db stubbed out.
+
+    Stubs are removed after import — a leaked db.models mock breaks any later
+    test that reads real ORM metadata.
+    """
     auth_mock = MagicMock()
     auth_mock._api_key = "test"
     auth_mock.verify_sse_token = MagicMock()
-    sys.modules["backend.auth"] = auth_mock
-    sys.modules["backend.db"] = MagicMock()
-    sys.modules["db.connection"] = MagicMock()
-    sys.modules["db.models"] = MagicMock()
-
-    import backend.endpoints.streaming as streaming_mod
-    return streaming_mod
+    stubs = {
+        "backend.auth": auth_mock,
+        "backend.db": MagicMock(),
+        "db.connection": MagicMock(),
+        "db.models": MagicMock(),
+    }
+    original = {name: sys.modules.get(name) for name in stubs}
+    sys.modules.update(stubs)
+    try:
+        import backend.endpoints.streaming as streaming_mod
+        return streaming_mod
+    finally:
+        for name, module in original.items():
+            if module is None:
+                sys.modules.pop(name, None)
+            else:
+                sys.modules[name] = module
 
 
 _streaming = _import_streaming_module()

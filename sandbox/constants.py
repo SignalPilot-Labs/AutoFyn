@@ -66,10 +66,9 @@ SDK_MAX_BUFFER_BYTES: int = 4 * 1024 * 1024
 INPUT_SUMMARY_MAX_LEN: int = 1000
 INPUT_CONTENT_MAX_LEN: int = 3000
 SUMMARY_CONTENT_KEYS: frozenset[str] = frozenset({"content", "prompt"})
-# Levels of nesting walked before a container is replaced by an ellipsis.
-# summarize() seeds the recursion at the payload's own keys, so this counts
-# that first level: 3 means top-level keys plus two levels beneath them.
-SUMMARY_MAX_DEPTH: int = 3
+# Nesting levels walked before a container is emptied. A Write's
+# structuredPatch[].lines sits at exactly 4 — lowering this truncates diffs.
+SUMMARY_MAX_DEPTH: int = 4
 SUMMARY_MAX_ITEMS: int = 50
 SUMMARY_TRUNCATED_KEY: str = "_truncated"
 SUMMARY_ELLIPSIS: str = "..."
@@ -84,6 +83,14 @@ TASK_TOOL_NAME: str = "Agent"
 # orchestrator control before the subagent runs. It then ends its turn without
 # collecting, killing the subagent mid-flight. Every dispatch must block.
 SUBAGENT_RUNS_IN_BACKGROUND: bool = False
+
+# Drops run_in_background from the Agent/Bash schemas — the only switch the CLI
+# honors; AgentDefinition.background alone does not stop backgrounding.
+CLI_DISABLE_BACKGROUND_TASKS_ENV_VAR: str = "CLAUDE_CODE_DISABLE_BACKGROUND_TASKS"
+CLI_DISABLE_BACKGROUND_TASKS_VALUE: str = "1"
+SESSION_ENV: dict[str, str] = {
+    CLI_DISABLE_BACKGROUND_TASKS_ENV_VAR: CLI_DISABLE_BACKGROUND_TASKS_VALUE
+}
 
 # ── Filesystem API ──
 # Max file size the /file_system/read endpoint will return. Larger files
