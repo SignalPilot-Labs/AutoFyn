@@ -122,7 +122,7 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, defaultB
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const prevOpenRef = useRef(open);
 
-  const { models, defaultModel, providersByModel } = useModels();
+  const { models, defaultModel, providersByModel, refetch: refetchModels } = useModels();
 
   // Providers the user can actually run this model on (has keys for). Empty
   // when the user holds no key for any provider that serves the model.
@@ -182,6 +182,9 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, defaultB
     const wasOpen = prevOpenRef.current;
     prevOpenRef.current = open;
     if (!wasOpen && open) {
+      // providersByModel is a token-pool snapshot from the last fetch; refetch
+      // on open so a key added in Settings is reflected without a page reload.
+      refetchModels();
       setCustomPrompt("");
       setBudget(0);
       setDuration(0);
@@ -205,7 +208,7 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, defaultB
       // with remote mounts for the correct sandbox.
       if (activeRepo) void loadMountsForSandbox(null);
     }
-  }, [open, activeRepo, loadMountsForSandbox, defaultBranch]);
+  }, [open, activeRepo, loadMountsForSandbox, defaultBranch, refetchModels]);
 
   // The repo's default branch is fetched asynchronously and may arrive after
   // the modal has already opened. Follow it until the user picks a branch, so

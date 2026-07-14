@@ -31,6 +31,7 @@ vi.mock("@/lib/models", async (importOriginal) => {
       defaultModel: "claude-opus-4-8",
       providersByModel: { "claude-opus-4-8": ["anthropic"] },
       loading: false,
+      refetch: () => {},
     }),
   };
 });

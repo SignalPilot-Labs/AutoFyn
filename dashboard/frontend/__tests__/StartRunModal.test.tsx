@@ -29,6 +29,7 @@ vi.mock("@/lib/models", async (importOriginal) => {
         "claude-sonnet-4-6": ["anthropic"],
       },
       loading: false,
+      refetch: () => {},
     }),
   };
 });

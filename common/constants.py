@@ -11,11 +11,13 @@ Two-provider model (see docs/providers.md):
   - openrouter — gateway for non-Claude families (GPT-5.6). Routed through
                  OpenRouter's Anthropic-compatible endpoint.
 
-A model belongs to exactly one provider, so a run is single-provider. Tiers
-(opus/sonnet) are roles anchored on the native family: opus is the flagship,
-sonnet the workhorse. Non-Claude families map into those roles (Sol plays the
-opus role, Terra the sonnet role) so a developer's tier intent is preserved
-across providers.
+Model↔provider is a relation, not a fixed field: a model may be served by
+several providers (MODEL_PROVIDER_SLUGS), each under its own API slug. The user
+picks one provider per run, so a run is single-provider — the broker rotates
+only over that provider's tokens. Tiers (opus/sonnet) are roles anchored on the
+native family: opus is the flagship, sonnet the workhorse. Non-Claude families
+map into those roles (Sol plays the opus role, Terra the sonnet role) so a
+developer's tier intent is preserved across providers.
 """
 
 # ── Providers ──

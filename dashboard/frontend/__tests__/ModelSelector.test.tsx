@@ -22,6 +22,7 @@ vi.mock("@/lib/models", async (importOriginal) => {
       defaultModel: "claude-opus-4-8",
       providersByModel: {},
       loading: false,
+      refetch: () => {},
     }),
   };
 });

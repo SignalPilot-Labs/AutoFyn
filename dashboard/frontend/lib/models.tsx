@@ -14,7 +14,7 @@
  * model list.
  */
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { fetchModels } from "@/lib/api";
 import type { ModelInfo } from "@/lib/api";
@@ -28,6 +28,13 @@ interface ModelsContextValue {
   /** model id -> providers the user has keys for that can serve it. */
   providersByModel: Record<string, string[]>;
   loading: boolean;
+  /**
+   * Re-fetch models + providersByModel from the backend. providersByModel is a
+   * snapshot of the token pool at fetch time, so callers that can change the
+   * pool (adding a key in Settings) must refetch to avoid a stale map — e.g.
+   * the start modal refetches on open.
+   */
+  refetch: () => void;
 }
 
 const ModelsContext = createContext<ModelsContextValue>({
@@ -35,6 +42,7 @@ const ModelsContext = createContext<ModelsContextValue>({
   defaultModel: "",
   providersByModel: {},
   loading: true,
+  refetch: () => {},
 });
 
 export function ModelsProvider({ children }: { children: ReactNode }): React.ReactElement {
@@ -43,25 +51,22 @@ export function ModelsProvider({ children }: { children: ReactNode }): React.Rea
   const [providersByModel, setProvidersByModel] = useState<Record<string, string[]>>({});
   const [loading, setLoading] = useState<boolean>(true);
 
-  useEffect(() => {
-    let cancelled = false;
-    fetchModels()
+  const refetch = useCallback((): void => {
+    void fetchModels()
       .then((res) => {
-        if (cancelled) return;
         setModels(res.models);
         setDefaultModel(res.default);
         setProvidersByModel(res.providers_by_model);
       })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
+      .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
   return (
-    <ModelsContext.Provider value={{ models, defaultModel, providersByModel, loading }}>
+    <ModelsContext.Provider value={{ models, defaultModel, providersByModel, loading, refetch }}>
       {children}
     </ModelsContext.Provider>
   );

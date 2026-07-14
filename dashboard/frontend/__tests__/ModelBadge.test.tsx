@@ -21,7 +21,9 @@ vi.mock("@/lib/models", async (importOriginal) => {
         { id: "claude-sonnet-4-6", api_model: "claude-sonnet-4-6", label: "Claude Sonnet 4.6", short: "Sonnet 4.6", description: "y", context: "1M", tier: "sonnet", provider: "anthropic" },
       ],
       defaultModel: "claude-opus-4-8",
+      providersByModel: {},
       loading: false,
+      refetch: () => {},
     }),
   };
 });
