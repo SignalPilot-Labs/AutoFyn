@@ -361,10 +361,13 @@ class StreamDispatcher:
         """
         usage = data.get("usage")
         if usage:
-            inp = usage.get("input_tokens", 0)
-            out = usage.get("output_tokens", 0)
-            cache_create = usage.get("cache_creation_input_tokens", 0)
-            cache_read = usage.get("cache_read_input_tokens", 0)
+            # OpenRouter (GPT-5.6) sends these keys with null for token kinds it
+            # lacks (no prompt caching), so `or 0` covers both absent and null;
+            # Anthropic always sends real ints. The totals are non-nullable ints.
+            inp = usage.get("input_tokens") or 0
+            out = usage.get("output_tokens") or 0
+            cache_create = usage.get("cache_creation_input_tokens") or 0
+            cache_read = usage.get("cache_read_input_tokens") or 0
             self._latest_context_tokens = inp + cache_create + cache_read
             self._run.total_input_tokens += inp
             self._run.total_output_tokens += out
