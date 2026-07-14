@@ -473,21 +473,29 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, defaultB
                     <div className="flex items-center justify-between gap-3">
                       <label className="text-content uppercase tracking-[0.15em] text-text-muted font-semibold">Provider</label>
                       {noProvider ? (
-                        <span className="text-content text-warning">
-                          No API keys for this model — add one in Settings
+                        <span className="text-content text-warning text-right">
+                          No API keys — add one in Settings
                         </span>
                       ) : (
-                        <select
-                          value={provider}
-                          onChange={(e) => setProvider(e.target.value)}
-                          disabled={singleProvider}
-                          aria-label="Provider"
-                          className="bg-black/30 border border-border rounded px-3 py-1.5 text-content text-text focus-visible:outline-none focus-visible:border-[#00ff88]/30 focus-visible:ring-1 focus-visible:ring-[#00ff88]/40 disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
-                        >
+                        <div role="radiogroup" aria-label="Provider" className="flex items-center bg-black/30 border border-border rounded-full p-0.5">
                           {availableProviders.map((p) => (
-                            <option key={p} value={p}>{providerLabel(p)}</option>
+                            <button
+                              key={p}
+                              type="button"
+                              role="radio"
+                              aria-checked={provider === p}
+                              onClick={() => setProvider(p)}
+                              disabled={singleProvider}
+                              className={clsx(
+                                "px-2.5 py-0.5 rounded-full text-content transition-all",
+                                provider === p ? "bg-[#00ff88]/[0.12] text-[#00ff88] font-medium" : "text-text-dim hover:text-text-secondary",
+                                singleProvider && "cursor-default",
+                              )}
+                            >
+                              {providerLabel(p)}
+                            </button>
                           ))}
-                        </select>
+                        </div>
                       )}
                     </div>
 

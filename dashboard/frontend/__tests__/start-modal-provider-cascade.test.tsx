@@ -72,6 +72,13 @@ function startButton(): HTMLButtonElement {
   ) as HTMLButtonElement;
 }
 
+/** The checked provider label in the segmented Provider control, or null. */
+function selectedProvider(): string | null {
+  const group = screen.queryByRole("radiogroup", { name: "Provider" });
+  if (!group) return null;
+  return within(group).getByRole("radio", { checked: true }).textContent;
+}
+
 describe("StartRunModal provider cascade", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -88,10 +95,10 @@ describe("StartRunModal provider cascade", () => {
   it("auto-selects the sole provider and shows it read-only", async () => {
     renderModal();
     await openModelSection();
-    const select = screen.getByLabelText<HTMLSelectElement>("Provider");
-    expect(select.value).toBe("anthropic");
-    // One available provider => the select is disabled (read-only clarity).
-    expect(select).toBeDisabled();
+    expect(selectedProvider()).toBe("Anthropic");
+    // One available provider => the pill is not clickable (read-only clarity).
+    const group = screen.getByRole("radiogroup", { name: "Provider" });
+    expect(within(group).getByRole("radio")).toBeDisabled();
   });
 
   it("passes the auto-selected provider to onStart at position 6", async () => {
@@ -106,8 +113,8 @@ describe("StartRunModal provider cascade", () => {
     renderModal();
     await openModelSection();
     await pickModel("No Keys Model");
-    expect(screen.getByText(/No API keys for this model/i)).toBeInTheDocument();
-    expect(screen.queryByLabelText("Provider")).toBeNull();
+    expect(screen.getByText(/No API keys/i)).toBeInTheDocument();
+    expect(screen.queryByRole("radiogroup", { name: "Provider" })).toBeNull();
     expect(startButton()).toBeDisabled();
   });
 
@@ -116,19 +123,17 @@ describe("StartRunModal provider cascade", () => {
     await openModelSection();
 
     // A: anthropic auto-selected, start enabled.
-    expect(screen.getByLabelText<HTMLSelectElement>("Provider").value).toBe("anthropic");
+    expect(selectedProvider()).toBe("Anthropic");
     expect(startButton()).not.toBeDisabled();
 
-    // B: zero providers — provider clears, start disabled, no select.
+    // B: zero providers — provider clears, start disabled, no control.
     await pickModel("No Keys Model");
-    expect(screen.queryByLabelText("Provider")).toBeNull();
+    expect(screen.queryByRole("radiogroup", { name: "Provider" })).toBeNull();
     expect(startButton()).toBeDisabled();
 
     // C: openrouter re-selected, not the stale "anthropic" from A.
     await pickModel("GPT-5.6 Sol");
-    const select = screen.getByLabelText<HTMLSelectElement>("Provider");
-    expect(select.value).toBe("openrouter");
-    expect(within(select).queryByText(/anthropic/i)).toBeNull();
+    expect(selectedProvider()).toBe("OpenRouter");
     expect(startButton()).not.toBeDisabled();
 
     await userEvent.click(startButton());
