@@ -72,18 +72,9 @@ VALID_MODELS: tuple[str, ...] = (
 DEFAULT_MODEL: str = SUPPORTED_OPUS
 VALID_MODELS_PATTERN: str = f"^({'|'.join(VALID_MODELS)})$"
 
-# Structured metadata for the /api/models endpoint — the single source of
-# truth the dashboard fetches at runtime. The frontend defines no model list
-# of its own; everything textual lives here.
-#   id          — AutoFyn's stable model ID (picker, localStorage, DB Run.model_name)
-#   label       — full product name, shown in the picker
-#   short       — compact name, shown on badges/run cards
-#   description — one-line picker blurb
-#   context     — context-window blurb
-#   tier        — opus | sonnet | legacy (drives subagent tier resolution)
-# A model is NOT tied to one provider here: which providers can serve it (and
-# the API slug each uses) lives in MODEL_PROVIDER_SLUGS. The user picks the
-# provider per run; the dashboard offers only providers it has keys for.
+# Model metadata for /api/models (the dashboard's source of truth; no model
+# list is hardcoded in the frontend). Provider routing is not here — a model's
+# providers/slugs live in MODEL_PROVIDER_SLUGS, chosen per run.
 SUPPORTED_MODELS: list[dict[str, str]] = [
     {
         "id": SUPPORTED_FABLE,

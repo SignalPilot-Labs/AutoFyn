@@ -124,8 +124,6 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, defaultB
 
   const { models, defaultModel, providersByModel, refetch: refetchModels } = useModels();
 
-  // Providers the user can actually run this model on (has keys for). Empty
-  // when the user holds no key for any provider that serves the model.
   const availableProviders = providersByModel[model] ?? [];
 
   // Seed the model selection once the model list arrives: the user's stored
@@ -136,9 +134,7 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, defaultB
     }
   }, [model, models, defaultModel]);
 
-  // Cascade: when the model (and thus its available providers) changes, keep
-  // the current provider if it is still valid, otherwise default to the first
-  // available one, or clear it when none are available.
+  // Keep provider valid as the model changes: first available, or cleared.
   useEffect(() => {
     if (availableProviders.length === 0) {
       if (provider !== "") setProvider("");
