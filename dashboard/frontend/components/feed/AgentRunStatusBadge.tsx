@@ -8,6 +8,7 @@ import {
   WarningTriangleIcon,
   PauseIcon,
 } from "@/components/ui/StatusIcons";
+import { IDLE_RECOVERY_MIN } from "@/components/feed/eventCardHelpers";
 
 export interface AgentRunStatusBadgeProps {
   isPending: boolean;
@@ -122,7 +123,7 @@ export function IdleWarningBanner({ idleSec }: IdleWarningBannerProps): ReactEle
               ? `${Math.floor(idleSec / 60)}m ${idleSec % 60}s`
               : `${idleSec}s`}
           </span>{" "}
-          &mdash; auto-recovery at 10m
+          &mdash; auto-recovery at {IDLE_RECOVERY_MIN}m
         </span>
       </div>
     </div>

@@ -52,3 +52,7 @@ export function extractResultText(data: Record<string, unknown>): string {
 }
 
 export const IDLE_WARN_MS = 300_000;
+
+// Mirrors config.yml subagent_idle_kill_sec (900). Not served to the FE, so
+// bumping that value means bumping this one.
+export const IDLE_RECOVERY_MIN = 15;
