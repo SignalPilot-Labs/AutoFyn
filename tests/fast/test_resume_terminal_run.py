@@ -18,6 +18,7 @@ from fastapi.testclient import TestClient
 from config.constants import SANDBOX_KIND_DOCKER, SandboxResources
 from endpoints.control import _restart_terminal_run
 from endpoints.registry import register_routes
+from common.constants import PROVIDER_ANTHROPIC
 from lifecycle.bootstrap import bootstrap_run
 from utils.models_http import ResumeRequest
 
@@ -43,6 +44,7 @@ def _mock_run_info(branch_name: str | None) -> dict:
         "cache_creation_input_tokens": 0,
         "cache_read_input_tokens": 0,
         "model_name": "claude-sonnet-4-6",
+        "provider_name": PROVIDER_ANTHROPIC,
     }
 
 
@@ -77,6 +79,22 @@ class TestRestartTerminalRun:
         assert result["run_id"] == "run-1"
         server.remove_run.assert_called_once_with("run-1")
         server.register_run.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_restart_backfills_provider_for_legacy_null(self) -> None:
+        """A pre-multi-provider run (provider_name NULL) derives it from its model."""
+        server = make_server()
+        legacy = _mock_run_info("autofyn/fix-bug")
+        legacy["provider_name"] = None
+
+        body = _make_resume_body("run-1", None)
+        with patch("endpoints.control.db.get_run_for_resume", new_callable=AsyncMock, return_value=legacy):
+            with patch("endpoints.control.asyncio.create_task") as mock_task:
+                mock_task.return_value = MagicMock()
+                await _restart_terminal_run(server, body)
+
+        start_body = server.execute_run.call_args[0][1]
+        assert start_body.provider == PROVIDER_ANTHROPIC
 
     @pytest.mark.asyncio
     async def test_restart_uses_new_prompt_if_provided(self) -> None:
@@ -176,8 +194,8 @@ class TestBootstrapResumesBranch:
                 base_branch="main",
                 github_repo="owner/repo",
                 model="claude-sonnet-4-6",
+                provider=PROVIDER_ANTHROPIC,
                 effort="high",
-
                 mcp_servers=None,
             )
 
@@ -217,8 +235,8 @@ class TestBootstrapResumesBranch:
                 base_branch="main",
                 github_repo="owner/repo",
                 model="claude-sonnet-4-6",
+                provider=PROVIDER_ANTHROPIC,
                 effort="high",
-
                 mcp_servers=None,
             )
 
@@ -254,8 +272,8 @@ class TestBootstrapResumesBranch:
                 base_branch="main",
                 github_repo="owner/repo",
                 model="claude-sonnet-4-6",
+                provider=PROVIDER_ANTHROPIC,
                 effort="high",
-
                 mcp_servers=None,
             )
 
@@ -377,8 +395,8 @@ class TestBootstrapPreservesCosts:
                 base_branch="main",
                 github_repo="owner/repo",
                 model="claude-sonnet-4-6",
+                provider=PROVIDER_ANTHROPIC,
                 effort="high",
-
                 mcp_servers=None,
             )
 
@@ -414,8 +432,8 @@ class TestBootstrapPreservesCosts:
                 base_branch="main",
                 github_repo="owner/repo",
                 model="claude-sonnet-4-6",
+                provider=PROVIDER_ANTHROPIC,
                 effort="high",
-
                 mcp_servers=None,
             )
 

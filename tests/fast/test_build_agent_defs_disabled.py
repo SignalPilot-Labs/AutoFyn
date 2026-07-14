@@ -6,7 +6,7 @@ orchestrator has no way to dispatch it. Enabled agents are unaffected.
 
 from config.constants import SANDBOX_KIND_DOCKER, SandboxResources
 from config.loader import merge_subagents
-from db.constants import SUPPORTED_OPUS
+from common.constants import PROVIDER_ANTHROPIC, SUPPORTED_OPUS
 from prompts.subagent import build_agent_defs
 
 _TEST_RESOURCES = SandboxResources(
@@ -20,6 +20,7 @@ def _defs(disabled: list[str] | None) -> dict[str, dict]:
         host_mounts=None,
         user_env_keys=[],
         user_model=SUPPORTED_OPUS,
+        provider=PROVIDER_ANTHROPIC,
         tool_call_timeout_sec=600,
         base_branch="main",
         disabled_subagents=disabled,

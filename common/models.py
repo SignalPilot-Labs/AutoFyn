@@ -2,12 +2,8 @@
 
 from pydantic import BaseModel, Field, field_validator
 
-from db.constants import (
-    DEFAULT_PROVIDER,
-    TOKEN_LABEL_MAX_LEN,
-    TOKEN_VALUE_MAX_LEN,
-    VALID_PROVIDERS,
-)
+from common.constants import DEFAULT_PROVIDER, VALID_PROVIDERS
+from db.constants import TOKEN_LABEL_MAX_LEN, TOKEN_VALUE_MAX_LEN
 
 
 class Token(BaseModel):

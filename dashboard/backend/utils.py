@@ -30,9 +30,9 @@ from db.constants import (
     DISABLED_SUBAGENTS_KEY_PREFIX,
     HOST_MOUNTS_KEY_PREFIX,
     MASTER_KEY_PATH,
-    PROVIDER_ANTHROPIC,
     REMOTE_MOUNTS_KEY_PREFIX,
 )
+from common.constants import PROVIDER_ANTHROPIC, rotation_key_for
 from common.models import Token, parse_token_pool
 from db.models import AuditLog, ControlSignal, Run, Setting
 
@@ -293,34 +293,69 @@ async def rename_token_in_pool(index: int, label: str | None) -> dict:
     return {"ok": True, "index": index}
 
 
+def _active_full_index(
+    tokens: list[Token], provider: str, rotation_value: str | None
+) -> int:
+    """Full-pool index of the next-up token for one provider, or -1.
+
+    The broker stores (picked + 1) as the bookmark, so the last-picked — the
+    one the UI marks "Next" — is (stored - 1) within that provider's subset.
+    The subset index is translated back to a full-pool index. Returns -1 when
+    the provider has no tokens or has never been used.
+    """
+    if rotation_value is None:
+        return -1
+    subset = [i for i, t in enumerate(tokens) if t.provider == provider]
+    if not subset:
+        return -1
+    return subset[(int(rotation_value) - 1) % len(subset)]
+
+
 async def list_pool_tokens() -> list[dict]:
-    """List all tokens in the pool (value masked, provider and label as-is)."""
+    """List all tokens in the pool (value masked, provider and label as-is).
+
+    Rotation is per-provider, so each provider's next-up token is marked
+    "active" independently from its own bookmark.
+    """
     async with session() as s:
         tokens = await read_token_pool(s, for_update=False)
-        idx_row = await s.get(Setting, CLAUDE_TOKEN_INDEX_KEY)
-        idx_value: str | None = idx_row.value if idx_row else None
-    if not tokens:
-        return []
-    has_used = idx_value is not None
-    active_idx = (int(idx_value) - 1) % len(tokens) if has_used else -1
+        if not tokens:
+            return []
+        providers = {t.provider for t in tokens}
+        active_by_provider: dict[str, int] = {}
+        for provider in providers:
+            row = await s.get(Setting, rotation_key_for(provider, CLAUDE_TOKEN_INDEX_KEY))
+            active_by_provider[provider] = _active_full_index(
+                tokens, provider, row.value if row else None
+            )
     return [
         {
             "index": i,
             "provider": t.provider,
             "masked": crypto.mask(t.value, prefix_len=MASK_PREFIX_CLAUDE_TOKEN),
             "label": t.label,
-            "active": has_used and i == active_idx,
+            "active": i == active_by_provider[t.provider],
         }
         for i, t in enumerate(tokens)
     ]
 
 
 async def remove_token_from_pool(index: int) -> dict:
-    """Remove a token by index. Adjusts round-robin index to avoid skipping."""
+    """Remove a token by index, adjusting its provider's rotation bookmark.
+
+    Rotation is per-provider, so only the removed token's provider bookmark is
+    touched, and the adjustment is computed in that provider's subset index
+    space (not the full-pool index) to avoid skipping a credential.
+    """
     async with session() as s:
         tokens = await read_token_pool(s, for_update=True)
         if index < 0 or index >= len(tokens):
             raise ValueError(f"Index {index} out of range (pool has {len(tokens)} tokens)")
+        removed = tokens[index]
+        # Subset index of the removed token within its provider, before removal.
+        removed_subset_idx = [
+            i for i, t in enumerate(tokens) if t.provider == removed.provider
+        ].index(index)
         tokens.pop(index)
         if tokens:
             await _write_token_pool(s, tokens)
@@ -328,18 +363,33 @@ async def remove_token_from_pool(index: int) -> dict:
             pool_row = await s.get(Setting, CLAUDE_TOKENS_KEY)
             if pool_row:
                 await s.delete(pool_row)
-        # Adjust round-robin index
-        idx_row = await s.get(Setting, CLAUDE_TOKEN_INDEX_KEY)
-        if idx_row and tokens:
-            current = int(idx_row.value)
-            if index < current:
-                await upsert_setting(s, CLAUDE_TOKEN_INDEX_KEY, str(current - 1), False)
-            elif current >= len(tokens):
-                await upsert_setting(s, CLAUDE_TOKEN_INDEX_KEY, str(0), False)
-        elif idx_row and not tokens:
-            await s.delete(idx_row)
+        await _adjust_rotation_on_remove(s, tokens, removed.provider, removed_subset_idx)
         await s.commit()
     return {"ok": True, "count": len(tokens)}
+
+
+async def _adjust_rotation_on_remove(
+    s: AsyncSession, tokens: list[Token], provider: str, removed_subset_idx: int
+) -> None:
+    """Fix one provider's rotation bookmark after a token of it was removed.
+
+    Mirrors the pre-provider logic but in the provider's subset index space:
+    decrement if the removed slot was before the bookmark, wrap to 0 if the
+    bookmark now points past the shrunk subset, delete if the subset is empty.
+    """
+    rotation_key = rotation_key_for(provider, CLAUDE_TOKEN_INDEX_KEY)
+    idx_row = await s.get(Setting, rotation_key)
+    if idx_row is None:
+        return
+    remaining = [t for t in tokens if t.provider == provider]
+    if not remaining:
+        await s.delete(idx_row)
+        return
+    current = int(idx_row.value)
+    if removed_subset_idx < current:
+        await upsert_setting(s, rotation_key, str(current - 1), False)
+    elif current >= len(remaining):
+        await upsert_setting(s, rotation_key, str(0), False)
 
 
 # ---------------------------------------------------------------------------

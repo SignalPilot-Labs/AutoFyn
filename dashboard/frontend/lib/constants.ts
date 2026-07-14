@@ -56,12 +56,19 @@ export const TOKEN_LABEL_MAX_LEN = 16;
 // Reads like empty-field placeholder text, matching the "Name (optional)" input.
 export const TOKEN_NAME_PLACEHOLDER = "Unnamed";
 
-// Credential providers — must match db/constants.py VALID_PROVIDERS / DEFAULT_PROVIDER.
-// Anthropic is the only provider today; Part 2 appends here and the dropdown grows.
+// Credential providers — must match common/constants.py VALID_PROVIDERS / DEFAULT_PROVIDER.
+// Anthropic is native (Claude); OpenRouter is the gateway for non-Claude
+// families (GPT-5.6). See docs/providers.md.
 export const CREDENTIAL_PROVIDERS: { value: string; label: string }[] = [
   { value: "anthropic", label: "Anthropic" },
+  { value: "openrouter", label: "OpenRouter" },
 ];
 export const DEFAULT_PROVIDER = "anthropic";
+// Token-input placeholder per provider (mirrors each provider's key format).
+export const TOKEN_PLACEHOLDERS: Record<string, string> = {
+  anthropic: "sk-ant-oat01-...",
+  openrouter: "sk-or-v1-...",
+};
 
 // Toast notifications
 export const TOAST_DURATION_MS = 3000;

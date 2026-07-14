@@ -64,6 +64,7 @@ class Run(Base):
     github_repo: Mapped[str | None] = mapped_column(String)
     context_tokens: Mapped[int] = mapped_column(Integer, default=0)
     model_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    provider_name: Mapped[str | None] = mapped_column(String, nullable=True)
 
     # ── Remote Sandbox ──
     sandbox_id: Mapped[str | None] = mapped_column(String, nullable=True)

@@ -18,7 +18,7 @@ if "db.connection" not in sys.modules:
 
 from backend.utils import rename_token_in_pool
 from common.models import Token
-from db.constants import PROVIDER_ANTHROPIC
+from common.constants import PROVIDER_ANTHROPIC
 
 
 class TestRenameTokenInPool:

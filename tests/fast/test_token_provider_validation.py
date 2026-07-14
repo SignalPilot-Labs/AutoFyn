@@ -12,7 +12,7 @@ import pytest
 from pydantic import ValidationError
 
 from common.models import Token
-from db.constants import DEFAULT_PROVIDER, PROVIDER_ANTHROPIC
+from common.constants import DEFAULT_PROVIDER, PROVIDER_ANTHROPIC
 
 
 class TestTokenProviderValidation:
