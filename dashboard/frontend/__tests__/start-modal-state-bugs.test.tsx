@@ -17,6 +17,24 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { StartRunModal } from "@/components/controls/StartRunModal";
 import { DEFAULT_BASE_BRANCH, DEFAULT_EFFORT } from "@/lib/constants";
 
+// The modal reads its model list from useModels(). Provide a fixed list with a
+// single provider per model so a provider auto-selects and the start button is
+// enabled without a live ModelsProvider fetch; keep the real helpers.
+vi.mock("@/lib/models", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/models")>();
+  return {
+    ...actual,
+    useModels: () => ({
+      models: [
+        { id: "claude-opus-4-8", label: "Claude Opus 4.8", short: "Opus 4.8", description: "Most capable", context: "1M context", tier: "opus" },
+      ],
+      defaultModel: "claude-opus-4-8",
+      providersByModel: { "claude-opus-4-8": ["anthropic"] },
+      loading: false,
+    }),
+  };
+});
+
 function renderModal(overrides: Partial<{
   open: boolean;
   onClose: () => void;
@@ -186,12 +204,13 @@ describe("StartRunModal: state reset on open (Bug 2)", () => {
     await userEvent.click(startBtn!);
 
     expect(onStart).toHaveBeenCalledOnce();
-    const [prompt, preset, budget, duration, baseBranch, , effort, sandboxId] =
+    const [prompt, preset, budget, duration, baseBranch, , , effort, sandboxId] =
       onStart.mock.calls[0] as [
         string | undefined,
         string | undefined,
         number,
         number,
+        string,
         string,
         string,
         string,

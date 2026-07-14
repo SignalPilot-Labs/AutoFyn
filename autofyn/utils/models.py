@@ -195,6 +195,7 @@ class BootstrapResult:
     base_session_options: dict
     task: str
     model: str
+    provider: str
     fallback_model: str | None
     run_start_time: float
     # Highest round number already archived on disk; 0 for a fresh run,

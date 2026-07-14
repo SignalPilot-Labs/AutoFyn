@@ -1,6 +1,6 @@
 """Tests for effort downgrade logic in bootstrap."""
 
-from common.constants import LEGACY_OPUS, SUPPORTED_OPUS, SUPPORTED_SONNET
+from common.constants import LEGACY_OPUS, PROVIDER_ANTHROPIC, SUPPORTED_OPUS, SUPPORTED_SONNET
 from lifecycle.bootstrap import _build_base_session_options
 from utils.constants import DISALLOWED_SESSION_TOOLS
 from utils.models import RunContext
@@ -23,6 +23,7 @@ class TestEffortDowngrade:
         opts = _build_base_session_options(
             run=self._make_run(),
             model=SUPPORTED_OPUS,
+            provider=PROVIDER_ANTHROPIC,
             fallback_model=SUPPORTED_SONNET,
             max_budget_usd=0,
             effort="max",
@@ -35,6 +36,7 @@ class TestEffortDowngrade:
         opts = _build_base_session_options(
             run=self._make_run(),
             model=SUPPORTED_SONNET,
+            provider=PROVIDER_ANTHROPIC,
             fallback_model=None,
             max_budget_usd=0,
             effort="max",
@@ -47,6 +49,7 @@ class TestEffortDowngrade:
         opts = _build_base_session_options(
             run=self._make_run(),
             model=LEGACY_OPUS,
+            provider=PROVIDER_ANTHROPIC,
             fallback_model=SUPPORTED_SONNET,
             max_budget_usd=0,
             effort="max",
@@ -59,6 +62,7 @@ class TestEffortDowngrade:
         opts = _build_base_session_options(
             run=self._make_run(),
             model=LEGACY_OPUS,
+            provider=PROVIDER_ANTHROPIC,
             fallback_model=SUPPORTED_SONNET,
             max_budget_usd=0,
             effort="high",
@@ -72,6 +76,7 @@ class TestEffortDowngrade:
             opts = _build_base_session_options(
                 run=self._make_run(),
                 model=model,
+                provider=PROVIDER_ANTHROPIC,
                 fallback_model=None,
                 max_budget_usd=0,
                 effort="medium",
@@ -86,6 +91,7 @@ class TestEffortDowngrade:
         opts = _build_base_session_options(
             run=self._make_run(),
             model=SUPPORTED_OPUS,
+            provider=PROVIDER_ANTHROPIC,
             fallback_model=None,
             max_budget_usd=0,
             effort="high",

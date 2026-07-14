@@ -16,6 +16,9 @@ const FIELD_BOX =
   "bg-black/30 border border-border rounded px-3 py-2 text-content";
 const FIELD_FOCUS =
   "placeholder:text-text-secondary focus-visible:outline-none focus-visible:border-[#00ff88]/30 focus-visible:ring-1 focus-visible:ring-[#00ff88]/40 transition-all";
+// Inline command/URL chip in the help text — uses the `info` design token
+// (globals.css --color-info), shared by both provider branches.
+const CODE_CHIP = "text-info bg-info/[0.06] px-1 py-0.5 rounded";
 
 interface TokenPoolSectionProps {
   tokens: PoolToken[];
@@ -166,11 +169,11 @@ export function TokenPoolSection({
       <p className="mt-2 text-content text-text-dim">
         {newProvider === "openrouter" ? (
           <>
-            Create a key at <code className="text-[#88ccff] bg-[#88ccff]/[0.06] px-1 py-0.5 rounded">openrouter.ai/keys</code> to run GPT-5.6. Multiple keys rotate on rate limit.
+            Create a key at <code className={CODE_CHIP}>openrouter.ai/keys</code> to run GPT-5.6. Multiple keys rotate on rate limit.
           </>
         ) : (
           <>
-            Run <code className="text-[#88ccff] bg-[#88ccff]/[0.06] px-1 py-0.5 rounded">claude setup-token</code> to generate tokens. Multiple keys rotate on rate limit.
+            Run <code className={CODE_CHIP}>claude setup-token</code> to generate tokens. Multiple keys rotate on rate limit.
           </>
         )}
       </p>

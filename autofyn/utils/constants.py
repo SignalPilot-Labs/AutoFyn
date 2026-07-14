@@ -8,6 +8,7 @@ load() call, so repeated access is a dict lookup — not YAML I/O.
 import logging
 from pathlib import Path
 
+from common.constants import ENV_ANTHROPIC_API_KEY, ENV_CLAUDE_OAUTH_TOKEN
 from config.constants import SANDBOX_KIND_DOCKER, SANDBOX_KIND_SLURM
 from config.loader import agent_config
 
@@ -210,11 +211,14 @@ AGENT_CONTAINER_NAME = "autofyn-agent"
 RUN_ID_LOG_PREFIX_LEN = 8
 
 # ── Token env keys — passed per-run via extra_env, not os.environ ──
-ENV_KEY_CLAUDE_TOKEN = "CLAUDE_CODE_OAUTH_TOKEN"
+# The two SDK credential var names alias common.constants (one source of truth):
+# server.py secret-scrubbing and endpoints/helpers.py git-token merge must use
+# the exact same literals the broker injects, so they cannot drift.
+ENV_KEY_CLAUDE_TOKEN = ENV_CLAUDE_OAUTH_TOKEN
 ENV_KEY_GIT_TOKEN = "GIT_TOKEN"
 ENV_KEY_INTERNAL_SECRET = "AGENT_INTERNAL_SECRET"
 ENV_KEY_SANDBOX_SECRET = "SANDBOX_INTERNAL_SECRET"
-ENV_KEY_ANTHROPIC_API = "ANTHROPIC_API_KEY"
+ENV_KEY_ANTHROPIC_API = ENV_ANTHROPIC_API_KEY
 
 # ── HTTP headers ──
 # Sync: dashboard/backend/constants.py must define the same constant.

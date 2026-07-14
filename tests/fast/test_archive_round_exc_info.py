@@ -18,6 +18,7 @@ from lifecycle.round_loop import run_rounds
 from user.inbox import UserInbox
 from config.constants import SANDBOX_KIND_DOCKER, SandboxResources
 from config.loader import merge_subagents
+from common.constants import PROVIDER_ANTHROPIC
 from utils.models import BootstrapResult, RoundsMetadata, RunContext
 from utils.run_config import RunAgentConfig
 from utils.run_subagents import SubagentConfig
@@ -81,6 +82,7 @@ def _make_bootstrap(run: RunContext, run_config: RunAgentConfig) -> BootstrapRes
         base_session_options={"model": "claude-3-5-sonnet-20241022"},
         task="Fix the bug",
         model="claude-3-5-sonnet-20241022",
+        provider=PROVIDER_ANTHROPIC,
         fallback_model=None,
         run_start_time=0.0,
         starting_round=0,

@@ -35,7 +35,7 @@ afterEach(() => {
 
 describe("startRun", () => {
   it("sends POST to /api/agent/start with all params", async () => {
-    await startRun("fix bugs", undefined, 10, 30, "main", "opus", "high", "owner/repo", null, "");
+    await startRun("fix bugs", undefined, 10, 30, "main", "opus", "anthropic", "high", "owner/repo", null, "");
     expect(fetchCalls).toHaveLength(1);
     const body = JSON.parse(fetchCalls[0].init.body as string);
     expect(body.prompt).toBe("fix bugs");
@@ -44,24 +44,25 @@ describe("startRun", () => {
     expect(body.duration_minutes).toBe(30);
     expect(body.base_branch).toBe("main");
     expect(body.model).toBe("opus");
+    expect(body.provider).toBe("anthropic");
     expect(body.effort).toBe("high");
     expect(body.repo).toBe("owner/repo");
   });
 
   it("sends preset key instead of prompt", async () => {
-    await startRun(undefined, "security_hardening", 0, 0, "main", "opus", "high", null, null, "");
+    await startRun(undefined, "security_hardening", 0, 0, "main", "opus", "anthropic", "high", null, null, "");
     const body = JSON.parse(fetchCalls[0].init.body as string);
     expect(body.prompt).toBeNull();
     expect(body.preset).toBe("security_hardening");
   });
 
   it("returns run_id from response", async () => {
-    const result = await startRun("test", undefined, 0, 0, "main", "sonnet", "high", null, null, "");
+    const result = await startRun("test", undefined, 0, 0, "main", "sonnet", "anthropic", "high", null, null, "");
     expect(result.run_id).toBe("test-run-id");
   });
 
   it("sends null prompt and preset when both undefined", async () => {
-    await startRun(undefined, undefined, 0, 0, "main", "opus-4-5", "medium", null, null, "");
+    await startRun(undefined, undefined, 0, 0, "main", "opus-4-5", "anthropic", "medium", null, null, "");
     const body = JSON.parse(fetchCalls[0].init.body as string);
     expect(body.prompt).toBeNull();
     expect(body.preset).toBeNull();

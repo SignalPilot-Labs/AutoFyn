@@ -31,7 +31,6 @@ from common.constants import (
     PROVIDER_ANTHROPIC,
     PROVIDER_OPENROUTER,
     openrouter_model_env,
-    provider_for_model,
     rotation_key_for,
 )
 from common.models import Token
@@ -62,15 +61,15 @@ def _provider_env(token: Token, model: str) -> dict[str, str]:
     raise ValueError(f"cannot build credential env for unknown provider '{token.provider}'")
 
 
-async def acquire_and_inject(sandbox: SandboxClient, run_id: str, model: str) -> str:
-    """Acquire a healthy credential eligible for the run's model and inject it.
+async def acquire_and_inject(sandbox: SandboxClient, run_id: str, model: str, provider: str) -> str:
+    """Acquire a healthy credential for the run's provider and inject it.
 
-    The model decides the eligible token set (its provider); the broker rotates
-    over that set and returns the selected token, whose provider drives the
-    injected env. Parks the run (status rate_limited) until a credential is
-    free, then returns its credential_id so the caller can report exhaustion.
+    The run's provider decides the eligible token set; the broker rotates over
+    that set and returns the selected token, whose provider drives the injected
+    env (model supplies the OpenRouter tier overrides). Parks the run (status
+    rate_limited) until a credential is free, then returns its credential_id so
+    the caller can report exhaustion.
     """
-    provider = provider_for_model(model)
     rotation_key = rotation_key_for(provider, CLAUDE_TOKEN_INDEX_KEY)
     parked = False
     while True:

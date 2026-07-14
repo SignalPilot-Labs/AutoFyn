@@ -83,6 +83,7 @@ async def run_migrations() -> None:
         await _migrate_cache_token_columns(conn)
         await _migrate_context_tokens_column(conn)
         await _migrate_model_name_column(conn)
+        await _migrate_provider_name_column(conn)
         await _migrate_branch_name_nullable(conn)
         await _migrate_idempotency_key_columns(conn)
         await _migrate_sandbox_snapshot_columns(conn)
@@ -149,6 +150,19 @@ async def _migrate_model_name_column(conn) -> None:
             "ALTER TABLE runs ADD COLUMN model_name VARCHAR"
         ))
         log.info("Added column runs.model_name")
+
+
+async def _migrate_provider_name_column(conn) -> None:
+    """Add provider_name column to runs table if it doesn't exist."""
+    result = await conn.execute(text(
+        "SELECT 1 FROM information_schema.columns "
+        "WHERE table_name = 'runs' AND column_name = 'provider_name'"
+    ))
+    if result.first() is None:
+        await conn.execute(text(
+            "ALTER TABLE runs ADD COLUMN provider_name VARCHAR"
+        ))
+        log.info("Added column runs.provider_name")
 
 
 async def _migrate_branch_name_nullable(conn) -> None:

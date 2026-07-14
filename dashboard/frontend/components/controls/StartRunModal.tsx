@@ -12,7 +12,7 @@ import { HostMountsEditor } from "@/components/controls/HostMountsEditor";
 import { SandboxPicker } from "@/components/controls/SandboxPicker";
 import { McpServersEditor } from "@/components/controls/McpServersEditor";
 import { clsx } from "clsx";
-import { capitalize, DEFAULT_DOCKER_START_CMD, STARTER_PRESETS, STARTER_PRESET_KEYS, EFFORT_LEVELS, DEFAULT_EFFORT } from "@/lib/constants";
+import { capitalize, DEFAULT_DOCKER_START_CMD, STARTER_PRESETS, STARTER_PRESET_KEYS, EFFORT_LEVELS, DEFAULT_EFFORT, CREDENTIAL_PROVIDERS } from "@/lib/constants";
 import type { StarterPresetKey, EffortLevel } from "@/lib/constants";
 import { useModels, findModel, resolveInitialModel } from "@/lib/models";
 import { fetchRepoEnv, saveRepoEnv, fetchRepoMounts, saveRepoMounts, fetchRemoteMounts, saveRemoteMounts, fetchRepoMcpServers, saveRepoMcpServers, fetchRemoteSandboxes, updateRemoteSandbox } from "@/lib/api";
@@ -21,7 +21,7 @@ import type { HostMount, RemoteSandboxConfig } from "@/lib/api";
 export interface StartRunModalProps {
   open: boolean;
   onClose: () => void;
-  onStart: (prompt: string | undefined, preset: string | undefined, budget: number, durationMinutes: number, baseBranch: string, model: string, effort: string, sandboxId: string | null, startCmd: string) => void;
+  onStart: (prompt: string | undefined, preset: string | undefined, budget: number, durationMinutes: number, baseBranch: string, model: string, provider: string, effort: string, sandboxId: string | null, startCmd: string) => void;
   busy: boolean;
   branches: string[];
   defaultBranch: string;
@@ -65,6 +65,11 @@ const DURATION_PRESETS = [
   { label: "8 hours", minutes: 480, desc: "Overnight" },
 ];
 
+/** Human label for a provider slug, falling back to the slug itself. */
+function providerLabel(slug: string): string {
+  return CREDENTIAL_PROVIDERS.find((p) => p.value === slug)?.label ?? slug;
+}
+
 const QUICK_START_ICONS: Record<string, React.ReactElement> = {
   sparkle: (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -99,6 +104,7 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, defaultB
   const branchTouchedRef = useRef(false);
   const [selectedQuick, setSelectedQuick] = useState<StarterPresetKey | null>(null);
   const [model, setModel] = useState<string>("");
+  const [provider, setProvider] = useState<string>("");
   const [effort, setEffort] = useState<EffortLevel>(DEFAULT_EFFORT);
   const [envText, setEnvText] = useState("");
   const [envError, setEnvError] = useState<string | null>(null);
@@ -116,7 +122,11 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, defaultB
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const prevOpenRef = useRef(open);
 
-  const { models, defaultModel } = useModels();
+  const { models, defaultModel, providersByModel } = useModels();
+
+  // Providers the user can actually run this model on (has keys for). Empty
+  // when the user holds no key for any provider that serves the model.
+  const availableProviders = providersByModel[model] ?? [];
 
   // Seed the model selection once the model list arrives: the user's stored
   // choice if it's still valid, otherwise the backend default.
@@ -125,6 +135,17 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, defaultB
       setModel(resolveInitialModel(models, defaultModel));
     }
   }, [model, models, defaultModel]);
+
+  // Cascade: when the model (and thus its available providers) changes, keep
+  // the current provider if it is still valid, otherwise default to the first
+  // available one, or clear it when none are available.
+  useEffect(() => {
+    if (availableProviders.length === 0) {
+      if (provider !== "") setProvider("");
+    } else if (!availableProviders.includes(provider)) {
+      setProvider(availableProviders[0]);
+    }
+  }, [availableProviders, provider]);
 
   const adjustPromptHeight = useCallback((): void => {
     const el = textareaRef.current;
@@ -309,7 +330,7 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, defaultB
           void updateRemoteSandbox(selectedSandboxId, { ...sandbox, default_start_cmd: cmdToSend });
         }
       }
-      onStart(prompt, preset, budget, duration, baseBranch, model, effort, selectedSandboxId, cmdToSend);
+      onStart(prompt, preset, budget, duration, baseBranch, model, provider, effort, selectedSandboxId, cmdToSend);
     } finally {
       submittingRef.current = false;
       setSubmitting(false);
@@ -321,6 +342,8 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, defaultB
     if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); void handleStart(); }
   };
 
+  const noProvider = model !== "" && availableProviders.length === 0;
+  const singleProvider = availableProviders.length === 1;
   const modelSummary = `${findModel(models, model)?.label ?? "…"} · ${capitalize(effort)}`;
   const budgetSummary = budget > 0 ? `$${budget}` : "Unlimited";
   const envCount = countEnvVars(envText);
@@ -447,6 +470,29 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, defaultB
                 <CollapsibleSection label="Model" summary={modelSummary} defaultOpen={false}>
                   <div className="space-y-3">
                     <ModelSelector value={model} onChange={setModel} />
+
+                    {/* Provider (cascades from the selected model) */}
+                    <div className="flex items-center justify-between gap-3">
+                      <label className="text-content uppercase tracking-[0.15em] text-text-muted font-semibold">Provider</label>
+                      {noProvider ? (
+                        <span className="text-content text-warning">
+                          No API keys for this model — add one in Settings
+                        </span>
+                      ) : (
+                        <select
+                          value={provider}
+                          onChange={(e) => setProvider(e.target.value)}
+                          disabled={singleProvider}
+                          aria-label="Provider"
+                          className="bg-black/30 border border-border rounded px-3 py-1.5 text-content text-text focus-visible:outline-none focus-visible:border-[#00ff88]/30 focus-visible:ring-1 focus-visible:ring-[#00ff88]/40 disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
+                        >
+                          {availableProviders.map((p) => (
+                            <option key={p} value={p}>{providerLabel(p)}</option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+
                     <div className="flex items-center justify-between">
                       <label className="text-content uppercase tracking-[0.15em] text-text-muted font-semibold">Thinking Effort</label>
                       <div className="flex items-center bg-black/30 border border-border rounded-full p-0.5">
@@ -522,7 +568,7 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, defaultB
                 <div className="flex gap-2">
                   <Button variant="ghost" size="md" onClick={onClose}>Cancel</Button>
                   <Button
-                    variant="success" size="md" onClick={() => void handleStart()} disabled={busy || submitting || !sandboxValid}
+                    variant="success" size="md" onClick={() => void handleStart()} disabled={busy || submitting || !sandboxValid || provider === ""}
                     icon={<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="3 2 8 5 3 8" /></svg>}
                   >
                     {busy || submitting ? "Starting..." : "New Run"}

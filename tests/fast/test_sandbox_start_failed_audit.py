@@ -19,6 +19,7 @@ with patch("docker.from_env", return_value=MagicMock()):
 from sandbox_client.models import SandboxStartError
 from utils.constants import ENV_KEY_GIT_TOKEN
 from utils.models import ActiveRun
+from common.constants import PROVIDER_ANTHROPIC
 from utils.models_http import StartRequest
 
 
@@ -37,6 +38,7 @@ def _make_active_run(run_id: str) -> ActiveRun:
 
 def _make_body(git_token: str) -> StartRequest:
     return StartRequest(
+        provider=PROVIDER_ANTHROPIC,
         max_budget_usd=0,
         github_repo="owner/repo",
         prompt="fix it",

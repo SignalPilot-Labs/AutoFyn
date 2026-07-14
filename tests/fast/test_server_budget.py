@@ -16,6 +16,7 @@ os.environ.setdefault("SANDBOX_INTERNAL_SECRET", "test-sandbox-secret")
 with patch("docker.from_env", return_value=MagicMock()):
     from server import AgentServer
 
+from common.constants import PROVIDER_ANTHROPIC
 from utils.constants import ENV_KEY_GIT_TOKEN
 from utils.models import ActiveRun
 from utils.models_http import StartRequest
@@ -46,6 +47,7 @@ class TestServerBudgetExtraction:
         srv = _make_server()
         active = _make_active_run("aaaaaaaa-0000-0000-0000-000000000001")
         body = StartRequest(
+            provider=PROVIDER_ANTHROPIC,
             github_repo="owner/repo",
             prompt="fix the bug",
             max_budget_usd=0.0,
@@ -68,6 +70,7 @@ class TestServerBudgetExtraction:
         srv = _make_server()
         active = _make_active_run("aaaaaaaa-0000-0000-0000-000000000002")
         body = StartRequest(
+            provider=PROVIDER_ANTHROPIC,
             github_repo="owner/repo",
             prompt="fix the bug",
             max_budget_usd=10.0,

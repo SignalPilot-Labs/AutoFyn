@@ -1,8 +1,8 @@
 "use client";
 
 /** Model picker: a collapsed trigger that opens a listbox of models from
- * /api/models. Legacy-tier models sort last and render dimmed; models are
- * grouped under a provider header (one provider today, more later). */
+ * /api/models. Legacy-tier models sort last and render dimmed. Provider is
+ * chosen separately (a model can be served by several providers). */
 
 import { useRef, useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,17 +16,6 @@ export interface ModelSelectorProps {
 }
 
 const LEGACY_TIER = "legacy";
-
-/** Display label for a provider group header, keyed on the model's provider. */
-const PROVIDER_LABELS: Record<string, string> = {
-  anthropic: "Anthropic",
-  openrouter: "OpenRouter",
-};
-
-/** Provider group header for a model, from its provider field (not id prefix). */
-function providerOf(model: ModelInfo): string {
-  return PROVIDER_LABELS[model.provider] ?? model.provider;
-}
 
 /** Non-legacy models first (in list order), legacy models last. */
 function orderModels(models: ModelInfo[]): ModelInfo[] {
@@ -80,8 +69,6 @@ export function ModelSelector({ value, onChange }: ModelSelectorProps): React.Re
     else if (e.key === "Escape") { e.preventDefault(); setOpen(false); }
   };
 
-  let renderedProvider: string | null = null;
-
   return (
     <div ref={containerRef} className="relative">
       <button
@@ -127,16 +114,8 @@ export function ModelSelector({ value, onChange }: ModelSelectorProps): React.Re
               {ordered.map((m, idx) => {
                 const isSelected = m.id === value;
                 const isLegacy = m.tier === LEGACY_TIER;
-                const provider = providerOf(m);
-                const header = provider !== renderedProvider ? provider : null;
-                renderedProvider = provider;
                 return (
                   <div key={m.id}>
-                    {header && (
-                      <div className="px-3 pt-2 pb-1 text-caption uppercase tracking-[0.15em] text-text-muted font-semibold">
-                        {header}
-                      </div>
-                    )}
                     <button
                       ref={(el) => { itemRefs.current[idx] = el; }}
                       type="button"

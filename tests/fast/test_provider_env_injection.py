@@ -44,8 +44,12 @@ class TestProviderEnvInjection:
         # Explicitly empty so the SDK never falls back to a native Anthropic key.
         assert env[ENV_ANTHROPIC_API_KEY] == ""
         # Model overrides route both SDK tiers to OpenRouter slugs.
-        assert env[ENV_ANTHROPIC_DEFAULT_OPUS_MODEL] == api_model_for(SUPPORTED_GPT_SOL)
-        assert env[ENV_ANTHROPIC_DEFAULT_SONNET_MODEL] == api_model_for(SUPPORTED_GPT_TERRA)
+        assert env[ENV_ANTHROPIC_DEFAULT_OPUS_MODEL] == api_model_for(
+            SUPPORTED_GPT_SOL, PROVIDER_OPENROUTER
+        )
+        assert env[ENV_ANTHROPIC_DEFAULT_SONNET_MODEL] == api_model_for(
+            SUPPORTED_GPT_TERRA, PROVIDER_OPENROUTER
+        )
 
     def test_openrouter_never_sets_claude_oauth_token(self) -> None:
         """A GPT run must not carry the native Claude OAuth var."""

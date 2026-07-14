@@ -12,18 +12,18 @@ export async function fetchRuns(repo?: string): Promise<Run[]> {
 
 export interface ModelInfo {
   id: string;
-  api_model: string;
   label: string;
   short: string;
   description: string;
   context: string;
   tier: string;
-  provider: string;
 }
 
 export interface ModelsResponse {
   models: ModelInfo[];
   default: string;
+  /** model id -> providers the user has keys for that can serve it. */
+  providers_by_model: Record<string, string[]>;
 }
 
 export async function fetchModels(): Promise<ModelsResponse> {
@@ -175,6 +175,7 @@ export async function startRun(
   durationMinutes: number,
   baseBranch: string,
   model: string,
+  provider: string,
   effort: string,
   repo: string | null,
   sandboxId: string | null,
@@ -190,6 +191,7 @@ export async function startRun(
       duration_minutes: durationMinutes,
       base_branch: baseBranch,
       model: model,
+      provider: provider,
       effort: effort,
       repo: repo || null,
       sandbox_id: sandboxId || null,

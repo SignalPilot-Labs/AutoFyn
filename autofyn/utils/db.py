@@ -45,6 +45,7 @@ async def create_run_starting(
     base_branch: str,
     github_repo: str | None,
     model_name: str | None,
+    provider_name: str | None,
 ) -> None:
     """Create a run record with status 'starting'. Called at /start time."""
     async with get_session_factory()() as s:
@@ -58,6 +59,7 @@ async def create_run_starting(
                 base_branch=base_branch,
                 github_repo=github_repo,
                 model_name=model_name,
+                provider_name=provider_name,
             )
         )
         await s.commit()
@@ -140,6 +142,7 @@ async def get_run_for_resume(run_id: str) -> dict | None:
             "cache_creation_input_tokens": run.cache_creation_input_tokens,
             "cache_read_input_tokens": run.cache_read_input_tokens,
             "model_name": run.model_name,
+            "provider_name": run.provider_name,
         }
 
 

@@ -112,7 +112,8 @@ def _build_round_options(
         round_number=round_number,
         host_mounts=host_mounts,
         user_env_keys=user_env_keys,
-        user_model=options["model"],
+        user_model=bootstrap.model,
+        provider=bootstrap.provider,
         tool_call_timeout_sec=tool_call_timeout_sec,
         base_branch=bootstrap.run.base_branch,
         disabled_subagents=disabled_subagents,
@@ -223,7 +224,7 @@ async def run_rounds(
             round_number, bootstrap, time_lock, prior_reports
         )
 
-        cred_id = await acquire_and_inject(sandbox, run.run_id, bootstrap.model)
+        cred_id = await acquire_and_inject(sandbox, run.run_id, bootstrap.model, bootstrap.provider)
         result = await runner.run(options, initial_prompt, round_number)
         await report_round_outcome(run.run_id, cred_id)
         await reconcile_orphaned_agent_calls(run.run_id)

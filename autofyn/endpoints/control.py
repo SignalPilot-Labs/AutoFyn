@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 
 from fastapi import FastAPI, HTTPException
 
+from common.constants import providers_for_model
 from db.constants import CLEANABLE_RUN_STATUSES
 from endpoints.helpers import merge_tokens_into_env
 from utils import db
@@ -41,6 +42,10 @@ async def _restart_terminal_run(server: "AgentServer", body: ResumeRequest) -> d
     if not run_info["base_branch"]:
         raise HTTPException(status_code=409, detail="Run has no base_branch in DB")
 
+    # Runs created before per-run provider selection have provider_name NULL.
+    # Their model predates multi-provider, so it maps to exactly one provider.
+    provider = run_info["provider_name"] or providers_for_model(run_info["model_name"])[0]
+
     merged_env = merge_tokens_into_env(body.env, body.claude_token, body.git_token)
     start_cmd = await server.pool().resolve_start_cmd(body.sandbox_id)
     start_body = StartRequest(
@@ -49,6 +54,7 @@ async def _restart_terminal_run(server: "AgentServer", body: ResumeRequest) -> d
         duration_minutes=run_info["duration_minutes"],
         base_branch=run_info["base_branch"],
         model=run_info["model_name"],
+        provider=provider,
         github_repo=github_repo,
         env=merged_env,
         host_mounts=body.host_mounts,

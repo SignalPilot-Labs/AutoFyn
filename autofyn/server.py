@@ -353,6 +353,7 @@ class AgentServer:
                 base_branch=body.base_branch,
                 github_repo=github_repo,
                 model=body.model,
+                provider=body.provider,
                 effort=body.effort,
                 mcp_servers=body.mcp_servers,
             )

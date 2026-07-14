@@ -2,7 +2,7 @@
  * Tests for the model helpers in lib/models.tsx.
  *
  * The model list + metadata now come from /api/models at runtime (single
- * source of truth = db/constants.py). The frontend hardcodes no model list,
+ * source of truth = common/constants.py). The frontend hardcodes no model list,
  * so these tests cover only the pure helpers: looking a model up by id and
  * resolving the initial selection from a stored choice + backend default.
  *
@@ -14,8 +14,8 @@ import { findModel, resolveInitialModel, saveStoredModel, LOCALSTORAGE_MODEL_KEY
 import type { ModelInfo } from "@/lib/api";
 
 const MODELS: ModelInfo[] = [
-  { id: "claude-opus-4-8", api_model: "claude-opus-4-8", label: "Claude Opus 4.8", short: "Opus 4.8", description: "x", context: "1M", tier: "opus", provider: "anthropic" },
-  { id: "claude-sonnet-4-6", api_model: "claude-sonnet-4-6", label: "Claude Sonnet 4.6", short: "Sonnet 4.6", description: "y", context: "1M", tier: "sonnet", provider: "anthropic" },
+  { id: "claude-opus-4-8", label: "Claude Opus 4.8", short: "Opus 4.8", description: "x", context: "1M", tier: "opus" },
+  { id: "claude-sonnet-4-6", label: "Claude Sonnet 4.6", short: "Sonnet 4.6", description: "y", context: "1M", tier: "sonnet" },
 ];
 
 describe("findModel", () => {

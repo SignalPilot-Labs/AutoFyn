@@ -21,8 +21,6 @@ across providers.
 # ── Providers ──
 PROVIDER_ANTHROPIC: str = "anthropic"
 PROVIDER_OPENROUTER: str = "openrouter"
-# All credential providers the pool accepts. Anthropic is native; OpenRouter
-# is the gateway for non-Claude families. LiteLLM appends here later.
 VALID_PROVIDERS: tuple[str, ...] = (PROVIDER_ANTHROPIC, PROVIDER_OPENROUTER)
 DEFAULT_PROVIDER: str = PROVIDER_ANTHROPIC
 VALID_PROVIDERS_PATTERN: str = f"^({'|'.join(VALID_PROVIDERS)})$"
@@ -76,79 +74,75 @@ VALID_MODELS_PATTERN: str = f"^({'|'.join(VALID_MODELS)})$"
 # truth the dashboard fetches at runtime. The frontend defines no model list
 # of its own; everything textual lives here.
 #   id          — AutoFyn's stable model ID (picker, localStorage, DB Run.model_name)
-#   api_model   — the slug the provider's API expects (injected into the SDK).
-#                 Kept SEPARATE from id: the same conceptual model can have a
-#                 different slug on a different gateway (OpenRouter vs. a future
-#                 LiteLLM), so routing reads api_model, never id. For native
-#                 Anthropic models the two coincide.
 #   label       — full product name, shown in the picker
 #   short       — compact name, shown on badges/run cards
 #   description — one-line picker blurb
 #   context     — context-window blurb
 #   tier        — opus | sonnet | legacy (drives subagent tier resolution)
-#   provider    — anthropic | openrouter (drives credential + routing)
+# A model is NOT tied to one provider here: which providers can serve it (and
+# the API slug each uses) lives in MODEL_PROVIDER_SLUGS. The user picks the
+# provider per run; the dashboard offers only providers it has keys for.
 SUPPORTED_MODELS: list[dict[str, str]] = [
     {
         "id": SUPPORTED_FABLE,
-        "api_model": SUPPORTED_FABLE,
         "label": "Claude Fable 5",
         "short": "Fable 5",
         "description": "Most capable, for demanding agentic work",
         "context": "1M context",
         "tier": TIER_OPUS,
-        "provider": PROVIDER_ANTHROPIC,
     },
     {
         "id": SUPPORTED_OPUS,
-        "api_model": SUPPORTED_OPUS,
         "label": "Claude Opus 4.8",
         "short": "Opus 4.8",
         "description": "Highly capable, strong for agents",
         "context": "1M context",
         "tier": TIER_OPUS,
-        "provider": PROVIDER_ANTHROPIC,
     },
     {
         "id": SUPPORTED_SONNET,
-        "api_model": SUPPORTED_SONNET,
         "label": "Claude Sonnet 4.6",
         "short": "Sonnet 4.6",
         "description": "Fast and capable",
         "context": "1M context",
         "tier": TIER_SONNET,
-        "provider": PROVIDER_ANTHROPIC,
     },
     {
         "id": LEGACY_OPUS,
-        "api_model": LEGACY_OPUS,
         "label": "Claude Opus 4.5",
         "short": "Opus 4.5",
         "description": "Legacy Opus model",
         "context": "200K context",
         "tier": TIER_LEGACY,
-        "provider": PROVIDER_ANTHROPIC,
     },
     {
         "id": SUPPORTED_GPT_SOL,
-        "api_model": SUPPORTED_GPT_SOL,
         "label": "GPT-5.6 Sol",
         "short": "Sol",
-        "description": "OpenAI flagship, top reasoning via OpenRouter",
+        "description": "OpenAI flagship, top reasoning",
         "context": "1M context",
         "tier": TIER_OPUS,
-        "provider": PROVIDER_OPENROUTER,
     },
     {
         "id": SUPPORTED_GPT_TERRA,
-        "api_model": SUPPORTED_GPT_TERRA,
         "label": "GPT-5.6 Terra",
         "short": "Terra",
-        "description": "OpenAI balanced workhorse via OpenRouter",
+        "description": "OpenAI balanced workhorse",
         "context": "1M context",
         "tier": TIER_SONNET,
-        "provider": PROVIDER_OPENROUTER,
     },
 ]
+
+# model id -> {provider -> API slug}. A model may be served by several providers,
+# each under its own slug. Adding a gateway for a model is a data-only edit.
+MODEL_PROVIDER_SLUGS: dict[str, dict[str, str]] = {
+    SUPPORTED_FABLE: {PROVIDER_ANTHROPIC: SUPPORTED_FABLE},
+    SUPPORTED_OPUS: {PROVIDER_ANTHROPIC: SUPPORTED_OPUS},
+    SUPPORTED_SONNET: {PROVIDER_ANTHROPIC: SUPPORTED_SONNET},
+    LEGACY_OPUS: {PROVIDER_ANTHROPIC: LEGACY_OPUS},
+    SUPPORTED_GPT_SOL: {PROVIDER_OPENROUTER: SUPPORTED_GPT_SOL},
+    SUPPORTED_GPT_TERRA: {PROVIDER_OPENROUTER: SUPPORTED_GPT_TERRA},
+}
 
 # Models that support effort="max". Others get downgraded to "high".
 # Per family, only the flagship unlocks max reasoning.
@@ -174,32 +168,27 @@ _FALLBACK_MAP: dict[str, str | None] = {
     SUPPORTED_GPT_TERRA: None,
 }
 
-# model id -> provider, derived from SUPPORTED_MODELS (single source of truth).
-_MODEL_PROVIDER: dict[str, str] = {m["id"]: m["provider"] for m in SUPPORTED_MODELS}
-# model id -> tier, derived from SUPPORTED_MODELS.
+# model id -> tier, derived from SUPPORTED_MODELS (single source of truth).
 _MODEL_TIER: dict[str, str] = {m["id"]: m["tier"] for m in SUPPORTED_MODELS}
-# model id -> gateway API slug (what the provider's API actually expects).
-_MODEL_API: dict[str, str] = {m["id"]: m["api_model"] for m in SUPPORTED_MODELS}
 
 
-def api_model_for(model: str) -> str:
-    """Return the provider-API slug for an AutoFyn model ID. Fails loudly."""
-    api = _MODEL_API.get(model)
-    if api is None:
-        raise ValueError(f"no api_model for model '{model}' (not in SUPPORTED_MODELS)")
-    return api
+def api_model_for(model: str, provider: str) -> str:
+    """Return the API slug ``provider`` uses for ``model``. Fails loudly."""
+    slugs = MODEL_PROVIDER_SLUGS.get(model)
+    if slugs is None:
+        raise ValueError(f"unknown model '{model}'")
+    slug = slugs.get(provider)
+    if slug is None:
+        raise ValueError(f"provider '{provider}' does not serve model '{model}'")
+    return slug
 
 
-def provider_for_model(model: str) -> str:
-    """Return the provider that serves ``model``.
-
-    Fails loudly for an unknown model rather than defaulting to a provider —
-    a wrong default would silently route a model to the wrong gateway.
-    """
-    provider = _MODEL_PROVIDER.get(model)
-    if provider is None:
-        raise ValueError(f"no provider for model '{model}' (not in SUPPORTED_MODELS)")
-    return provider
+def providers_for_model(model: str) -> tuple[str, ...]:
+    """Return every provider that can serve ``model``. Fails loudly if unknown."""
+    slugs = MODEL_PROVIDER_SLUGS.get(model)
+    if slugs is None:
+        raise ValueError(f"unknown model '{model}'")
+    return tuple(slugs)
 
 
 def tier_for_model(model: str) -> str:
@@ -243,15 +232,11 @@ def openrouter_model_env(model: str) -> dict[str, str]:
     """Build the SDK model-override env for an OpenRouter run.
 
     Routes the SDK's opus tier to the run's model and its sonnet tier to the
-    family workhorse, so subagents resolve correctly through the gateway. Uses
-    each model's gateway api_model slug, not its AutoFyn id. Fails loudly if
-    handed a non-OpenRouter model.
+    workhorse, both by their OpenRouter slug so subagents resolve through the
+    gateway. Fails loudly if OpenRouter does not serve ``model``.
     """
-    if provider_for_model(model) != PROVIDER_OPENROUTER:
-        raise ValueError(f"openrouter_model_env called with non-OpenRouter model '{model}'")
+    workhorse = tier_model_for(PROVIDER_OPENROUTER, TIER_SONNET)
     return {
-        ENV_ANTHROPIC_DEFAULT_OPUS_MODEL: api_model_for(model),
-        ENV_ANTHROPIC_DEFAULT_SONNET_MODEL: api_model_for(
-            tier_model_for(PROVIDER_OPENROUTER, TIER_SONNET)
-        ),
+        ENV_ANTHROPIC_DEFAULT_OPUS_MODEL: api_model_for(model, PROVIDER_OPENROUTER),
+        ENV_ANTHROPIC_DEFAULT_SONNET_MODEL: api_model_for(workhorse, PROVIDER_OPENROUTER),
     }

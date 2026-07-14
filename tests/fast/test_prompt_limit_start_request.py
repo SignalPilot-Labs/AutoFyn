@@ -4,6 +4,7 @@ import pytest
 from pydantic import ValidationError
 
 from db.constants import PROMPT_MAX_LEN
+from common.constants import PROVIDER_ANTHROPIC
 from utils.models_http import StartRequest
 
 
@@ -11,18 +12,18 @@ class TestStartRequestPromptLimit:
     """Prompt size validation on the agent StartRequest model."""
 
     def test_accepts_none_prompt(self) -> None:
-        req = StartRequest(max_budget_usd=0, prompt=None)
+        req = StartRequest(provider=PROVIDER_ANTHROPIC, max_budget_usd=0, prompt=None)
         assert req.prompt is None
 
     def test_accepts_normal_prompt(self) -> None:
-        req = StartRequest(max_budget_usd=0, prompt="Fix the tests")
+        req = StartRequest(provider=PROVIDER_ANTHROPIC, max_budget_usd=0, prompt="Fix the tests")
         assert req.prompt == "Fix the tests"
 
     def test_accepts_prompt_at_exact_limit(self) -> None:
-        req = StartRequest(max_budget_usd=0, prompt="x" * PROMPT_MAX_LEN)
+        req = StartRequest(provider=PROVIDER_ANTHROPIC, max_budget_usd=0, prompt="x" * PROMPT_MAX_LEN)
         assert req.prompt is not None
         assert len(req.prompt) == PROMPT_MAX_LEN
 
     def test_rejects_prompt_over_limit(self) -> None:
         with pytest.raises(ValidationError, match="under"):
-            StartRequest(max_budget_usd=0, prompt="x" * (PROMPT_MAX_LEN + 1))
+            StartRequest(provider=PROVIDER_ANTHROPIC, max_budget_usd=0, prompt="x" * (PROMPT_MAX_LEN + 1))

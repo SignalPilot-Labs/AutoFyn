@@ -15,30 +15,24 @@ from prompts.loader import load_markdown, render_environment, render_subagent_bu
 from common.constants import (
     TIER_OPUS,
     TIER_SONNET,
-    provider_for_model,
+    api_model_for,
     tier_for_model,
     tier_model_for,
 )
 
 
-def _resolve_subagent_model(tier: str, user_model: str) -> str:
-    """Resolve a subagent tier to a concrete model ID within the run's family.
+def _resolve_subagent_model(tier: str, user_model: str, provider: str) -> str:
+    """Resolve a subagent tier to the provider's API slug for its model.
 
-    Tiers are roles, not vendor labels: opus = flagship, sonnet = workhorse.
-    The run's provider (Anthropic native, or OpenRouter for GPT-5.6) is fixed by
-    the user's model, and the tier binds to that family's flagship or workhorse.
-
-    - Opus-class run → opus-tier subagents get the user's model, sonnet-tier
-      subagents get the family workhorse (Claude Sonnet, or GPT Terra).
-    - Sonnet-class run → ALL subagents (including opus-tier) get the user's
-      model. Sonnet runs are cost-conscious — no flagship anywhere.
+    Tiers are roles: opus = flagship, sonnet = workhorse. The run's provider is
+    user-picked. An opus-class run gives opus-tier subagents the user's model and
+    sonnet-tier subagents the workhorse; a sonnet-class run gives every tier the
+    user's model (cost-conscious). The result is the provider's API slug, since
+    the subagent ``model`` field feeds the SDK directly.
     """
-    provider = provider_for_model(user_model)
-    if tier_for_model(user_model) == TIER_SONNET:
-        return user_model
-    if tier == TIER_OPUS:
-        return user_model
-    return tier_model_for(provider, TIER_SONNET)
+    if tier_for_model(user_model) == TIER_SONNET or tier == TIER_OPUS:
+        return api_model_for(user_model, provider)
+    return api_model_for(tier_model_for(provider, TIER_SONNET), provider)
 
 
 def enabled_subagents(
@@ -65,6 +59,7 @@ def build_agent_defs(
     host_mounts: list[dict[str, str]] | None,
     user_env_keys: list[str],
     user_model: str,
+    provider: str,
     tool_call_timeout_sec: int,
     base_branch: str,
     disabled_subagents: list[str] | None,
@@ -126,7 +121,7 @@ def build_agent_defs(
         result[spec.name] = {
             "description": spec.description,
             "prompt": "\n\n".join(prompt_parts),
-            "model": _resolve_subagent_model(spec.model, user_model),
+            "model": _resolve_subagent_model(spec.model, user_model, provider),
             "tools": list(spec.tools),
         }
     return result

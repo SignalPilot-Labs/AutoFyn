@@ -18,6 +18,7 @@ with patch("docker.from_env", return_value=MagicMock()):
 
 from utils.constants import ENV_KEY_GIT_TOKEN
 from utils.models import ActiveRun
+from common.constants import PROVIDER_ANTHROPIC
 from utils.models_http import StartRequest
 
 
@@ -56,6 +57,7 @@ class TestBudgetEnvFallback:
         srv = _make_server()
         active = _make_active_run("aaaaaaaa-0000-0000-0000-000000000011")
         body = StartRequest(
+            provider=PROVIDER_ANTHROPIC,
             github_repo="owner/repo",
             prompt="fix the bug",
             max_budget_usd=0.0,
@@ -77,6 +79,7 @@ class TestBudgetEnvFallback:
         srv = _make_server()
         active = _make_active_run("aaaaaaaa-0000-0000-0000-000000000012")
         body = StartRequest(
+            provider=PROVIDER_ANTHROPIC,
             github_repo="owner/repo",
             prompt="fix the bug",
             max_budget_usd=10.0,

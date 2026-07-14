@@ -81,6 +81,7 @@ def register_run_routes(app: FastAPI, server: "AgentServer") -> None:
                 body.base_branch,
                 body.github_repo,
                 body.model,
+                body.provider,
             )
 
             await log_audit(run_id, "run_starting", {

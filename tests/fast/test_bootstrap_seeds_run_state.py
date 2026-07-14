@@ -9,6 +9,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from config.constants import SANDBOX_KIND_DOCKER, SandboxResources
+from common.constants import PROVIDER_ANTHROPIC
 from lifecycle.bootstrap import bootstrap_run
 from utils.constants import MEMORY_DIR, RUN_STATE_PATH, RUN_STATE_TEMPLATE
 
@@ -54,8 +55,8 @@ class TestBootstrapSeedsRunState:
                 base_branch="main",
                 github_repo="owner/repo",
                 model="claude-sonnet-4-6",
+                provider=PROVIDER_ANTHROPIC,
                 effort="high",
-
                 mcp_servers=None,
             )
 
@@ -97,6 +98,7 @@ class TestBootstrapSeedsRunState:
                         base_branch="main",
                         github_repo="owner/repo",
                         model="claude-sonnet-4-6",
+                        provider=PROVIDER_ANTHROPIC,
                         effort="high",
                         mcp_servers=None,
                     )
@@ -132,6 +134,7 @@ class TestBootstrapSeedsRunState:
                 base_branch="main",
                 github_repo="owner/repo",
                 model="claude-sonnet-4-6",
+                provider=PROVIDER_ANTHROPIC,
                 effort="high",
                 mcp_servers=None,
             )

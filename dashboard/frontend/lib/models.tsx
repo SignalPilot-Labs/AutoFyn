@@ -25,18 +25,22 @@ interface ModelsContextValue {
   models: ModelInfo[];
   /** Default model id from the backend, or "" until loaded. */
   defaultModel: string;
+  /** model id -> providers the user has keys for that can serve it. */
+  providersByModel: Record<string, string[]>;
   loading: boolean;
 }
 
 const ModelsContext = createContext<ModelsContextValue>({
   models: [],
   defaultModel: "",
+  providersByModel: {},
   loading: true,
 });
 
 export function ModelsProvider({ children }: { children: ReactNode }): React.ReactElement {
   const [models, setModels] = useState<ModelInfo[]>([]);
   const [defaultModel, setDefaultModel] = useState<string>("");
+  const [providersByModel, setProvidersByModel] = useState<Record<string, string[]>>({});
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -46,6 +50,7 @@ export function ModelsProvider({ children }: { children: ReactNode }): React.Rea
         if (cancelled) return;
         setModels(res.models);
         setDefaultModel(res.default);
+        setProvidersByModel(res.providers_by_model);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -56,7 +61,7 @@ export function ModelsProvider({ children }: { children: ReactNode }): React.Rea
   }, []);
 
   return (
-    <ModelsContext.Provider value={{ models, defaultModel, loading }}>
+    <ModelsContext.Provider value={{ models, defaultModel, providersByModel, loading }}>
       {children}
     </ModelsContext.Provider>
   );

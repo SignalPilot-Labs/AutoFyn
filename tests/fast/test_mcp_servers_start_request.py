@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from common.constants import PROVIDER_ANTHROPIC
 from utils.models_http import StartRequest
 from utils.models import RunContext
 
@@ -36,6 +37,7 @@ class TestStartRequestMcpServers:
         req = StartRequest(
             prompt="fix the bug",
             max_budget_usd=10.0,
+            provider=PROVIDER_ANTHROPIC,
             github_repo="org/repo",
             mcp_servers=None,
         )
@@ -46,6 +48,7 @@ class TestStartRequestMcpServers:
         req = StartRequest(
             prompt="fix the bug",
             max_budget_usd=10.0,
+            provider=PROVIDER_ANTHROPIC,
             github_repo="org/repo",
             mcp_servers=_SAMPLE_MCP_SERVERS,
         )
@@ -56,6 +59,7 @@ class TestStartRequestMcpServers:
         req = StartRequest(
             prompt="fix the bug",
             max_budget_usd=10.0,
+            provider=PROVIDER_ANTHROPIC,
             github_repo="org/repo",
         )
         assert req.mcp_servers is None
@@ -65,6 +69,7 @@ class TestStartRequestMcpServers:
         req = StartRequest(
             prompt="fix the bug",
             max_budget_usd=10.0,
+            provider=PROVIDER_ANTHROPIC,
             github_repo="org/repo",
             mcp_servers={},
         )
@@ -82,6 +87,7 @@ class TestBuildBaseSessionOptionsMcpServers:
         opts = _build_base_session_options(
             run=run,
             model="claude-opus-4-8",
+            provider=PROVIDER_ANTHROPIC,
             fallback_model=None,
             max_budget_usd=10.0,
             effort="high",
@@ -99,6 +105,7 @@ class TestBuildBaseSessionOptionsMcpServers:
         opts = _build_base_session_options(
             run=run,
             model="claude-opus-4-8",
+            provider=PROVIDER_ANTHROPIC,
             fallback_model=None,
             max_budget_usd=10.0,
             effort="high",
@@ -116,6 +123,7 @@ class TestBuildBaseSessionOptionsMcpServers:
         opts = _build_base_session_options(
             run=run,
             model="claude-opus-4-8",
+            provider=PROVIDER_ANTHROPIC,
             fallback_model=None,
             max_budget_usd=0.0,
             effort="high",

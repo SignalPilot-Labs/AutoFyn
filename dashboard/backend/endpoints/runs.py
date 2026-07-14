@@ -32,10 +32,11 @@ from backend.utils import (
     agent_request,
     model_to_dict,
     read_credentials,
+    read_token_pool,
     send_control_signal,
     session,
 )
-from common.constants import DEFAULT_MODEL, SUPPORTED_MODELS
+from common.constants import DEFAULT_MODEL, SUPPORTED_MODELS, providers_for_model
 from db.constants import (
     ACTIVE_RUN_STATUSES,
     RUN_STATUS_PAUSED,
@@ -237,6 +238,7 @@ async def start_agent_run(body: StartRunRequest) -> dict:
         "duration_minutes": body.duration_minutes,
         "base_branch": body.base_branch,
         "model": body.model,
+        "provider": body.provider,
         "effort": body.effort,
         "claude_token": creds.get("claude_token"),
         "git_token": creds.get("git_token"),
@@ -395,7 +397,28 @@ async def get_diff_tmp(run_id: str = RunId, expand: str | None = None) -> dict:
     )
 
 
+async def _providers_by_model() -> dict[str, list[str]]:
+    """Map each supported model to the providers the user can actually use.
+
+    A provider is offered for a model only when it can serve the model AND the
+    user holds at least one token for it. Order follows providers_for_model.
+    """
+    async with session() as s:
+        tokens = await read_token_pool(s, for_update=False)
+    key_providers = {t.provider for t in tokens}
+    return {
+        model["id"]: [
+            p for p in providers_for_model(model["id"]) if p in key_providers
+        ]
+        for model in SUPPORTED_MODELS
+    }
+
+
 @router.get("/models")
 async def get_models() -> dict:
-    """Return the list of supported models and the default."""
-    return {"models": SUPPORTED_MODELS, "default": DEFAULT_MODEL}
+    """Return supported models, the default, and usable providers per model."""
+    return {
+        "models": SUPPORTED_MODELS,
+        "default": DEFAULT_MODEL,
+        "providers_by_model": await _providers_by_model(),
+    }
