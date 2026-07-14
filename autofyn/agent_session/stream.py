@@ -17,6 +17,8 @@ from utils import db
 from utils.db_logging import log_audit, log_audit_idempotent, log_tool_call_idempotent
 from utils.constants import (
     LOG_PREVIEW_LIMIT,
+    STREAM_EVENT_MESSAGE_DELTA,
+    USAGE_COST_KEY,
     USAGE_EMIT_INTERVAL,
     cost_per_cache_read,
     cost_per_cache_write,
@@ -55,12 +57,16 @@ class StreamDispatcher:
         self._output_baseline: int = run.total_output_tokens
         self._cache_create_baseline: int = run.cache_creation_input_tokens
         self._cache_read_baseline: int = run.cache_read_input_tokens
+        # Gateway-reported cost accrued this round; a dispatcher is per-round, so
+        # this starts at zero and only grows while the round runs.
+        self._round_gateway_cost: float = 0.0
         self._message_count: int = 0
         self._latest_context_tokens: int = 0
         self._tools_in_flight: int = 0
         self._sandbox_session_id: str | None = None
         self._dispatch_table: dict[str, EventHandler] = {
             "assistant_message": self._on_assistant_message,
+            "stream_event": self._on_stream_event,
             "tool_use": self._on_tool_use,
             "tool_done": self._on_tool_done,
             "subagent_start": self._on_subagent_start,
@@ -102,6 +108,10 @@ class StreamDispatcher:
 
     async def _on_assistant_message(self, data: dict) -> StreamSignal:
         await self._handle_assistant_message(data)
+        return StreamSignal(kind="continue")
+
+    async def _on_stream_event(self, data: dict) -> StreamSignal:
+        await self._handle_stream_event(data)
         return StreamSignal(kind="continue")
 
     async def _on_tool_use(self, data: dict) -> StreamSignal:
@@ -246,7 +256,18 @@ class StreamDispatcher:
                     )
             elif block_type == "tool_use":
                 log.info("[%s] Tool: %s", self._rid, block.get("name", ""))
-        await self._accumulate_usage(data)
+
+    async def _handle_stream_event(self, data: dict) -> None:
+        """Accumulate settled usage from a message_delta stream event.
+
+        message_delta is the only event both providers populate: Anthropic
+        fills message_start too, but OpenRouter zeroes it and settles usage
+        only at the delta, which also carries the gateway's real cost.
+        """
+        event = data.get("event") or {}
+        if event.get("type") != STREAM_EVENT_MESSAGE_DELTA:
+            return
+        await self._accumulate_usage(event)
 
     def _handle_subagent_start(self, data: dict) -> None:
         """Record a subagent starting in the tracker."""
@@ -336,20 +357,16 @@ class StreamDispatcher:
         ResultMessage carries the authoritative cost for THIS round's
         session. We add it to the prior-rounds baseline and rebase so any
         late assistant_messages in this round (rare) can't double-count.
-        A gateway that does not bill through Anthropic reports 0.0 rather
-        than omitting the field, so a zero cost is only authoritative when
-        the round spent no tokens either.
+        A gateway that billed us directly already reported its real cost per
+        message_delta, and the SDK reports 0.0 for those rounds because it did
+        not bill them — so the gateway's figure wins.
         """
         run_id = self._run.run_id
         session_id = data.get("session_id")
         if session_id:
             await db.save_session_id(run_id, session_id)
         round_cost = data.get("total_cost_usd")
-        spent_tokens = (
-            self._run.total_input_tokens > self._input_baseline
-            or self._run.total_output_tokens > self._output_baseline
-        )
-        if round_cost is not None and not (round_cost == 0.0 and spent_tokens):
+        if round_cost is not None and not self._round_gateway_cost:
             self._run.total_cost = self._cost_baseline + round_cost
             self._cost_baseline = self._run.total_cost
             self._input_baseline = self._run.total_input_tokens
@@ -358,13 +375,25 @@ class StreamDispatcher:
             self._cache_read_baseline = self._run.cache_read_input_tokens
         await self._persist_cost()
 
+    def _estimated_round_cost(self) -> float:
+        """Cost of this round's tokens at the configured (Opus upper-bound) rates."""
+        return (
+            (self._run.total_input_tokens - self._input_baseline) * cost_per_input()
+            + (self._run.total_output_tokens - self._output_baseline) * cost_per_output()
+            + (self._run.cache_creation_input_tokens - self._cache_create_baseline)
+            * cost_per_cache_write()
+            + (self._run.cache_read_input_tokens - self._cache_read_baseline)
+            * cost_per_cache_read()
+        )
+
     async def _accumulate_usage(self, data: dict) -> None:
         """Accumulate token usage and emit a throttled usage audit event.
 
-        Running cost estimate uses ONLY this round's delta (current totals
-        minus baselines captured at round start) added to the prior-rounds
-        baseline. ResultMessage replaces this estimate with the SDK's
-        authoritative cost for the round.
+        Running cost uses ONLY this round's delta (current totals minus
+        baselines captured at round start) added to the prior-rounds baseline.
+        A gateway that bills us directly reports what it actually charged, which
+        is preferred over the rate estimate; Anthropic omits it and settles at
+        ResultMessage instead.
         """
         usage = data.get("usage")
         if usage:
@@ -380,19 +409,13 @@ class StreamDispatcher:
             self._run.total_output_tokens += out
             self._run.cache_creation_input_tokens += cache_create
             self._run.cache_read_input_tokens += cache_read
-            round_input = self._run.total_input_tokens - self._input_baseline
-            round_output = self._run.total_output_tokens - self._output_baseline
-            round_cache_create = (
-                self._run.cache_creation_input_tokens - self._cache_create_baseline
-            )
-            round_cache_read = (
-                self._run.cache_read_input_tokens - self._cache_read_baseline
-            )
+            gateway_cost = usage.get(USAGE_COST_KEY)
+            if gateway_cost is not None:
+                self._round_gateway_cost += gateway_cost
             self._run.total_cost = self._cost_baseline + (
-                round_input * cost_per_input()
-                + round_output * cost_per_output()
-                + round_cache_create * cost_per_cache_write()
-                + round_cache_read * cost_per_cache_read()
+                self._round_gateway_cost
+                if self._round_gateway_cost
+                else self._estimated_round_cost()
             )
         self._message_count += 1
         if self._message_count % USAGE_EMIT_INTERVAL == 0:

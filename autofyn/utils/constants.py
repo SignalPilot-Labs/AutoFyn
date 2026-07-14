@@ -161,6 +161,8 @@ INJECT_PAYLOAD_MAX_LEN = 50000
 
 # ── Usage Tracking ──
 USAGE_EMIT_INTERVAL = 10  # Emit usage audit event every N assistant messages
+STREAM_EVENT_MESSAGE_DELTA = "message_delta"  # Stream event carrying settled usage
+USAGE_COST_KEY = "cost"  # Gateway-reported cost, present only on OpenRouter
 
 # ── SSE Event Processing ──
 SSE_TRIM_INTERVAL = 100  # Trim processed events from sandbox memory every N events

@@ -86,7 +86,13 @@ def summarize(data: Any) -> dict:
 def serialize_message(message: object) -> dict | None:
     """Convert SDK message to a JSON-serializable event dict."""
     if isinstance(message, StreamEvent):
-        return {"event": "stream_event", "data": {"event": message.event or {}}}
+        return {
+            "event": "stream_event",
+            "data": {
+                "event": message.event or {},
+                "parent_tool_use_id": message.parent_tool_use_id,
+            },
+        }
     if isinstance(message, AssistantMessage):
         blocks = []
         for block in message.content:
