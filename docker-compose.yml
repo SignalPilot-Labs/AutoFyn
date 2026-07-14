@@ -102,6 +102,10 @@ services:
     build:
       context: .
       dockerfile: sandbox/Dockerfile.gvisor
+      args:
+        # Undeclared args are dropped by compose, so build.sh's value would
+        # never reach the Dockerfile without this.
+        CLAUDE_CODE_VERSION: ${CLAUDE_CODE_VERSION}
     container_name: autofyn-sandbox
     restart: unless-stopped
     environment:
