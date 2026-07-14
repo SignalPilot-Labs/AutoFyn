@@ -1,22 +1,35 @@
 # Credential Providers & Model Families
 
-How AutoFyn decides which credential and which API endpoint a run uses. One source of truth for the two-provider design, so the next provider (LiteLLM) slots in without re-litigating any of this.
+How AutoFyn decides which credential and which API endpoint a run uses. One source of truth for the multi-provider design, so a second gateway for a model slots in without re-litigating any of this.
 
-## The two choices
+## The choices
 
 **Anthropic — native, first-class.** Claude models run directly against the Anthropic subscription via `CLAUDE_CODE_OAUTH_TOKEN` (from `claude setup-token`). No proxy, no translation layer, exact SDK model IDs. This is the home turf; every other family is measured against it.
 
-**OpenRouter — gateway for non-Claude families.** Models Anthropic does not serve (today: GPT-5.6 Sol and Terra) reach the SDK through OpenRouter's Anthropic-compatible endpoint. OpenRouter is a transport for other vendors' models — it is **never** a second way to reach Claude. LiteLLM will later be a second gateway with the same shape.
+**OpenRouter — gateway for non-Claude families.** Models Anthropic does not serve (today: GPT-5.6 Sol and Terra) reach the SDK through OpenRouter's Anthropic-compatible endpoint. OpenRouter is a transport for other vendors' models — it is **never** used to reach Claude (a gateway hop for Claude is strictly worse: extra latency and margin, no upside).
 
-**Claude is never served through OpenRouter.** Running Claude through a gateway is strictly worse (extra hop, extra margin, no upside), and — more importantly — it would let one model belong to two providers. Forbidding it keeps the core invariant below.
+## A model can be served by more than one provider
 
-## Core invariant: one model, one provider → one run, one provider
+Provider is **not** a fixed property of a model. The same model may be reachable through several gateways (and a user may hold keys for several), so the model↔provider link is a **relation**, not a per-model field:
 
-Every model belongs to exactly one provider (`SUPPORTED_MODELS[*].provider`). A run's model therefore fixes its provider for the whole run. Consequences:
+```
+MODEL_PROVIDER_SLUGS: model_id -> { provider -> API slug }
+```
 
-- The broker rotates only over that provider's tokens (`credentials.py` filters the pool by provider before leasing).
-- Credential injection is provider-specific and needs **no cross-provider clearing** — a run never switches providers mid-flight, so there is no stale env to scrub.
-- A GPT run with no OpenRouter tokens fails loudly (`no openrouter credentials configured`) instead of silently falling back to an Anthropic key.
+`providers_for_model(model)` returns every provider that can serve a model; `api_model_for(model, provider)` returns that provider's slug for it. Both fail loud on unknown input.
+
+**The user picks the provider per run.** The start modal cascades: pick a model, then pick a provider from a dropdown filtered to the providers you hold keys for (`GET /api/models` returns `providers_by_model`, computed from the token pool). One available provider → auto-selected and shown read-only; zero → a distinct "no keys for this model" state that disables start.
+
+## A run is single-provider
+
+Once picked, a run is pinned to one provider for its whole life. Consequences:
+
+- The broker rotates only over that provider's tokens (`credentials.py` filters the pool by `t.provider == run.provider` before leasing) and round-robins that provider's N keys.
+- Credential injection is provider-specific and needs **no cross-provider clearing** — a run never switches providers mid-flight, so there is no stale env to scrub. No cross-gateway spillover mid-run.
+- A run whose provider has no tokens fails loudly (`no <provider> credentials configured`) instead of silently borrowing another provider's key.
+- The run stores its provider (`Run.provider_name`) so resume re-injects the same one. Pre-migration runs (NULL) backfill it from the model — unambiguous while a model has a single provider.
+
+Today Anthropic serves the Claude models and OpenRouter serves GPT-5.6, so every model currently has exactly one available provider. The relation is fully general regardless: adding a second gateway for a model is a data-only edit.
 
 ## Tiers are roles, not vendor labels
 
@@ -40,12 +53,12 @@ Max-effort membership (`MODELS_SUPPORTING_MAX_EFFORT`) is **per model**, not per
 
 ## Model ID vs. gateway slug
 
-Each `SUPPORTED_MODELS` entry carries two identifiers that must stay distinct:
+Two identifiers that must stay distinct:
 
-- `id` — AutoFyn's stable identifier. Flows through the picker, `localStorage`, the DB (`Run.model_name`), and `VALID_MODELS`.
-- `api_model` — the slug the provider's API actually expects, injected into the SDK.
+- `id` — AutoFyn's stable identifier. Flows through the picker, `localStorage`, the DB (`Run.model_name`), and `VALID_MODELS`. Drives tier resolution.
+- **API slug** — what a provider's API expects, injected into the SDK. Lives per (model, provider) in `MODEL_PROVIDER_SLUGS` and is read only at the SDK boundary via `api_model_for(model, provider)`.
 
-Today they coincide for every model (`openai/gpt-5.6-sol` is both). They are kept separate on purpose: the **same conceptual model can have a different slug on a different gateway** — GPT-5.6 Sol is `openai/gpt-5.6-sol` on OpenRouter but may be something else under LiteLLM. Routing always reads `api_model` (`api_model_for()`), never `id`, so adding LiteLLM later is a new set of entries with the same conceptual ids and their own slugs — no translation layer, no guessing.
+They are separate on purpose: the **same model can have a different slug on a different gateway**. Routing always resolves the slug from (model, provider), never reuses the `id` — so a second gateway for a model is a new key in the relation with its own slug, no translation layer. The slug is never stored or threaded around as a second identity; everything upstream of the SDK boundary uses the `id`.
 
 ## Env-var contract per provider
 
@@ -60,10 +73,14 @@ Injected per round by `acquire_and_inject` → `_provider_env`:
 
 Provider and model constants and helpers live in `common/constants.py` (the credential/model domain, shared across the agent, sandbox, dashboard, and broker). DB-row keys and cooldown timing stay in `db/constants.py`.
 
-To add a provider or model:
+**Add a gateway for an existing model** (the common case) — a data-only edit: append `PROVIDER_<NAME>: "<slug>"` to that model's entry in `MODEL_PROVIDER_SLUGS`. The picker offers it automatically once the user has a key for it.
 
-1. `common/constants.py` — add `PROVIDER_<NAME>` and extend `VALID_PROVIDERS`; add model IDs, a `SUPPORTED_MODELS` entry per model (with `id`, `api_model`, `tier`, `provider`), and the tier mapping in `_PROVIDER_TIER_MODELS`; add flagship models to `MODELS_SUPPORTING_MAX_EFFORT`; give each model a `_FALLBACK_MAP` entry. Add any gateway env-var names + base URL.
+**Add a new provider:**
+
+1. `common/constants.py` — add `PROVIDER_<NAME>`, extend `VALID_PROVIDERS`, add the gateway env-var names + base URL, and add `<provider>` keys to the relevant `MODEL_PROVIDER_SLUGS` entries and `_PROVIDER_TIER_MODELS`.
 2. `_provider_env` in `autofyn/lifecycle/credentials.py` — add the injection branch for the new provider (fail loud on unknown).
-3. `dashboard/frontend/lib/constants.ts` — add the provider to `CREDENTIAL_PROVIDERS` and a `TOKEN_PLACEHOLDERS` entry; `ModelSelector.tsx` `PROVIDER_LABELS` for the group header.
+3. `dashboard/frontend/lib/constants.ts` — add the provider to `CREDENTIAL_PROVIDERS` and a `TOKEN_PLACEHOLDERS` entry.
 
-Sync/regression tests enforce the contract: `tests/fast/test_model_sync.py` (every model has the required fields, matching the TS `ModelInfo` interface), `tests/fast/test_provider_model_mapping.py` (every `VALID_MODELS` entry maps to a valid provider, tier, and api_model — `provider_for_model` is total). See also `docs/design-system.md` for the frontend token/primitive rules the settings UI follows.
+**Add a new model:** add its `id` + `SUPPORTED_MODELS` entry (`id`, `label`, `short`, `description`, `context`, `tier`), a `MODEL_PROVIDER_SLUGS` entry (≥1 provider→slug), and a `_FALLBACK_MAP` entry; add flagships to `MODELS_SUPPORTING_MAX_EFFORT`.
+
+Sync/regression tests enforce the contract: `tests/fast/test_model_sync.py` (every model has the required fields matching the TS `ModelInfo`, and `SUPPORTED_MODELS` ids ↔ `MODEL_PROVIDER_SLUGS` keys are in parity), `tests/fast/test_provider_model_mapping.py` (every model maps to ≥1 valid provider, a tier, and a per-provider slug — all total, fail loud). See also `docs/design-system.md` for the frontend token/primitive rules the settings UI follows.
