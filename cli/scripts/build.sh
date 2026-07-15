@@ -9,6 +9,9 @@ PYTHON_VERSION=3.12
 NODE_VERSION=24
 UV_VERSION=0.11
 GVISOR_VERSION=20260323.0
+# Ships CLAUDE_CODE_DISABLE_BACKGROUND_TASKS, which is what bans background
+# subagents. Verify the var still exists before bumping.
+CLAUDE_CODE_VERSION=2.1.209
 DOCKER_CLI_VERSION=27.5.1
 POSTGRES_VERSION=16
 UBUNTU_VERSION=22.04
@@ -17,6 +20,7 @@ docker compose build \
     --build-arg NODE_VERSION="$NODE_VERSION" \
     --build-arg UV_VERSION="$UV_VERSION" \
     --build-arg GVISOR_VERSION="$GVISOR_VERSION" \
+    --build-arg CLAUDE_CODE_VERSION="$CLAUDE_CODE_VERSION" \
     --build-arg DOCKER_CLI_VERSION="$DOCKER_CLI_VERSION" \
     --build-arg POSTGRES_VERSION="$POSTGRES_VERSION" \
     --build-arg UBUNTU_VERSION="$UBUNTU_VERSION"

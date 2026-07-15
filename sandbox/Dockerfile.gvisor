@@ -10,6 +10,7 @@ ARG PYTHON_VERSION=3.12
 ARG NODE_VERSION=24
 ARG GVISOR_VERSION=20260323.0
 ARG UV_VERSION=0.11
+ARG CLAUDE_CODE_VERSION=2.1.209
 
 FROM docker.io/astral/uv:${UV_VERSION} AS uv
 FROM python:${PYTHON_VERSION}-slim
@@ -21,6 +22,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV GIT_TERMINAL_PROMPT=0
 ARG GVISOR_VERSION
 ARG NODE_VERSION
+ARG CLAUDE_CODE_VERSION
 
 # System deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -51,7 +53,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Claude Code CLI
-RUN npm install -g @anthropic-ai/claude-code
+RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}
 
 # Frontend dev tools
 RUN npm install -g \
