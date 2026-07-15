@@ -1,0 +1,2 @@
+ALWAYS: Numerically cross-check an explorer's newly claimed hidden cyclicity or metric identity against another explorer's generic sample before making it a proof spine (because B,C,K,L cyclic and its consequences were explicitly contradicted by a valid numerical configuration, round 1).
+NEVER: Merge incompatible explorer claims merely because each report is internally plausible; isolate the false structural branch and preserve rival routes that do not depend on it (because the structure and analogy reports disagreed on B,C,K,L cyclicity, round 1).

@@ -1,0 +1,50 @@
+{
+  "antipode-quarter-turn": {
+    "copied_from": null,
+    "elo": 1502.110506192537,
+    "expanded": 1,
+    "last_note": "Correct antipode and Thales reductions recorded, but no quarter-turn cancellation proving XB=XC is supplied.",
+    "last_outcome": "advanced",
+    "last_round": 1,
+    "selected": 1,
+    "slug": "antipode-quarter-turn",
+    "stale": false,
+    "summary": "The A-antipode turns OM=ON into XB=XC, targeted by cancellation among complex quarter-turn and ray equations."
+  },
+  "inverted-circle-intercepts": {
+    "copied_from": null,
+    "elo": 1467.235950090175,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 1,
+    "slug": "inverted-circle-intercepts",
+    "stale": false,
+    "summary": "Equal powers and inversion at A reduce the claim to a signed affine intercept identity for the inverted circumcircle."
+  },
+  "oriented-determinant-elimination": {
+    "copied_from": null,
+    "elo": 1531.2975328274754,
+    "expanded": 2,
+    "last_note": "Ray/sign derivations advanced, but the compact residual table is algebraically incorrect (difference 2hqr x modulo unit-circle identities), and the decisive implication remains unproved.",
+    "last_outcome": "partial",
+    "last_round": 2,
+    "selected": 1,
+    "slug": "oriented-determinant-elimination",
+    "stale": true,
+    "summary": "Oriented trigonometric coordinates reduce OM=ON to an explicit determinant residual controlled by two incidence equations."
+  },
+  "sine-product-antipode": {
+    "copied_from": null,
+    "elo": 1499.3560108898125,
+    "expanded": 1,
+    "last_note": "Correct antipode reduction survives, but the advertised sine-product cancellation is not exhibited and may leave an extra factor.",
+    "last_outcome": "partial",
+    "last_round": 1,
+    "selected": 1,
+    "slug": "sine-product-antipode",
+    "stale": false,
+    "summary": "The A-antipode turns OM=ON into XB=XC, targeted by a directed four-triangle sine-product cancellation."
+  }
+}
