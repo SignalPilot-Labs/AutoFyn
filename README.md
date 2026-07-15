@@ -31,18 +31,18 @@ Give AutoFyn a repo, a goal, and a time limit. Walk away. Come back to a PR.
 ### Security audits
 
 - **[Next.js](https://github.com/vercel/next.js)** — 8 vulnerabilities (1 High, 4 Medium, 3 Low). Responsibly disclosed via HackerOne. [CVEs](docs/cves.md#nextjs)
-- **[pnpm](https://github.com/pnpm/pnpm)** — 7 vulnerabilities (1 High, 5 Medium, 1 Low), 3 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#pnpm)
+- **[pnpm](https://github.com/pnpm/pnpm)** — 7 vulnerabilities (1 High, 5 Medium, 1 Low), 3 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#pnpm) · [Report](results/audit_reports/pnpm.md)
 - **[MetaMask Extension](https://github.com/MetaMask/metamask-extension)** — 12 vulnerabilities (3 High, 7 Medium, 2 Low), 3 exploit chains. Responsibly disclosed via HackerOne. [CVEs](docs/cves.md#metamask-extension)
-- **[Warp](https://github.com/warpdotdev/Warp)** — 30 vulnerabilities (6 Critical, 7 High, 8 Medium, 9 Low), 3 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#warp)
+- **[Warp](https://github.com/warpdotdev/Warp)** — 30 vulnerabilities (6 Critical, 7 High, 8 Medium, 9 Low), 3 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#warp) · [Report](results/audit_reports/warp.md)
 - **[Langflow](https://github.com/langflow-ai/langflow)** — 22 vulnerabilities (3 Critical, 13 High, 6 Medium), 4 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#langflow)
-- **[Hermes Agent](https://github.com/NousResearch/hermes-agent)** — 36 vulnerabilities (13 Critical, 22 High, 1 Medium), 18 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#hermes-agent)
+- **[Hermes Agent](https://github.com/NousResearch/hermes-agent)** — 36 vulnerabilities (13 Critical, 22 High, 1 Medium), 18 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#hermes-agent) · [Report](results/audit_reports/hermes-agent.md)
 - **[Agent TARS](https://github.com/bytedance/UI-TARS-desktop)** — 25 vulnerabilities (4 Critical, 18 High, 3 Medium), 20 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#agent-tars)
 - **[RAGFlow](https://github.com/infiniflow/ragflow)** — 17 vulnerabilities (5 Critical, 11 High, 1 Medium), 5 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#ragflow)
 - **[LiteLLM](https://github.com/BerriAI/litellm)** — 14 vulnerabilities (3 Critical, 4 High, 4 Medium, 3 Low), 2 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#litellm) · [Report](results/audit_reports/litellm.md)
 - **[Open WebUI](https://github.com/open-webui/open-webui)** — 12 vulnerabilities (4 Critical, 5 High, 3 Medium), 4 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#open-webui) · [Report](results/audit_reports/open-webui.md)
 - **[Twenty](https://github.com/twentyhq/twenty)** — 2 vulnerabilities (1 High, 1 Low), 1 exploit chain. Responsibly disclosed. [CVEs](docs/cves.md#twenty)
 - **[Supermemory](https://github.com/supermemoryai/supermemory)** — 4 vulnerabilities (1 High, 3 Medium), 4 exploit chains. Responsibly disclosed via email to Supermemory.
-- **[Phantom Connect SDK](https://github.com/phantom/phantom-connect-sdk)** — 8 vulnerabilities (5 Medium, 3 Low), 1 exploit chain. Responsibly disclosed. [CVEs](docs/cves.md#phantom-connect-sdk)
+- **[Phantom Connect SDK](https://github.com/phantom/phantom-connect-sdk)** — 8 vulnerabilities (5 Medium, 3 Low), 1 exploit chain. Responsibly disclosed. [CVEs](docs/cves.md#phantom-connect-sdk) · [Report](results/audit_reports/phantom-connect-sdk.md)
 
 ### Software engineering
 
