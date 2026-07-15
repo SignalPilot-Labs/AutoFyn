@@ -15,12 +15,12 @@ import type { ModelInfo } from "@/lib/api";
 
 const MODELS: ModelInfo[] = [
   { id: "claude-opus-4-8", label: "Claude Opus 4.8", short: "Opus 4.8", description: "x", context: "1M", tier: "opus" },
-  { id: "claude-sonnet-4-6", label: "Claude Sonnet 4.6", short: "Sonnet 4.6", description: "y", context: "1M", tier: "sonnet" },
+  { id: "claude-sonnet-5", label: "Claude Sonnet 5", short: "Sonnet 5", description: "y", context: "1M", tier: "sonnet" },
 ];
 
 describe("findModel", () => {
   it("returns the matching model by exact id", () => {
-    expect(findModel(MODELS, "claude-sonnet-4-6")?.short).toBe("Sonnet 4.6");
+    expect(findModel(MODELS, "claude-sonnet-5")?.short).toBe("Sonnet 5");
   });
 
   it("returns null for an unknown id (no alias resolution)", () => {
@@ -46,8 +46,8 @@ describe("resolveInitialModel", () => {
   });
 
   it("uses the stored model when it is a known id", () => {
-    saveStoredModel("claude-sonnet-4-6");
-    expect(resolveInitialModel(MODELS, "claude-opus-4-8")).toBe("claude-sonnet-4-6");
+    saveStoredModel("claude-sonnet-5");
+    expect(resolveInitialModel(MODELS, "claude-opus-4-8")).toBe("claude-sonnet-5");
   });
 
   it("falls back to the backend default when nothing is stored", () => {

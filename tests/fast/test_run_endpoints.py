@@ -14,8 +14,8 @@ class TestStartRequestModel:
         assert req.model == DEFAULT_MODEL
 
     def test_can_be_set_to_sonnet(self) -> None:
-        req = StartRequest(provider=PROVIDER_ANTHROPIC, max_budget_usd=0, model="claude-sonnet-4-6")
-        assert req.model == "claude-sonnet-4-6"
+        req = StartRequest(provider=PROVIDER_ANTHROPIC, max_budget_usd=0, model="claude-sonnet-5")
+        assert req.model == "claude-sonnet-5"
 
     def test_can_be_set_to_opus_4_5(self) -> None:
         req = StartRequest(provider=PROVIDER_ANTHROPIC, max_budget_usd=0, model="claude-opus-4-5")
@@ -30,6 +30,6 @@ class TestStartRequestModel:
             StartRequest(provider=PROVIDER_ANTHROPIC, max_budget_usd=0, model="opus")
 
     def test_included_in_serialization(self) -> None:
-        req = StartRequest(provider=PROVIDER_ANTHROPIC, max_budget_usd=0, model="claude-sonnet-4-6")
+        req = StartRequest(provider=PROVIDER_ANTHROPIC, max_budget_usd=0, model="claude-sonnet-5")
         data = req.model_dump()
-        assert data["model"] == "claude-sonnet-4-6"
+        assert data["model"] == "claude-sonnet-5"

@@ -44,7 +44,7 @@ Pairing is **within a family**, keyed on the model's `family` field (not its pro
 
 | Family   | `opus` (flagship)  | `sonnet` (workhorse) |
 | -------- | ------------------ | -------------------- |
-| claude   | Opus 4.8 / Fable 5 | Sonnet 4.6           |
+| claude   | Opus 4.8 / Fable 5 | Sonnet 5             |
 | gpt      | Sol                | Terra                |
 | deepseek | V4 Pro             | V4 Flash             |
 | glm      | GLM 5.2            | GLM 5.2 (self-pairs) |

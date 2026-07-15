@@ -19,7 +19,7 @@ vi.mock("@/lib/models", async (importOriginal) => {
     useModels: () => ({
       models: [
         { id: "claude-opus-4-8", label: "Claude Opus 4.8", short: "Opus 4.8", description: "x", context: "1M", tier: "opus" },
-        { id: "claude-sonnet-4-6", label: "Claude Sonnet 4.6", short: "Sonnet 4.6", description: "y", context: "1M", tier: "sonnet" },
+        { id: "claude-sonnet-5", label: "Claude Sonnet 5", short: "Sonnet 5", description: "y", context: "1M", tier: "sonnet" },
         { id: "openai/gpt-5.6-sol", label: "GPT-5.6 Sol", short: "Sol", description: "z", context: "1M", tier: "opus" },
       ],
       defaultModel: "claude-opus-4-8",
