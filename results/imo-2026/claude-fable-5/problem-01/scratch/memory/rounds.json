@@ -1,0 +1,10 @@
+{
+  "pr_title": "Solve IMO 2026 P1 (gcd/lcm blackboard): full proofs of (a) termination with exactly one M>1 and (b) M = ∏_p p^{gcd of p-adic exponents}, two independently certified approaches",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "imo-2026-01 solved: 2 approved proofs, M = prod p^gcd(v_p)",
+      "ended_at": "2026-07-15T06:19:01Z"
+    }
+  ]
+}
