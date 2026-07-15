@@ -38,8 +38,8 @@ Give AutoFyn a repo, a goal, and a time limit. Walk away. Come back to a PR.
 - **[Hermes Agent](https://github.com/NousResearch/hermes-agent)** — 36 vulnerabilities (13 Critical, 22 High, 1 Medium), 18 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#hermes-agent)
 - **[Agent TARS](https://github.com/bytedance/UI-TARS-desktop)** — 25 vulnerabilities (4 Critical, 18 High, 3 Medium), 20 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#agent-tars)
 - **[RAGFlow](https://github.com/infiniflow/ragflow)** — 17 vulnerabilities (5 Critical, 11 High, 1 Medium), 5 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#ragflow)
-- **[LiteLLM](https://github.com/BerriAI/litellm)** — 14 vulnerabilities (3 Critical, 4 High, 4 Medium, 3 Low), 2 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#litellm) · [Report](docs/audit_reports/litellm.md)
-- **[Open WebUI](https://github.com/open-webui/open-webui)** — 12 vulnerabilities (4 Critical, 5 High, 3 Medium), 4 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#open-webui) · [Report](docs/audit_reports/open-webui.md)
+- **[LiteLLM](https://github.com/BerriAI/litellm)** — 14 vulnerabilities (3 Critical, 4 High, 4 Medium, 3 Low), 2 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#litellm) · [Report](results/audit_reports/litellm.md)
+- **[Open WebUI](https://github.com/open-webui/open-webui)** — 12 vulnerabilities (4 Critical, 5 High, 3 Medium), 4 exploit chains. Responsibly disclosed. [CVEs](docs/cves.md#open-webui) · [Report](results/audit_reports/open-webui.md)
 - **[Twenty](https://github.com/twentyhq/twenty)** — 2 vulnerabilities (1 High, 1 Low), 1 exploit chain. Responsibly disclosed. [CVEs](docs/cves.md#twenty)
 - **[Supermemory](https://github.com/supermemoryai/supermemory)** — 4 vulnerabilities (1 High, 3 Medium), 4 exploit chains. Responsibly disclosed via email to Supermemory.
 - **[Phantom Connect SDK](https://github.com/phantom/phantom-connect-sdk)** — 8 vulnerabilities (5 Medium, 3 Low), 1 exploit chain. Responsibly disclosed. [CVEs](docs/cves.md#phantom-connect-sdk)
