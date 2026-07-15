@@ -12,13 +12,17 @@ from common.constants import (
     LEGACY_OPUS,
     PROVIDER_ANTHROPIC,
     PROVIDER_OPENROUTER,
+    SUPPORTED_DEEPSEEK_FLASH,
+    SUPPORTED_DEEPSEEK_PRO,
     SUPPORTED_FABLE,
+    SUPPORTED_GLM,
     SUPPORTED_GPT_SOL,
     SUPPORTED_GPT_TERRA,
     SUPPORTED_OPUS,
     SUPPORTED_SONNET,
     TIER_OPUS,
     TIER_SONNET,
+    family_for_model,
 )
 from prompts.subagent import _resolve_subagent_model
 
@@ -110,15 +114,67 @@ class TestResolveSubagentModel:
             == SUPPORTED_GPT_TERRA
         )
 
-    # ── Leak guard: a GPT run resolves to NO Claude id at any tier ──
+    # ── User picks DeepSeek V4 Pro (OpenRouter flagship, opus role) ──
 
-    def test_gpt_run_never_resolves_to_a_claude_id(self) -> None:
-        """The tier-role fix must keep every GPT run inside the GPT family."""
+    def test_deepseek_pro_run_opus_tier_gets_pro(self) -> None:
+        assert (
+            _resolve_subagent_model(TIER_OPUS, SUPPORTED_DEEPSEEK_PRO, PROVIDER_OPENROUTER)
+            == SUPPORTED_DEEPSEEK_PRO
+        )
+
+    def test_deepseek_pro_run_sonnet_tier_gets_flash(self) -> None:
+        """Workhorse stays in the DeepSeek family — never GPT Terra."""
+        assert (
+            _resolve_subagent_model(TIER_SONNET, SUPPORTED_DEEPSEEK_PRO, PROVIDER_OPENROUTER)
+            == SUPPORTED_DEEPSEEK_FLASH
+        )
+
+    def test_deepseek_flash_run_all_tiers_stay_flash(self) -> None:
+        for tier in (TIER_OPUS, TIER_SONNET):
+            assert (
+                _resolve_subagent_model(tier, SUPPORTED_DEEPSEEK_FLASH, PROVIDER_OPENROUTER)
+                == SUPPORTED_DEEPSEEK_FLASH
+            )
+
+    # ── User picks GLM 5.2 (OpenRouter flagship, self-pairing) ──
+
+    def test_glm_run_both_tiers_get_glm(self) -> None:
+        """GLM has no workhorse variant, so every tier resolves to GLM itself."""
+        for tier in (TIER_OPUS, TIER_SONNET):
+            assert (
+                _resolve_subagent_model(tier, SUPPORTED_GLM, PROVIDER_OPENROUTER)
+                == SUPPORTED_GLM
+            )
+
+    # ── Leak guard: an OpenRouter run resolves to NO Claude id, and stays in
+    #    its own family (no cross-family borrow) at any tier ──
+
+    def test_openrouter_run_never_resolves_to_a_claude_id(self) -> None:
+        """The tier-role fix must keep every OpenRouter run out of Claude."""
         claude_ids = {SUPPORTED_OPUS, SUPPORTED_SONNET, LEGACY_OPUS, SUPPORTED_FABLE}
-        gpt_models = (SUPPORTED_GPT_SOL, SUPPORTED_GPT_TERRA)
-        for user_model in gpt_models:
+        openrouter_models = (
+            SUPPORTED_GPT_SOL,
+            SUPPORTED_GPT_TERRA,
+            SUPPORTED_DEEPSEEK_PRO,
+            SUPPORTED_DEEPSEEK_FLASH,
+            SUPPORTED_GLM,
+        )
+        for user_model in openrouter_models:
             for tier in (TIER_OPUS, TIER_SONNET):
                 assert (
                     _resolve_subagent_model(tier, user_model, PROVIDER_OPENROUTER)
                     not in claude_ids
                 )
+
+    def test_no_openrouter_run_borrows_another_family(self) -> None:
+        """No run resolves a subagent to a model outside its own family."""
+        openrouter_models = (
+            SUPPORTED_GPT_SOL,
+            SUPPORTED_DEEPSEEK_PRO,
+            SUPPORTED_GLM,
+        )
+        for user_model in openrouter_models:
+            fam = family_for_model(user_model)
+            for tier in (TIER_OPUS, TIER_SONNET):
+                resolved = _resolve_subagent_model(tier, user_model, PROVIDER_OPENROUTER)
+                assert family_for_model(resolved) == fam
