@@ -1,0 +1,38 @@
+{
+  "newman-confluence": {
+    "copied_from": null,
+    "elo": 1468.736306793522,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "newman-confluence",
+    "stale": false,
+    "summary": "Termination via W + local confluence + Newman's lemma => unique normal form {M,1,...,1}; no closed form; hedge independent of g_p invariant."
+  },
+  "prime-gcd-invariant": {
+    "copied_from": null,
+    "elo": 1514.4660703266338,
+    "expanded": 1,
+    "last_note": "APPROVE: complete proof of (a)+(b) certified; W=N+SumOmega monovariant + g_p invariant verified independently (exhaustive small-board search, 25k move checks); M = prod p^{g_p}.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "prime-gcd-invariant",
+    "stale": true,
+    "summary": "Per-prime g_p=gcd of exponents invariant (subtractive Euclid) + W=N+SumOmega monovariant; M=prod p^g_p."
+  },
+  "star-monoid-product-descent": {
+    "copied_from": null,
+    "elo": 1516.797622879844,
+    "expanded": 1,
+    "last_note": "APPROVE: independent complete proof of (a)+(b) certified; Phi fold invariant + lex (P,N) descent verified; kept as alternative full proof.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "star-monoid-product-descent",
+    "stale": true,
+    "summary": "Commutative-monoid fold Phi under m*n=prod p^gcd(vp) invariant; termination by lex (P=prod entries, N); exactly-one via Phi>=2."
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "dyadic-reserve-induction": {
+    "copied_from": null,
+    "elo": 1484.0,
+    "expanded": 1,
+    "last_note": "Rigorous drafting, layer-cake, toggle, legality, and n=1 lemmas established; both all-n refinement inequalities remain unproved.",
+    "last_outcome": "advanced",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "dyadic-reserve-induction",
+    "stale": true,
+    "summary": "Normalize Liu gaps to 1,2,...,2^n and prove matching refinement-discrepancy bounds by strengthened reserve induction."
+  },
+  "threshold-parity-toggles": {
+    "copied_from": null,
+    "elo": 1516.0,
+    "expanded": 1,
+    "last_note": "Complete minimax proof verified: provenance-tree lower bound and subset-sum transport upper bound close both sides.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "threshold-parity-toggles",
+    "stale": true,
+    "summary": "Express sorted discrepancy as odd-threshold measure and control the two-interval parity toggles induced by cuts."
+  }
+}
