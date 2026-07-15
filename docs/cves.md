@@ -26,7 +26,7 @@ Security advisories filed by AutoFyn and confirmed by maintainers.
 
 ## [Open WebUI](https://github.com/open-webui/open-webui)
 
-Full audit report: [docs/audit_reports/open-webui.md](audit_reports/open-webui.md)
+Full audit report: [results/audit_reports/open-webui.md](../results/audit_reports/open-webui.md)
 
 | Advisory | Status |
 |----------|--------|
@@ -71,7 +71,7 @@ Full audit report: [docs/audit_reports/open-webui.md](audit_reports/open-webui.m
 
 ## [LiteLLM](https://github.com/BerriAI/litellm)
 
-Full audit report: [docs/audit_reports/litellm.md](audit_reports/litellm.md)
+Full audit report: [results/audit_reports/litellm.md](../results/audit_reports/litellm.md)
 
 | Advisory | Status |
 |----------|--------|
