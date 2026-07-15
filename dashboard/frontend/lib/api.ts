@@ -17,6 +17,7 @@ export interface ModelInfo {
   description: string;
   context: string;
   tier: string;
+  family: string;
 }
 
 export interface ModelsResponse {

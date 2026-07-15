@@ -48,10 +48,18 @@ ENV_ANTHROPIC_DEFAULT_SONNET_MODEL: str = "ANTHROPIC_DEFAULT_SONNET_MODEL"
 
 # ── Subagent tiers (roles) ──
 # Each subagent declares a tier; the resolver binds it to a concrete model in
-# the run's provider family. opus = flagship, sonnet = workhorse.
+# the run's family. opus = flagship, sonnet = workhorse.
 TIER_OPUS: str = "opus"
 TIER_SONNET: str = "sonnet"
 TIER_LEGACY: str = "legacy"
+
+# ── Model families ──
+# Groups a flagship with its same-generation workhorse; the tier resolver pairs
+# opus/sonnet within a family. A flagship with no workhorse pairs with itself.
+FAMILY_CLAUDE: str = "claude"
+FAMILY_GPT: str = "gpt"
+FAMILY_DEEPSEEK: str = "deepseek"
+FAMILY_GLM: str = "glm"
 
 # ── Model IDs ──
 # Anthropic native — exact SDK model IDs, no aliases, no translation layer.
@@ -59,9 +67,12 @@ SUPPORTED_FABLE: str = "claude-fable-5"
 SUPPORTED_OPUS: str = "claude-opus-4-8"
 SUPPORTED_SONNET: str = "claude-sonnet-4-6"
 LEGACY_OPUS: str = "claude-opus-4-5"
-# OpenRouter — exact OpenRouter model slugs (openai/gpt-5.6-*).
+# OpenRouter — exact OpenRouter model slugs.
 SUPPORTED_GPT_SOL: str = "openai/gpt-5.6-sol"
 SUPPORTED_GPT_TERRA: str = "openai/gpt-5.6-terra"
+SUPPORTED_DEEPSEEK_PRO: str = "deepseek/deepseek-v4-pro"
+SUPPORTED_DEEPSEEK_FLASH: str = "deepseek/deepseek-v4-flash"
+SUPPORTED_GLM: str = "z-ai/glm-5.2"
 
 VALID_MODELS: tuple[str, ...] = (
     SUPPORTED_FABLE,
@@ -70,6 +81,9 @@ VALID_MODELS: tuple[str, ...] = (
     LEGACY_OPUS,
     SUPPORTED_GPT_SOL,
     SUPPORTED_GPT_TERRA,
+    SUPPORTED_DEEPSEEK_PRO,
+    SUPPORTED_DEEPSEEK_FLASH,
+    SUPPORTED_GLM,
 )
 DEFAULT_MODEL: str = SUPPORTED_OPUS
 VALID_MODELS_PATTERN: str = f"^({'|'.join(VALID_MODELS)})$"
@@ -85,6 +99,7 @@ SUPPORTED_MODELS: list[dict[str, str]] = [
         "description": "Most capable, for demanding agentic work",
         "context": "1M context",
         "tier": TIER_OPUS,
+        "family": FAMILY_CLAUDE,
     },
     {
         "id": SUPPORTED_OPUS,
@@ -93,6 +108,7 @@ SUPPORTED_MODELS: list[dict[str, str]] = [
         "description": "Highly capable, strong for agents",
         "context": "1M context",
         "tier": TIER_OPUS,
+        "family": FAMILY_CLAUDE,
     },
     {
         "id": SUPPORTED_SONNET,
@@ -101,6 +117,7 @@ SUPPORTED_MODELS: list[dict[str, str]] = [
         "description": "Fast and capable",
         "context": "1M context",
         "tier": TIER_SONNET,
+        "family": FAMILY_CLAUDE,
     },
     {
         "id": LEGACY_OPUS,
@@ -109,6 +126,7 @@ SUPPORTED_MODELS: list[dict[str, str]] = [
         "description": "Legacy Opus model",
         "context": "200K context",
         "tier": TIER_LEGACY,
+        "family": FAMILY_CLAUDE,
     },
     {
         "id": SUPPORTED_GPT_SOL,
@@ -117,6 +135,7 @@ SUPPORTED_MODELS: list[dict[str, str]] = [
         "description": "OpenAI flagship, top reasoning",
         "context": "1M context",
         "tier": TIER_OPUS,
+        "family": FAMILY_GPT,
     },
     {
         "id": SUPPORTED_GPT_TERRA,
@@ -125,6 +144,34 @@ SUPPORTED_MODELS: list[dict[str, str]] = [
         "description": "OpenAI balanced workhorse",
         "context": "1M context",
         "tier": TIER_SONNET,
+        "family": FAMILY_GPT,
+    },
+    {
+        "id": SUPPORTED_DEEPSEEK_PRO,
+        "label": "DeepSeek V4 Pro",
+        "short": "V4 Pro",
+        "description": "DeepSeek flagship, deep reasoning",
+        "context": "1M context",
+        "tier": TIER_OPUS,
+        "family": FAMILY_DEEPSEEK,
+    },
+    {
+        "id": SUPPORTED_DEEPSEEK_FLASH,
+        "label": "DeepSeek V4 Flash",
+        "short": "V4 Flash",
+        "description": "DeepSeek efficient workhorse",
+        "context": "1M context",
+        "tier": TIER_SONNET,
+        "family": FAMILY_DEEPSEEK,
+    },
+    {
+        "id": SUPPORTED_GLM,
+        "label": "GLM 5.2",
+        "short": "GLM 5.2",
+        "description": "Zhipu open-weight flagship",
+        "context": "1M context",
+        "tier": TIER_OPUS,
+        "family": FAMILY_GLM,
     },
 ]
 
@@ -137,12 +184,22 @@ MODEL_PROVIDER_SLUGS: dict[str, dict[str, str]] = {
     LEGACY_OPUS: {PROVIDER_ANTHROPIC: LEGACY_OPUS},
     SUPPORTED_GPT_SOL: {PROVIDER_OPENROUTER: SUPPORTED_GPT_SOL},
     SUPPORTED_GPT_TERRA: {PROVIDER_OPENROUTER: SUPPORTED_GPT_TERRA},
+    SUPPORTED_DEEPSEEK_PRO: {PROVIDER_OPENROUTER: SUPPORTED_DEEPSEEK_PRO},
+    SUPPORTED_DEEPSEEK_FLASH: {PROVIDER_OPENROUTER: SUPPORTED_DEEPSEEK_FLASH},
+    SUPPORTED_GLM: {PROVIDER_OPENROUTER: SUPPORTED_GLM},
 }
 
 # Models that support effort="max". Others get downgraded to "high".
 # Per family, only the flagship unlocks max reasoning.
 MODELS_SUPPORTING_MAX_EFFORT: frozenset[str] = frozenset(
-    {SUPPORTED_FABLE, SUPPORTED_OPUS, SUPPORTED_SONNET, SUPPORTED_GPT_SOL}
+    {
+        SUPPORTED_FABLE,
+        SUPPORTED_OPUS,
+        SUPPORTED_SONNET,
+        SUPPORTED_GPT_SOL,
+        SUPPORTED_DEEPSEEK_PRO,
+        SUPPORTED_GLM,
+    }
 )
 
 
@@ -152,26 +209,42 @@ def resolve_effort(model: str, effort: str) -> str:
         return EFFORT_HIGH
     return effort
 
-# Per-provider flagship (opus role) and workhorse (sonnet role) model IDs.
-# The subagent tier resolver maps an opus-tier subagent to the flagship and a
-# sonnet-tier subagent to the workhorse of whichever family the run is on.
-_PROVIDER_TIER_MODELS: dict[str, dict[str, str]] = {
-    PROVIDER_ANTHROPIC: {TIER_OPUS: SUPPORTED_OPUS, TIER_SONNET: SUPPORTED_SONNET},
-    PROVIDER_OPENROUTER: {TIER_OPUS: SUPPORTED_GPT_SOL, TIER_SONNET: SUPPORTED_GPT_TERRA},
-}
-
-# Rate-limit fallback: flagship falls back to the workhorse; workhorse has none.
-_FALLBACK_MAP: dict[str, str | None] = {
-    SUPPORTED_OPUS: SUPPORTED_SONNET,
-    SUPPORTED_SONNET: None,
-    LEGACY_OPUS: SUPPORTED_SONNET,
-    SUPPORTED_FABLE: SUPPORTED_SONNET,
-    SUPPORTED_GPT_SOL: SUPPORTED_GPT_TERRA,
-    SUPPORTED_GPT_TERRA: None,
-}
-
-# model id -> tier, derived from SUPPORTED_MODELS (single source of truth).
+# model id -> tier / family, derived from SUPPORTED_MODELS (single source of truth).
 _MODEL_TIER: dict[str, str] = {m["id"]: m["tier"] for m in SUPPORTED_MODELS}
+_MODEL_FAMILY: dict[str, str] = {m["id"]: m["family"] for m in SUPPORTED_MODELS}
+
+# (family, tier) -> model id, derived. Pairs opus/sonnet within a family so a
+# run never mixes generations. TIER_LEGACY is excluded — it is not a role.
+_FAMILY_TIER_MODEL: dict[tuple[str, str], str] = {
+    (m["family"], m["tier"]): m["id"]
+    for m in SUPPORTED_MODELS
+    if m["tier"] != TIER_LEGACY
+}
+
+
+def family_tier_model(family: str, tier: str) -> str:
+    """Resolve a (family, tier) role to a model id, self-pairing if the family
+    has no distinct workhorse. Fails loudly on an unknown family."""
+    model = _FAMILY_TIER_MODEL.get((family, tier))
+    if model is not None:
+        return model
+    flagship = _FAMILY_TIER_MODEL.get((family, TIER_OPUS))
+    if flagship is None:
+        raise ValueError(f"no flagship for family '{family}'")
+    return flagship
+
+
+# Rate-limit fallback: flagship falls back to its family workhorse; a workhorse
+# (or a self-pairing flagship) has none. Derived from the family pairing.
+_FALLBACK_MAP: dict[str, str | None] = {
+    m["id"]: (
+        family_tier_model(m["family"], TIER_SONNET)
+        if m["tier"] == TIER_OPUS
+        and family_tier_model(m["family"], TIER_SONNET) != m["id"]
+        else None
+    )
+    for m in SUPPORTED_MODELS
+}
 
 
 def api_model_for(model: str, provider: str) -> str:
@@ -208,15 +281,18 @@ def fallback_model_for(model: str) -> str | None:
     return _FALLBACK_MAP[model]
 
 
-def tier_model_for(provider: str, tier: str) -> str:
-    """Resolve a (provider, tier) role to a concrete model ID. Fails loudly."""
-    family = _PROVIDER_TIER_MODELS.get(provider)
+def family_for_model(model: str) -> str:
+    """Return the family of an AutoFyn model ID. Fails loudly if unknown."""
+    family = _MODEL_FAMILY.get(model)
     if family is None:
-        raise ValueError(f"no tier models for provider '{provider}'")
-    model = family.get(tier)
-    if model is None:
-        raise ValueError(f"provider '{provider}' has no model for tier '{tier}'")
-    return model
+        raise ValueError(f"no family for model '{model}' (not in SUPPORTED_MODELS)")
+    return family
+
+
+def workhorse_for_model(model: str) -> str:
+    """Resolve the sonnet-tier workhorse in ``model``'s family, self-pairing when
+    the family has no distinct workhorse. Fails loudly if the model is unknown."""
+    return family_tier_model(family_for_model(model), TIER_SONNET)
 
 
 def rotation_key_for(provider: str, base_key: str) -> str:
@@ -234,10 +310,10 @@ def openrouter_model_env(model: str) -> dict[str, str]:
     """Build the SDK model-override env for an OpenRouter run.
 
     Routes the SDK's opus tier to the run's model and its sonnet tier to the
-    workhorse, both by their OpenRouter slug so subagents resolve through the
-    gateway. Fails loudly if OpenRouter does not serve ``model``.
+    workhorse in the same family, both by their OpenRouter slug so subagents
+    resolve through the gateway. Fails loudly if OpenRouter does not serve them.
     """
-    workhorse = tier_model_for(PROVIDER_OPENROUTER, TIER_SONNET)
+    workhorse = workhorse_for_model(model)
     return {
         ENV_ANTHROPIC_DEFAULT_OPUS_MODEL: api_model_for(model, PROVIDER_OPENROUTER),
         ENV_ANTHROPIC_DEFAULT_SONNET_MODEL: api_model_for(workhorse, PROVIDER_OPENROUTER),

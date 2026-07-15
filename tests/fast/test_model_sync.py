@@ -23,6 +23,7 @@ _REQUIRED_MODEL_FIELDS = {
     "description",
     "context",
     "tier",
+    "family",
 }
 
 TS_API_PATH = Path("dashboard/frontend/lib/api.ts")

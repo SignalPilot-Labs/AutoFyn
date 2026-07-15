@@ -17,7 +17,7 @@ from common.constants import (
     TIER_SONNET,
     api_model_for,
     tier_for_model,
-    tier_model_for,
+    workhorse_for_model,
 )
 
 
@@ -32,7 +32,7 @@ def _resolve_subagent_model(tier: str, user_model: str, provider: str) -> str:
     """
     if tier_for_model(user_model) == TIER_SONNET or tier == TIER_OPUS:
         return api_model_for(user_model, provider)
-    return api_model_for(tier_model_for(provider, TIER_SONNET), provider)
+    return api_model_for(workhorse_for_model(user_model), provider)
 
 
 def enabled_subagents(
