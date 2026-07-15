@@ -11,6 +11,7 @@ from common.constants import (
     MODEL_PROVIDER_SLUGS,
     PROVIDER_ANTHROPIC,
     PROVIDER_OPENROUTER,
+    SUPPORTED_MODELS,
     SUPPORTED_DEEPSEEK_FLASH,
     SUPPORTED_DEEPSEEK_PRO,
     SUPPORTED_GLM,
@@ -160,3 +161,53 @@ class TestAnthropicFamilyRouting:
         for model in (SUPPORTED_OPUS, SUPPORTED_SONNET):
             assert PROVIDER_ANTHROPIC in providers_for_model(model)
             assert api_model_for(model, PROVIDER_ANTHROPIC) == model
+
+
+class TestFamilyPairingInvariants:
+    """The (family, tier) pairing that drives workhorse/fallback resolution must
+    be unambiguous. _FAMILY_TIER_MODEL is a dict, so a duplicate slot silently
+    keeps the last row — these guards make that fail loudly instead."""
+
+    def _families(self) -> set[str]:
+        return {m["family"] for m in SUPPORTED_MODELS}
+
+    def test_each_family_has_at_most_one_sonnet(self) -> None:
+        """workhorse_for_model reads the sonnet slot; two sonnets in one family
+        would make the resolved workhorse depend on list order."""
+        for family in self._families():
+            sonnets = [
+                m["id"]
+                for m in SUPPORTED_MODELS
+                if m["family"] == family and m["tier"] == TIER_SONNET
+            ]
+            assert len(sonnets) <= 1, f"family {family!r} has multiple sonnets: {sonnets}"
+
+    def test_each_family_has_exactly_one_flagship(self) -> None:
+        """Self-pairing falls back to the family flagship (opus); more than one
+        opus per family makes that fallback order-dependent. Claude is the one
+        allowed multi-flagship family (Fable + Opus) and never self-pairs, since
+        it has a real sonnet workhorse."""
+        for family in self._families():
+            opuses = [
+                m["id"]
+                for m in SUPPORTED_MODELS
+                if m["family"] == family and m["tier"] == TIER_OPUS
+            ]
+            has_sonnet = any(
+                m["family"] == family and m["tier"] == TIER_SONNET
+                for m in SUPPORTED_MODELS
+            )
+            # A family may only carry multiple flagships if it never self-pairs
+            # (i.e. it has a distinct sonnet workhorse to resolve to).
+            assert len(opuses) == 1 or has_sonnet, (
+                f"family {family!r} self-pairs but has multiple flagships: {opuses}"
+            )
+
+    def test_every_flagship_workhorse_is_deterministic(self) -> None:
+        """workhorse_for_model must resolve every flagship to a real served model."""
+        for m in SUPPORTED_MODELS:
+            if m["tier"] != TIER_OPUS:
+                continue
+            workhorse = workhorse_for_model(m["id"])
+            assert workhorse in {sm["id"] for sm in SUPPORTED_MODELS}
+            assert family_for_model(workhorse) == m["family"]
