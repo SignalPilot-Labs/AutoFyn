@@ -6,7 +6,7 @@ How AutoFyn decides which credential and which API endpoint a run uses. One sour
 
 **Anthropic — native, first-class.** Claude models run directly against the Anthropic subscription via `CLAUDE_CODE_OAUTH_TOKEN` (from `claude setup-token`). No proxy, no translation layer, exact SDK model IDs. This is the home turf; every other family is measured against it.
 
-**OpenRouter — gateway for non-Claude families.** Models Anthropic does not serve (today: GPT-5.6 Sol and Terra) reach the SDK through OpenRouter's Anthropic-compatible endpoint. OpenRouter is a transport for other vendors' models — it is **never** used to reach Claude (a gateway hop for Claude is strictly worse: extra latency and margin, no upside).
+**OpenRouter — gateway for non-Claude families.** Models Anthropic does not serve (GPT-5.6, DeepSeek V4, GLM 5.2) reach the SDK through OpenRouter's Anthropic-compatible endpoint. OpenRouter is a transport for other vendors' models — it is **never** used to reach Claude (a gateway hop for Claude is strictly worse: extra latency and margin, no upside).
 
 ## A model can be served by more than one provider
 
@@ -29,7 +29,7 @@ Once picked, a run is pinned to one provider for its whole life. Consequences:
 - A run whose provider has no tokens fails loudly (`no <provider> credentials configured`) instead of silently borrowing another provider's key.
 - The run stores its provider (`Run.provider_name`) so resume re-injects the same one. Pre-migration runs (NULL) backfill it from the model — unambiguous while a model has a single provider.
 
-Today Anthropic serves the Claude models and OpenRouter serves GPT-5.6, so every model currently has exactly one available provider. The relation is fully general regardless: adding a second gateway for a model is a data-only edit.
+Today Anthropic serves the Claude models and OpenRouter serves the GPT-5.6, DeepSeek V4, and GLM 5.2 families, so every model currently has exactly one available provider. The relation is fully general regardless: adding a second gateway for a model is a data-only edit.
 
 ## Tiers are roles, not vendor labels
 
@@ -40,16 +40,20 @@ AutoFyn has two capability tiers, anchored on the native family:
 
 A tier is a **role**, so another family can be mapped into it. When a developer's subagent declares `tier: opus`, it means "use the flagship of whatever family this run is on" — not literally Claude Opus.
 
-| AutoFyn tier (role) | Anthropic (native) | OpenAI via OpenRouter |
-| ------------------- | ------------------ | --------------------- |
-| `opus` (flagship)   | Opus 4.8 / Fable 5 | **Sol**               |
-| `sonnet` (workhorse)| Sonnet 4.6         | **Terra**             |
+Pairing is **within a family**, keyed on the model's `family` field (not its provider). Several families share the OpenRouter gateway, so provider alone cannot pick the workhorse — a GLM run must not borrow GPT's workhorse.
 
-So on a GPT run, an `opus`-tier subagent runs Sol and a `sonnet`-tier subagent runs Terra. The developer's opus-vs-sonnet intent is preserved across families. This is why the mapping is defensible: we are not claiming Sol *is* Opus, only that Sol *plays the opus role* in the GPT family. (`_resolve_subagent_model` in `autofyn/prompts/subagent.py` implements this via `tier_model_for(provider, tier)`.)
+| Family   | `opus` (flagship)  | `sonnet` (workhorse) |
+| -------- | ------------------ | -------------------- |
+| claude   | Opus 4.8 / Fable 5 | Sonnet 4.6           |
+| gpt      | Sol                | Terra                |
+| deepseek | V4 Pro             | V4 Flash             |
+| glm      | GLM 5.2            | GLM 5.2 (self-pairs) |
+
+So on a DeepSeek run, an `opus`-tier subagent runs V4 Pro and a `sonnet`-tier subagent runs V4 Flash. A family with no distinct workhorse (GLM 5.2 has no Air/Flash variant yet) **self-pairs**: both roles resolve to the flagship. `_resolve_subagent_model` in `autofyn/prompts/subagent.py` implements this via `workhorse_for_model(model)`, which resolves the sonnet-tier model in the run model's own family.
 
 `GPT-5.6 Luna` is intentionally omitted — it is a third (cheap) tier and AutoFyn has no role for it, so leaving it out costs nothing.
 
-Max-effort membership (`MODELS_SUPPORTING_MAX_EFFORT`) is **per model**, not per tier: only each family's flagship unlocks it (Opus, Fable, Sonnet, and Sol). Terra does not, and downgrades `max` → `high`.
+Max-effort membership (`MODELS_SUPPORTING_MAX_EFFORT`) is **per model**, not per tier: only each family's flagship unlocks it (Opus, Fable, Sonnet, Sol, V4 Pro, GLM 5.2). Workhorses like Terra and V4 Flash do not, and downgrade `max` → `high`.
 
 ## Model ID vs. gateway slug
 

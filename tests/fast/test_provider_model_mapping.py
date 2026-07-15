@@ -11,6 +11,9 @@ from common.constants import (
     MODEL_PROVIDER_SLUGS,
     PROVIDER_ANTHROPIC,
     PROVIDER_OPENROUTER,
+    SUPPORTED_DEEPSEEK_FLASH,
+    SUPPORTED_DEEPSEEK_PRO,
+    SUPPORTED_GLM,
     SUPPORTED_GPT_SOL,
     SUPPORTED_GPT_TERRA,
     SUPPORTED_OPUS,
@@ -22,10 +25,11 @@ from common.constants import (
     VALID_MODELS,
     api_model_for,
     fallback_model_for,
+    family_for_model,
     openrouter_model_env,
     providers_for_model,
     tier_for_model,
-    tier_model_for,
+    workhorse_for_model,
     ENV_ANTHROPIC_DEFAULT_OPUS_MODEL,
     ENV_ANTHROPIC_DEFAULT_SONNET_MODEL,
 )
@@ -74,7 +78,7 @@ class TestProviderModelMapping:
 
 
 class TestGptFamilyRouting:
-    """GPT-5.6 Sol/Terra map into the OpenRouter family roles."""
+    """GPT-5.6 Sol/Terra are the OpenRouter GPT family, paired within family."""
 
     def test_sol_is_openrouter_opus(self) -> None:
         assert PROVIDER_OPENROUTER in providers_for_model(SUPPORTED_GPT_SOL)
@@ -84,9 +88,8 @@ class TestGptFamilyRouting:
         assert PROVIDER_OPENROUTER in providers_for_model(SUPPORTED_GPT_TERRA)
         assert tier_for_model(SUPPORTED_GPT_TERRA) == TIER_SONNET
 
-    def test_openrouter_tier_models(self) -> None:
-        assert tier_model_for(PROVIDER_OPENROUTER, TIER_OPUS) == SUPPORTED_GPT_SOL
-        assert tier_model_for(PROVIDER_OPENROUTER, TIER_SONNET) == SUPPORTED_GPT_TERRA
+    def test_sol_workhorse_is_terra(self) -> None:
+        assert workhorse_for_model(SUPPORTED_GPT_SOL) == SUPPORTED_GPT_TERRA
 
     def test_openrouter_env_routes_both_tiers_to_slugs(self) -> None:
         """Sol run routes SDK opus tier to Sol's slug, sonnet tier to Terra's."""
@@ -101,6 +104,53 @@ class TestGptFamilyRouting:
     def test_openrouter_env_rejects_anthropic_model(self) -> None:
         with pytest.raises(ValueError):
             openrouter_model_env(SUPPORTED_OPUS)
+
+
+class TestDeepSeekFamilyRouting:
+    """DeepSeek V4 Pro/Flash form a two-tier family, paired within family."""
+
+    def test_pro_is_openrouter_opus(self) -> None:
+        assert PROVIDER_OPENROUTER in providers_for_model(SUPPORTED_DEEPSEEK_PRO)
+        assert tier_for_model(SUPPORTED_DEEPSEEK_PRO) == TIER_OPUS
+
+    def test_flash_is_openrouter_sonnet(self) -> None:
+        assert PROVIDER_OPENROUTER in providers_for_model(SUPPORTED_DEEPSEEK_FLASH)
+        assert tier_for_model(SUPPORTED_DEEPSEEK_FLASH) == TIER_SONNET
+
+    def test_pro_workhorse_stays_in_family(self) -> None:
+        """A DeepSeek run's workhorse is DeepSeek Flash, not a foreign family."""
+        assert workhorse_for_model(SUPPORTED_DEEPSEEK_PRO) == SUPPORTED_DEEPSEEK_FLASH
+
+    def test_env_routes_sonnet_tier_to_flash(self) -> None:
+        env = openrouter_model_env(SUPPORTED_DEEPSEEK_PRO)
+        assert env[ENV_ANTHROPIC_DEFAULT_SONNET_MODEL] == api_model_for(
+            SUPPORTED_DEEPSEEK_FLASH, PROVIDER_OPENROUTER
+        )
+
+
+class TestGlmSelfPairing:
+    """GLM 5.2 has no separate workhorse, so it pairs with itself."""
+
+    def test_glm_is_openrouter_opus(self) -> None:
+        assert PROVIDER_OPENROUTER in providers_for_model(SUPPORTED_GLM)
+        assert tier_for_model(SUPPORTED_GLM) == TIER_OPUS
+
+    def test_glm_workhorse_is_itself(self) -> None:
+        assert workhorse_for_model(SUPPORTED_GLM) == SUPPORTED_GLM
+
+    def test_glm_env_routes_both_tiers_to_glm(self) -> None:
+        """Both SDK tiers resolve to GLM's slug — never a foreign workhorse."""
+        env = openrouter_model_env(SUPPORTED_GLM)
+        glm_slug = api_model_for(SUPPORTED_GLM, PROVIDER_OPENROUTER)
+        assert env[ENV_ANTHROPIC_DEFAULT_OPUS_MODEL] == glm_slug
+        assert env[ENV_ANTHROPIC_DEFAULT_SONNET_MODEL] == glm_slug
+
+    def test_glm_has_no_fallback(self) -> None:
+        """A self-pairing flagship has no distinct rate-limit fallback."""
+        assert fallback_model_for(SUPPORTED_GLM) is None
+
+    def test_glm_family_is_distinct(self) -> None:
+        assert family_for_model(SUPPORTED_GLM) != family_for_model(SUPPORTED_GPT_SOL)
 
 
 class TestAnthropicFamilyRouting:
