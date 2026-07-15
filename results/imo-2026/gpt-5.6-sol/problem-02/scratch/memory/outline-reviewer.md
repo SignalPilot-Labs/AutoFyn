@@ -1,0 +1,2 @@
+ALWAYS: Treat a promised trigonometric or sine-product cancellation as a load-bearing lemma requiring the exact identity and coefficient-by-coefficient mechanism before ranking it above an explicit coordinate target (because two synthetic outlines in round 1 named telescoping without exhibiting the product).
+NEVER: Accept hidden cyclicity inferred from angle/length products without checking a generic admissible numerical configuration (because the proposed `B,C,K,L` cyclicity and all dependent identities were numerically false in round 1).
