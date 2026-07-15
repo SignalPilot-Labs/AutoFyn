@@ -65,7 +65,7 @@ FAMILY_GLM: str = "glm"
 # Anthropic native — exact SDK model IDs, no aliases, no translation layer.
 SUPPORTED_FABLE: str = "claude-fable-5"
 SUPPORTED_OPUS: str = "claude-opus-4-8"
-SUPPORTED_SONNET: str = "claude-sonnet-4-6"
+SUPPORTED_SONNET: str = "claude-sonnet-5"
 LEGACY_OPUS: str = "claude-opus-4-5"
 # OpenRouter — exact OpenRouter model slugs.
 SUPPORTED_GPT_SOL: str = "openai/gpt-5.6-sol"
@@ -112,8 +112,8 @@ SUPPORTED_MODELS: list[dict[str, str]] = [
     },
     {
         "id": SUPPORTED_SONNET,
-        "label": "Claude Sonnet 4.6",
-        "short": "Sonnet 4.6",
+        "label": "Claude Sonnet 5",
+        "short": "Sonnet 5",
         "description": "Fast and capable",
         "context": "1M context",
         "tier": TIER_SONNET,

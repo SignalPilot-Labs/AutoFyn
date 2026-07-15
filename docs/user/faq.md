@@ -56,7 +56,7 @@ See [Remote Sandboxes](remote-sandboxes.md). Short version:
 ## What model should I use?
 
 - **Claude Opus 4.6** — most capable, best for complex multi-file tasks. Default.
-- **Claude Sonnet 4.6** — faster and cheaper, good for straightforward tasks.
+- **Claude Sonnet 5** — faster and cheaper, good for straightforward tasks.
 - **Claude Opus 4.5** — legacy, available for comparison.
 
 Change the model in the **Model** section of the New Run modal.
