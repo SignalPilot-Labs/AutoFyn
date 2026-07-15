@@ -18,6 +18,8 @@ Security advisories filed by AutoFyn and confirmed by maintainers.
 
 ## [pnpm](https://github.com/pnpm/pnpm)
 
+Full audit report: [results/audit_reports/pnpm.md](../results/audit_reports/pnpm.md)
+
 | Advisory | Status |
 |----------|--------|
 | [GHSA-rxhj-4m44-96r4](https://github.com/pnpm/pnpm/security/advisories/GHSA-rxhj-4m44-96r4) | Confirmed |
@@ -53,6 +55,8 @@ Full audit report: [results/audit_reports/open-webui.md](../results/audit_report
 
 ## [Hermes Agent](https://github.com/NousResearch/hermes-agent)
 
+Full audit report: [results/audit_reports/hermes-agent.md](../results/audit_reports/hermes-agent.md)
+
 | Advisory | Status |
 |----------|--------|
 | [GHSA-jf7f-ff92-gh9m](https://github.com/NousResearch/hermes-agent/security/advisories/GHSA-jf7f-ff92-gh9m) | Submitted |
@@ -61,6 +65,8 @@ Full audit report: [results/audit_reports/open-webui.md](../results/audit_report
 | [GHSA-h3pj-hxvj-wf3r](https://github.com/NousResearch/hermes-agent/security/advisories/GHSA-h3pj-hxvj-wf3r) | Submitted |
 
 ## [Warp](https://github.com/warpdotdev/Warp)
+
+Full audit report: [results/audit_reports/warp.md](../results/audit_reports/warp.md)
 
 | Advisory | Status |
 |----------|--------|
@@ -102,6 +108,8 @@ Full audit report: [results/audit_reports/litellm.md](../results/audit_reports/l
 | [GHSA-f4r7-47fh-cgh8](https://github.com/twentyhq/twenty/security/advisories/GHSA-f4r7-47fh-cgh8) | Submitted |
 
 ## [Phantom Connect SDK](https://github.com/phantom/phantom-connect-sdk)
+
+Full audit report: [results/audit_reports/phantom-connect-sdk.md](../results/audit_reports/phantom-connect-sdk.md)
 
 | Advisory | Status |
 |----------|--------|
