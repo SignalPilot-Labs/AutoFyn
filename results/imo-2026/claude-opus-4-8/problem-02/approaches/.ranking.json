@@ -1,0 +1,50 @@
+{
+  "antipode-perp-bisector": {
+    "copied_from": null,
+    "elo": 1416.1930464853183,
+    "expanded": 1,
+    "last_note": "Scaffold proven: Step1 antipode equivalence OM=ON<=>A*B=A*C (exact vector identity), Step2 Thales location A*K perp AK, Step4 isosceles synthesis (modulo Lemma B/C + A* inside angle BAC placement). Crux Lemma B/C (angle A*BK=90-C, angle A*CL=90-B) only numerically certified (1e-8), unproven.",
+    "last_outcome": "partial",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "antipode-perp-bisector",
+    "stale": true,
+    "summary": "Synthetic antipode A*=2O-A; prove A*B=A*C by angle-chase (equivalent to OM=ON)"
+  },
+  "complex-reality-conditions": {
+    "copied_from": null,
+    "elo": 1547.6770990514342,
+    "expanded": 3,
+    "last_note": "detA=0 gap CLOSED unconditionally: exact real-slice ideal-membership certificate W*Im(TN)=sum f_i Im(E_i), W a product of geometric non-degeneracies (none is detA), reproduced independently (Groebner reduction to 0; bidegree-(2,2) homogeneity justifies WLOG B=1). Proof complete end-to-end: SOLVED / APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "complex-reality-conditions",
+    "stale": true,
+    "summary": "A=0 complex; 3 angle conditions as reality (real) conditions; one Im identity via conjugate elimination"
+  },
+  "power-of-point-balance": {
+    "copied_from": null,
+    "elo": 1514.0442130121305,
+    "expanded": 1,
+    "last_note": "Full reduction OM=ON <=> (diamond5)/(**) proven; gap: derive coupled trig identity from (I),(II)",
+    "last_outcome": "partial",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "power-of-point-balance",
+    "stale": false,
+    "summary": "Power of a point: OM=ON via pow(M)=pow(N), reduce to MA prime/NA prime2 = b/c from angle conditions"
+  },
+  "trig-decoupled-bash": {
+    "copied_from": null,
+    "elo": 1522.085641451117,
+    "expanded": 1,
+    "last_note": "Full reduction OM=ON <=> (**) proven; gap: derive scalar trig identity (**) from constraints (I),(II)",
+    "last_outcome": "partial",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "trig-decoupled-bash",
+    "stale": false,
+    "summary": "Coordinates+law of sines; decoupled constraints (I),(II); show O_x=(M_x+N_x)/2 as trig identity"
+  }
+}
