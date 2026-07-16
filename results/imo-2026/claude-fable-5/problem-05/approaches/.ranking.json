@@ -1,0 +1,38 @@
+{
+  "chain-lipschitz-squeeze": {
+    "copied_from": null,
+    "elo": 1531.263693206478,
+    "expanded": 1,
+    "last_note": "APPROVE (solved): chain inequality (*), two-sided increment bounds, telescoping additivity all re-derived and verified; both GAPs closed; answer f=x+c, c>=0 correct and verified both directions.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "chain-lipschitz-squeeze",
+    "stale": true,
+    "summary": "Chain inequality 2sqrt(f(y1)f(y2)) <= 2f(y2)+y1-y2 from x=f(y2); two-sided increment bounds t+-O(t^2); telescope to f(y+T)-f(y)=T; no casework, no FE combination needed"
+  },
+  "orbit-forbidden-zone": {
+    "copied_from": null,
+    "elo": 1482.5949374039376,
+    "expanded": 1,
+    "last_note": "APPROVE (solved): FE/orbits/h>=0 + LEFT-inequality kills (orbit chase, forbidden interval + sup squeeze) all verified; both GAPs closed; identities sympy-checked.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "orbit-forbidden-zone",
+    "stale": true,
+    "summary": "FE f(f(y))=2f(y)-y, AP orbits of h=f-id; LEFT inequality: orbit chase kills two positive h-values, forbidden interval I(y0) + supremum squeeze kills fixed/non-fixed coexistence"
+  },
+  "right-spreading-fixed-points": {
+    "copied_from": null,
+    "elo": 1486.1413693895845,
+    "expanded": 1,
+    "last_note": "APPROVE (solved): FE/orbits/h>=0 + RIGHT-only kills (exact-expansion chase (EXP), fixed-point spreading to [y0,inf)) all verified; both GAPs closed.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "right-spreading-fixed-points",
+    "stale": true,
+    "summary": "FE + AP orbits; RIGHT inequality only: exact-expansion orbit chase kills two positive h-values; fixed set spreads via J(y0) subset F to [y0,inf) and swallows the non-fixed orbit"
+  }
+}
