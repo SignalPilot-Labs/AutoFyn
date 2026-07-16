@@ -25,6 +25,8 @@ interface ModelsContextValue {
   models: ModelInfo[];
   /** Default model id from the backend, or "" until loaded. */
   defaultModel: string;
+  /** Default thinking effort from the backend, or "" until loaded. */
+  defaultEffort: string;
   /** model id -> providers the user has keys for that can serve it. */
   providersByModel: Record<string, string[]>;
   loading: boolean;
@@ -35,6 +37,7 @@ interface ModelsContextValue {
 const ModelsContext = createContext<ModelsContextValue>({
   models: [],
   defaultModel: "",
+  defaultEffort: "",
   providersByModel: {},
   loading: true,
   refetch: () => {},
@@ -43,6 +46,7 @@ const ModelsContext = createContext<ModelsContextValue>({
 export function ModelsProvider({ children }: { children: ReactNode }): React.ReactElement {
   const [models, setModels] = useState<ModelInfo[]>([]);
   const [defaultModel, setDefaultModel] = useState<string>("");
+  const [defaultEffort, setDefaultEffort] = useState<string>("");
   const [providersByModel, setProvidersByModel] = useState<Record<string, string[]>>({});
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -51,6 +55,7 @@ export function ModelsProvider({ children }: { children: ReactNode }): React.Rea
       .then((res) => {
         setModels(res.models);
         setDefaultModel(res.default);
+        setDefaultEffort(res.default_effort);
         setProvidersByModel(res.providers_by_model);
       })
       .finally(() => setLoading(false));
@@ -61,7 +66,7 @@ export function ModelsProvider({ children }: { children: ReactNode }): React.Rea
   }, [refetch]);
 
   return (
-    <ModelsContext.Provider value={{ models, defaultModel, providersByModel, loading, refetch }}>
+    <ModelsContext.Provider value={{ models, defaultModel, defaultEffort, providersByModel, loading, refetch }}>
       {children}
     </ModelsContext.Provider>
   );

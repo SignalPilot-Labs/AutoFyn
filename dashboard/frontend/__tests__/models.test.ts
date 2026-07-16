@@ -14,8 +14,8 @@ import { findModel, resolveInitialModel, saveStoredModel, LOCALSTORAGE_MODEL_KEY
 import type { ModelInfo } from "@/lib/api";
 
 const MODELS: ModelInfo[] = [
-  { id: "claude-opus-4-8", label: "Claude Opus 4.8", short: "Opus 4.8", description: "x", context: "1M", tier: "opus" },
-  { id: "claude-sonnet-5", label: "Claude Sonnet 5", short: "Sonnet 5", description: "y", context: "1M", tier: "sonnet" },
+  { id: "claude-opus-4-8", label: "Claude Opus 4.8", short: "Opus 4.8", description: "x", context: "1M", tier: "opus", family: "claude" },
+  { id: "claude-sonnet-5", label: "Claude Sonnet 5", short: "Sonnet 5", description: "y", context: "1M", tier: "sonnet", family: "claude" },
 ];
 
 describe("findModel", () => {
