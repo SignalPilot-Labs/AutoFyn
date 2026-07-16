@@ -1,0 +1,38 @@
+{
+  "modulus-derivative": {
+    "copied_from": null,
+    "elo": 1500.7023986633528,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "modulus-derivative",
+    "stale": false,
+    "summary": "same prefix+(U) bound, finish via difference-quotient->0 => h prime==0 => h const by MVT"
+  },
+  "modulus-telescope": {
+    "copied_from": null,
+    "elo": 1531.263693206478,
+    "expanded": 1,
+    "last_note": "Complete correct proof: SOS sufficiency, pinch f(f(y))=2f(y)-y, h>=0 via iterates, quadratic modulus |dh|<=d^2/(4min) telescoped to h const. Algebra sympy-verified.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "modulus-telescope",
+    "stale": true,
+    "summary": "SOS sufficiency + x=f(y) pinch f(f(y))=2f(y)-y + quadratic modulus |dh|<=d^2/(4min) telescoped to h const"
+  },
+  "two-sided-orbit": {
+    "copied_from": null,
+    "elo": 1468.0339081301693,
+    "expanded": 1,
+    "last_note": "Complete correct proof: same prefix, two-sided modulus (upper from R, lower from L), interleaving+continuity+IVT force h const. Algebra sympy-verified.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "two-sided-orbit",
+    "stale": true,
+    "summary": "both-sided modulus from left+right ineqs, orbit-interleaving contradiction forces h const (calculus-free hedge)"
+  }
+}
