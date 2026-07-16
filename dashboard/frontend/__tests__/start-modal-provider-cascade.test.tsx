@@ -28,6 +28,7 @@ vi.mock("@/lib/models", async (importOriginal) => {
     useModels: () => ({
       models: MODELS,
       defaultModel: "claude-opus-4-8",
+      defaultEffort: "medium",
       providersByModel: PROVIDERS_BY_MODEL,
       loading: false,
       refetch,

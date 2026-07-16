@@ -23,6 +23,7 @@ vi.mock("@/lib/models", async (importOriginal) => {
         { id: "openai/gpt-5.6-sol", label: "GPT-5.6 Sol", short: "Sol", description: "z", context: "1M", tier: "opus" },
       ],
       defaultModel: "claude-opus-4-8",
+      defaultEffort: "medium",
       providersByModel: {},
       loading: false,
       refetch: () => {},

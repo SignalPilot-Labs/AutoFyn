@@ -39,6 +39,7 @@ from backend.utils import (
 from common.constants import DEFAULT_MODEL, SUPPORTED_MODELS, providers_for_model
 from db.constants import (
     ACTIVE_RUN_STATUSES,
+    DEFAULT_EFFORT,
     RUN_STATUS_PAUSED,
     RUN_STATUS_RATE_LIMITED,
     RUN_STATUS_RUNNING,
@@ -416,9 +417,10 @@ async def _providers_by_model() -> dict[str, list[str]]:
 
 @router.get("/models")
 async def get_models() -> dict:
-    """Return supported models, the default, and usable providers per model."""
+    """Return supported models, the default model + effort, and usable providers per model."""
     return {
         "models": SUPPORTED_MODELS,
         "default": DEFAULT_MODEL,
+        "default_effort": DEFAULT_EFFORT,
         "providers_by_model": await _providers_by_model(),
     }

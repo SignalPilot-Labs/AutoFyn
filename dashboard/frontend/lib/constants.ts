@@ -118,10 +118,11 @@ export const DEFAULT_DOCKER_START_CMD =
   " $AF_HOST_MOUNTS" +
   " ghcr.io/signalpilot-labs/autofyn-sandbox:$AF_IMAGE_TAG";
 
-// Effort levels for the thinking-effort picker.
+// Effort levels for the thinking-effort picker. The default effort is
+// backend-sourced (db/constants.py DEFAULT_EFFORT via /api/models), not a
+// frontend constant, so the two can never drift.
 export const EFFORT_LEVELS = ["low", "medium", "high", "max"] as const;
 export type EffortLevel = (typeof EFFORT_LEVELS)[number];
-export const DEFAULT_EFFORT: EffortLevel = "high";
 
 // Safety timeout for the stop-busy lock (ms). If SSE and polling both fail to
 // deliver run_ended within this window, the UI unlocks so the user isn't stuck.

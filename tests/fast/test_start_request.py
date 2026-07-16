@@ -3,6 +3,7 @@
 import pytest
 
 from common.constants import PROVIDER_ANTHROPIC
+from db.constants import DEFAULT_EFFORT, EFFORT_MEDIUM
 from utils.models_http import StartRequest
 
 
@@ -45,9 +46,10 @@ class TestStartRequestValidation:
         req = StartRequest(provider=PROVIDER_ANTHROPIC, max_budget_usd=0, base_branch="  main  ")
         assert req.base_branch == "main"
 
-    def test_default_effort_is_high(self):
+    def test_default_effort_is_backend_default(self):
         req = StartRequest(provider=PROVIDER_ANTHROPIC, max_budget_usd=0)
-        assert req.effort == "high"
+        assert req.effort == DEFAULT_EFFORT
+        assert DEFAULT_EFFORT == EFFORT_MEDIUM
 
     def test_accepts_valid_effort_values(self):
         for val in ("medium", "high", "max"):

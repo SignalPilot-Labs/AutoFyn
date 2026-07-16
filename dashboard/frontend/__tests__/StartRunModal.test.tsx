@@ -24,6 +24,7 @@ vi.mock("@/lib/models", async (importOriginal) => {
         { id: "claude-sonnet-5", label: "Claude Sonnet 5", short: "Sonnet 5", description: "Fast", context: "1M context", tier: "sonnet" },
       ],
       defaultModel: "claude-opus-4-8",
+      defaultEffort: "medium",
       providersByModel: {
         "claude-opus-4-8": ["anthropic"],
         "claude-sonnet-5": ["anthropic"],

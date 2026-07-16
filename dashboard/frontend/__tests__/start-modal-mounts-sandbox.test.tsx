@@ -46,6 +46,7 @@ vi.mock("@/lib/models", async (importOriginal) => {
         { id: "claude-opus-4-8", label: "Claude Opus 4.8", short: "Opus 4.8", description: "Most capable", context: "1M context", tier: "opus" },
       ],
       defaultModel: "claude-opus-4-8",
+      defaultEffort: "medium",
       providersByModel: { "claude-opus-4-8": ["anthropic"] },
       loading: false,
       refetch: () => {},
