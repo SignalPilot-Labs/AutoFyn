@@ -1,0 +1,38 @@
+{
+  "crt-window-small-prime-lockin": {
+    "copied_from": null,
+    "elo": 1500.7023986633528,
+    "expanded": 2,
+    "last_note": "Round-2 independent adversarial re-verification: proof re-audited step by step, Step 6 descent re-derived from scratch; fresh-code checks (EP 0 failures, bound E<a1*g, exact periodicity from n=1 on 9 seeds incl. a1=385: T=5088, L=43890) all pass. APPROVE confirmed.",
+    "last_outcome": "verified-milestone",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "crt-window-small-prime-lockin",
+    "stale": true,
+    "summary": "Same reduction + stronger claim: no prime > g is essential (lock-in via CRT dodging windows and static minimality); GAP A open"
+  },
+  "self-blocking-clutter-induction": {
+    "copied_from": null,
+    "elo": 1468.0339081301693,
+    "expanded": 1,
+    "last_note": "RETHINK: ladder counterexample verified correct \u2014 pure clutter theorem is FALSE, GAP B unclosable; no-go theorem certified as a hypothesis-filter",
+    "last_outcome": "dead-end",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "self-blocking-clutter-induction",
+    "stale": true,
+    "summary": "Same reduction + pure clutter theorem: identically self-blocking clutters of finite sets are finite, by induction on min member size; GAP B open"
+  },
+  "valid-set-sunflower-core": {
+    "copied_from": null,
+    "elo": 1531.263693206478,
+    "expanded": 1,
+    "last_note": "CHANGES REQUESTED: foundation + Theorem K (Konig branch) verified correct; GAP 1 (M finite) still open in this route \u2014 but closed globally by rival's descent",
+    "last_outcome": "advanced",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "valid-set-sunflower-core",
+    "stale": true,
+    "summary": "Sorted-valid-set reduction + sunflower/trace-pigeonhole attack on finiteness of the minimal-type clutter M; only GAP 1 (unbounded-size case) open"
+  }
+}

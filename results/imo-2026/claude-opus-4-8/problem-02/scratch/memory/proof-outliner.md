@@ -1,0 +1,4 @@
+ALWAYS: outliner writes approach skeleton files only; do NOT call register_approach — that is the outline-reviewer's gate (ranker header + role prompt say so, even if dispatch says "register"), round 1.
+ALWAYS: self-verify any reformulation you derive (e.g. antipode A*B=A*C) with the explorer's verify script before handing it off — took 30s, confirmed 1e-13, round 1.
+NEVER: trust the approach file's own `## Status` header — a builder can leave it "solved" after a reviewer downgrade to partial (current.md is reviewer-owned truth). On revise, reset the header to match current.md (round 2).
+ALWAYS: when a shared-gap plateau is confirmed by the crux explorer (Gröbner cofactors non-presentable, no clean factorization), record the plateau and do NOT nominate those slugs; route the build to the approach that bypasses the shared identity (round 2).
