@@ -15,7 +15,11 @@ import { render } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { StartRunModal } from "@/components/controls/StartRunModal";
-import { DEFAULT_BASE_BRANCH, DEFAULT_EFFORT } from "@/lib/constants";
+import { DEFAULT_BASE_BRANCH } from "@/lib/constants";
+
+// Backend-sourced default effort the mocked useModels() supplies (mirrors
+// db/constants.py DEFAULT_EFFORT flowing through /api/models).
+const BACKEND_DEFAULT_EFFORT = "medium";
 
 // The modal reads its model list from useModels(). Provide a fixed list with a
 // single provider per model so a provider auto-selects and the start button is
@@ -29,6 +33,7 @@ vi.mock("@/lib/models", async (importOriginal) => {
         { id: "claude-opus-4-8", label: "Claude Opus 4.8", short: "Opus 4.8", description: "Most capable", context: "1M context", tier: "opus" },
       ],
       defaultModel: "claude-opus-4-8",
+      defaultEffort: BACKEND_DEFAULT_EFFORT,
       providersByModel: { "claude-opus-4-8": ["anthropic"] },
       loading: false,
       refetch: () => {},
@@ -224,7 +229,7 @@ describe("StartRunModal: state reset on open (Bug 2)", () => {
     expect(budget).toBe(0);
     expect(duration).toBe(0);
     expect(baseBranch).toBe(DEFAULT_BASE_BRANCH);
-    expect(effort).toBe(DEFAULT_EFFORT);
+    expect(effort).toBe(BACKEND_DEFAULT_EFFORT);
     expect(sandboxId).toBeNull();
   });
 });
@@ -300,7 +305,9 @@ describe("StartRunModal: source code structural checks", () => {
     // Default values must be restored — branch resets to the repo's default
     // branch (not a hardcoded "main"), which may arrive asynchronously.
     expect(src).toContain("setBaseBranch(defaultBranch)");
-    expect(src).toContain("setEffort(DEFAULT_EFFORT)");
+    // Effort is cleared to "" and re-seeded from the backend default by a
+    // dedicated effect, not reset to a hardcoded value.
+    expect(src).toContain('setEffort("")');
     expect(src).toContain("setStartCmd(DEFAULT_DOCKER_START_CMD)");
     // All error states must be cleared
     expect(src).toContain("setEnvError(null)");

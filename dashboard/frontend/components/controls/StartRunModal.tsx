@@ -12,7 +12,7 @@ import { HostMountsEditor } from "@/components/controls/HostMountsEditor";
 import { SandboxPicker } from "@/components/controls/SandboxPicker";
 import { McpServersEditor } from "@/components/controls/McpServersEditor";
 import { clsx } from "clsx";
-import { capitalize, DEFAULT_DOCKER_START_CMD, STARTER_PRESETS, STARTER_PRESET_KEYS, EFFORT_LEVELS, DEFAULT_EFFORT, CREDENTIAL_PROVIDERS } from "@/lib/constants";
+import { capitalize, DEFAULT_DOCKER_START_CMD, STARTER_PRESETS, STARTER_PRESET_KEYS, EFFORT_LEVELS, CREDENTIAL_PROVIDERS } from "@/lib/constants";
 import type { StarterPresetKey, EffortLevel } from "@/lib/constants";
 import { useModels, findModel, resolveInitialModel } from "@/lib/models";
 import { fetchRepoEnv, saveRepoEnv, fetchRepoMounts, saveRepoMounts, fetchRemoteMounts, saveRemoteMounts, fetchRepoMcpServers, saveRepoMcpServers, fetchRemoteSandboxes, updateRemoteSandbox } from "@/lib/api";
@@ -105,7 +105,7 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, defaultB
   const [selectedQuick, setSelectedQuick] = useState<StarterPresetKey | null>(null);
   const [model, setModel] = useState<string>("");
   const [provider, setProvider] = useState<string>("");
-  const [effort, setEffort] = useState<EffortLevel>(DEFAULT_EFFORT);
+  const [effort, setEffort] = useState<EffortLevel | "">("");
   const [envText, setEnvText] = useState("");
   const [envError, setEnvError] = useState<string | null>(null);
   const [mounts, setMounts] = useState<HostMount[]>([]);
@@ -122,7 +122,7 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, defaultB
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const prevOpenRef = useRef(open);
 
-  const { models, defaultModel, providersByModel, refetch: refetchModels } = useModels();
+  const { models, defaultModel, defaultEffort, providersByModel, refetch: refetchModels } = useModels();
 
   const availableProviders = providersByModel[model] ?? [];
 
@@ -133,6 +133,14 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, defaultB
       setModel(resolveInitialModel(models, defaultModel));
     }
   }, [model, models, defaultModel]);
+
+  // Seed effort from the backend default once it arrives (source of truth is
+  // db/constants.py DEFAULT_EFFORT, delivered via /api/models).
+  useEffect(() => {
+    if (!effort && defaultEffort) {
+      setEffort(defaultEffort as EffortLevel);
+    }
+  }, [effort, defaultEffort]);
 
   // Keep provider valid as the model changes: first available, or cleared.
   useEffect(() => {
@@ -186,7 +194,9 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, defaultB
       setBaseBranch(defaultBranch);
       branchTouchedRef.current = false;
       setSelectedQuick(null);
-      setEffort(DEFAULT_EFFORT);
+      // Clear effort; the seeding effect re-applies the backend default. Mirrors
+      // how model is re-seeded rather than reset to a hardcoded value.
+      setEffort("");
       setEnvText("");
       setMounts([]);
       setMcpText("");
@@ -342,7 +352,7 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, defaultB
 
   const noProvider = model !== "" && availableProviders.length === 0;
   const singleProvider = availableProviders.length === 1;
-  const modelSummary = `${findModel(models, model)?.label ?? "…"} · ${capitalize(effort)}`;
+  const modelSummary = `${findModel(models, model)?.label ?? "…"} · ${effort ? capitalize(effort) : "…"}`;
   const budgetSummary = budget > 0 ? `$${budget}` : "Unlimited";
   const envCount = countEnvVars(envText);
   const envSummary = envCount > 0 ? `${envCount} vars` : "No vars";
@@ -574,7 +584,7 @@ export function StartRunModal({ open, onClose, onStart, busy, branches, defaultB
                 <div className="flex gap-2">
                   <Button variant="ghost" size="md" onClick={onClose}>Cancel</Button>
                   <Button
-                    variant="success" size="md" onClick={() => void handleStart()} disabled={busy || submitting || !sandboxValid || provider === ""}
+                    variant="success" size="md" onClick={() => void handleStart()} disabled={busy || submitting || !sandboxValid || provider === "" || effort === ""}
                     icon={<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="3 2 8 5 3 8" /></svg>}
                   >
                     {busy || submitting ? "Starting..." : "New Run"}

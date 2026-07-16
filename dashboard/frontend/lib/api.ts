@@ -23,6 +23,8 @@ export interface ModelInfo {
 export interface ModelsResponse {
   models: ModelInfo[];
   default: string;
+  /** Backend-sourced default thinking effort (db/constants.py DEFAULT_EFFORT). */
+  default_effort: string;
   /** model id -> providers the user has keys for that can serve it. */
   providers_by_model: Record<string, string[]>;
 }
