@@ -1,0 +1,38 @@
+{
+  "omega-count-monovariant": {
+    "copied_from": null,
+    "elo": 1514.4660703266338,
+    "expanded": 1,
+    "last_note": "verified-milestone: complete correct proof of (a)+(b); W=sumOmega+count 3-case + d_p invariant",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "omega-count-monovariant",
+    "stale": true,
+    "summary": "Termination via integer monovariant W=sum Omega + count(>1); (b) via per-prime d_p=gcd(v_p) invariant"
+  },
+  "product-count-monovariant": {
+    "copied_from": null,
+    "elo": 1468.736306793522,
+    "expanded": 1,
+    "last_note": "verified-milestone: complete correct proof of (a)+(b); lex (P,C) monovariant + d_p invariant",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "product-count-monovariant",
+    "stale": true,
+    "summary": "Termination via lexicographic (P=board product, C=count>1); (b) via same d_p=gcd(v_p) invariant"
+  },
+  "valuation-gcd": {
+    "copied_from": null,
+    "elo": 1516.797622879844,
+    "expanded": 1,
+    "last_note": "verified-milestone: complete correct proof of (a)+(b); per-prime T monovariant + d_p invariant, no gaps",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "valuation-gcd",
+    "stale": true,
+    "summary": "Per-prime Euclidean-step framework: termination from T=sum Omega + count, uniqueness from d_p=gcd(E_p) invariant"
+  }
+}

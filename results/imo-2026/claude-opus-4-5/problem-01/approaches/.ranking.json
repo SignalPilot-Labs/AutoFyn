@@ -1,0 +1,38 @@
+{
+  "euclidean-reduction": {
+    "copied_from": null,
+    "elo": 1468.736306793522,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "euclidean-reduction",
+    "stale": false,
+    "summary": "Prime-by-prime Euclidean algorithm structural view"
+  },
+  "omega-monovariant": {
+    "copied_from": null,
+    "elo": 1515.263693206478,
+    "expanded": 1,
+    "last_note": "Complete proof of both parts (a) and (b) verified",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "omega-monovariant",
+    "stale": true,
+    "summary": "Omega(n) prime-count monovariant + p-adic gcd invariant"
+  },
+  "p-adic-gcd-invariant": {
+    "copied_from": null,
+    "elo": 1516.0,
+    "expanded": 1,
+    "last_note": "Complete proof of both parts (a) and (b) verified",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "p-adic-gcd-invariant",
+    "stale": true,
+    "summary": "Lexicographic (P,k) monovariant + p-adic gcd invariant G_p"
+  }
+}
