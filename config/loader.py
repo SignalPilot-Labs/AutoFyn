@@ -21,11 +21,14 @@ import json
 import logging
 import os
 from pathlib import Path
+from typing import Any
 
 import yaml
 
 from config.constants import (
     DEFAULT_NEEDS_VERIFICATION,
+    PROJECT_MCP_FILE,
+    PROJECT_MCP_SERVERS_KEY,
     SANDBOX_REPO_DIR,
     SUBAGENT_TYPES,
     SUBAGENTS_FILE,
@@ -39,6 +42,7 @@ _DEFAULT_CONFIG = _AUTOFYN_ROOT / "config" / "config.yml"
 _SUBAGENTS_PATH = _AUTOFYN_ROOT / "config" / SUBAGENTS_FILE
 _GLOBAL_CONFIG = Path.home() / ".autofyn" / "config.yml"
 _PROJECT_CONFIG = Path(SANDBOX_REPO_DIR) / ".autofyn" / "config.yml"
+_PROJECT_MCP = Path(SANDBOX_REPO_DIR) / ".autofyn" / PROJECT_MCP_FILE
 
 # ── Cache ────────────────────────────────────────────────────────────
 # Keyed by (str(repo_path) or None, str(overlay) or None).
@@ -369,6 +373,44 @@ def merge_subagents(
         for spec in repo_specs:
             merged[spec.name] = spec
     return tuple(merged.values())
+
+
+def load_project_mcp_servers() -> dict[str, dict]:
+    """Load external MCP servers declared in the repo's .autofyn/mcp.json.
+
+    Standard Claude Code shape: {"mcpServers": {<name>: {"command": ..., ...}}}.
+    Returns the name→spec map, or empty if the file is absent. Unlike config.yml,
+    a malformed file fails loud (RuntimeError) rather than vanishing silently — a
+    broken mcp.json would otherwise drop the repo's servers with no signal.
+
+    These are the base layer; the run-start modal's mcp_servers config supersedes
+    a server of the same name (merge is the caller's job — see the sandbox session).
+    """
+    if not _PROJECT_MCP.exists():
+        return {}
+    try:
+        raw = json.loads(_PROJECT_MCP.read_text())
+    except json.JSONDecodeError as e:
+        raise RuntimeError(f"Malformed {_PROJECT_MCP}: {e}") from e
+    servers = raw.get(PROJECT_MCP_SERVERS_KEY, {})
+    if not isinstance(servers, dict):
+        raise RuntimeError(
+            f"{_PROJECT_MCP}: '{PROJECT_MCP_SERVERS_KEY}' must be an object, got {type(servers).__name__}"
+        )
+    return servers
+
+
+def merge_mcp_servers(project: dict[str, Any], modal: dict[str, Any] | None) -> dict[str, Any]:
+    """Merge project MCP servers with the run-start modal config, modal-wins-by-name.
+
+    Project servers (.autofyn/mcp.json) are the base; a modal server of the same
+    name replaces it wholesale. Pure — the caller owns loading both sides. Values
+    are typed Any: they flow straight into the SDK's McpServerConfig union.
+    """
+    merged: dict[str, Any] = dict(project)
+    if modal:
+        merged.update(modal)
+    return merged
 
 
 def agent_config() -> dict:

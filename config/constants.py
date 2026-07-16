@@ -47,6 +47,13 @@ SESSION_GATE_TOOL_PREFIX: str = f"mcp__{SESSION_GATE_SERVER_NAME}__"
 # HTTP reads done at bootstrap. Well above any realistic count.
 MAX_REPO_SUBAGENTS: int = 32
 
+# Per-project MCP server file. A repo declares external (stdio) MCP servers in
+# `.autofyn/mcp.json` — standard Claude Code shape `{"mcpServers": {<name>: {...}}}`.
+# Precedence: these are the base layer; the run-start modal's mcp_servers config
+# supersedes any server of the same name (see config.loader.load_project_mcp_servers).
+PROJECT_MCP_FILE: str = "mcp.json"
+PROJECT_MCP_SERVERS_KEY: str = "mcpServers"
+
 # `needs_verification` is optional in a subagent entry — when omitted, the
 # agent does not get the verification-rules fragment (run tests/typecheck).
 # Only agents that inspect runnable code opt in. Repo-defined agents can omit
