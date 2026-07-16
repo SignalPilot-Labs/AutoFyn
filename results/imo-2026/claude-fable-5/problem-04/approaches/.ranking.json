@@ -1,0 +1,26 @@
+{
+  "descending-chain": {
+    "copied_from": null,
+    "elo": 1484.0,
+    "expanded": 1,
+    "last_note": "APPROVE: independent complete proof verified (ignition/grind/descent simulated adversarially within max(n-1,2n-4) cuts, closure lemma inline and correct); minor presentational note on A1 inductive step only.",
+    "last_outcome": "verified-milestone",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "descending-chain",
+    "stale": true,
+    "summary": "Explicit 3-phase geometric strategy (grind/ignition/descent) with monovariants for sufficiency; closed family F (no multiple of theta) for necessity; bound 2n-2 cuts"
+  },
+  "remainder-forcing": {
+    "copied_from": null,
+    "elo": 1516.0,
+    "expanded": 1,
+    "last_note": "APPROVE: complete proof of both directions verified (cut formula re-derived from coordinates, forcing/descent strategy simulated adversarially within n-1 cuts, 4-case closure checked on 436k exact-rational cuts); lemma safe-piece-exists certified.",
+    "last_outcome": "verified-milestone",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "remainder-forcing",
+    "stale": true,
+    "summary": "Residue arithmetic mod theta: one-cut forcing (t = theta - r_b) for sufficiency, 4-case safety preservation for necessity; bound n-1 cuts"
+  }
+}
