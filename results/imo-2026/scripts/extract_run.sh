@@ -8,13 +8,21 @@
 #   branch    — the run's branch_name on the target repo (github_repo from the run row)
 #   imo-slug  — e.g. imo-2026-01; the run's custom_prompt must reference it
 #   dest      — ABSOLUTE path to results/imo-2026/<model>/problem-NN (must exist,
-#               with empty approaches/ lemmas/ scratch/ subdirs). Relative paths
-#               break the cp block, which runs with cwd inside the clone.
+#               with empty approaches/ lemmas/ scratch/ subdirs; code/ is made on
+#               demand). Relative paths break the cp block, which runs with cwd
+#               inside the clone.
 #
 # Three artifact sources (each derived, never guessed):
-#   1. target git branch -> current.md, approaches/ (incl. hidden .ranking.json), lemmas/
+#   1. target git branch -> current.md, approaches/ (incl. hidden .ranking.json), lemmas/,
+#      and any loose root-level files (verification scripts/data) -> code/ if present
 #   2. Postgres (user+db both 'autofyn') -> logs.jsonl (run + audit_log + tool_calls, chronological)
 #   3. autofyn_autofyn-rounds Docker volume, keyed by run UUID -> scratch/
+#
+# code/ captures files committed to results/<slug>/ root that aren't current.md
+# or in approaches/lemmas — e.g. a computer-verified proof's certificate scripts
+# (certificate.py, verify_config.py) and cached .pkl outputs. Only created when
+# such files exist, so prose-only runs stay clean. current.md cites these when
+# the proof depends on them; without them the verification path isn't auditable.
 #
 # NOTE: the trailing secret scan uses grep, which exits 1 when it finds ZERO
 # matches — the good outcome. With `set -e` that aborts the script at the very
@@ -38,6 +46,15 @@ echo "[$SLUG] branch files:"; find "results/$SLUG" -type f | sort
 cp "results/$SLUG/current.md" "$DEST/current.md"
 cp -a "results/$SLUG/approaches/." "$DEST/approaches/"
 cp -a "results/$SLUG/lemmas/." "$DEST/lemmas/"
+
+# Loose root-level files (verification scripts/data the proof cites) -> code/,
+# only when present. maxdepth 1 -type f excludes current.md, approaches/, lemmas/.
+CODE_FILES=$(find "results/$SLUG" -maxdepth 1 -type f ! -name current.md)
+if [ -n "$CODE_FILES" ]; then
+  mkdir -p "$DEST/code"
+  echo "$CODE_FILES" | while IFS= read -r fp; do cp "$fp" "$DEST/code/"; done
+  echo "[$SLUG] code/ files:"; find "$DEST/code" -type f | wc -l
+fi
 
 echo "[$SLUG] === logs.jsonl from DB ==="
 cd "$REPO_ROOT"
