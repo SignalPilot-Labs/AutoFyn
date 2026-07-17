@@ -18,6 +18,7 @@ from common.constants import (
     SUPPORTED_GLM,
     SUPPORTED_GPT_SOL,
     SUPPORTED_GPT_TERRA,
+    SUPPORTED_KIMI,
     SUPPORTED_OPUS,
     SUPPORTED_SONNET,
     TIER_OPUS,
@@ -146,6 +147,16 @@ class TestResolveSubagentModel:
                 == SUPPORTED_GLM
             )
 
+    # ── User picks Kimi K3 (OpenRouter flagship, self-pairing) ──
+
+    def test_kimi_run_both_tiers_get_kimi(self) -> None:
+        """Kimi has no workhorse variant, so every tier resolves to K3 itself."""
+        for tier in (TIER_OPUS, TIER_SONNET):
+            assert (
+                _resolve_subagent_model(tier, SUPPORTED_KIMI, PROVIDER_OPENROUTER)
+                == SUPPORTED_KIMI
+            )
+
     # ── Leak guard: an OpenRouter run resolves to NO Claude id, and stays in
     #    its own family (no cross-family borrow) at any tier ──
 
@@ -158,6 +169,7 @@ class TestResolveSubagentModel:
             SUPPORTED_DEEPSEEK_PRO,
             SUPPORTED_DEEPSEEK_FLASH,
             SUPPORTED_GLM,
+            SUPPORTED_KIMI,
         )
         for user_model in openrouter_models:
             for tier in (TIER_OPUS, TIER_SONNET):
@@ -172,6 +184,7 @@ class TestResolveSubagentModel:
             SUPPORTED_GPT_SOL,
             SUPPORTED_DEEPSEEK_PRO,
             SUPPORTED_GLM,
+            SUPPORTED_KIMI,
         )
         for user_model in openrouter_models:
             fam = family_for_model(user_model)
