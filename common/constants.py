@@ -60,6 +60,7 @@ FAMILY_CLAUDE: str = "claude"
 FAMILY_GPT: str = "gpt"
 FAMILY_DEEPSEEK: str = "deepseek"
 FAMILY_GLM: str = "glm"
+FAMILY_KIMI: str = "kimi"
 
 # ── Model IDs ──
 # Anthropic native — exact SDK model IDs, no aliases, no translation layer.
@@ -73,6 +74,7 @@ SUPPORTED_GPT_TERRA: str = "openai/gpt-5.6-terra"
 SUPPORTED_DEEPSEEK_PRO: str = "deepseek/deepseek-v4-pro"
 SUPPORTED_DEEPSEEK_FLASH: str = "deepseek/deepseek-v4-flash"
 SUPPORTED_GLM: str = "z-ai/glm-5.2"
+SUPPORTED_KIMI: str = "moonshotai/kimi-k3"
 
 VALID_MODELS: tuple[str, ...] = (
     SUPPORTED_FABLE,
@@ -84,6 +86,7 @@ VALID_MODELS: tuple[str, ...] = (
     SUPPORTED_DEEPSEEK_PRO,
     SUPPORTED_DEEPSEEK_FLASH,
     SUPPORTED_GLM,
+    SUPPORTED_KIMI,
 )
 DEFAULT_MODEL: str = SUPPORTED_OPUS
 VALID_MODELS_PATTERN: str = f"^({'|'.join(VALID_MODELS)})$"
@@ -173,6 +176,15 @@ SUPPORTED_MODELS: list[dict[str, str]] = [
         "tier": TIER_OPUS,
         "family": FAMILY_GLM,
     },
+    {
+        "id": SUPPORTED_KIMI,
+        "label": "Kimi K3",
+        "short": "Kimi K3",
+        "description": "Moonshot open-weight flagship, agentic coding",
+        "context": "1M context",
+        "tier": TIER_OPUS,
+        "family": FAMILY_KIMI,
+    },
 ]
 
 # model id -> {provider -> API slug}. A model may be served by several providers,
@@ -187,6 +199,7 @@ MODEL_PROVIDER_SLUGS: dict[str, dict[str, str]] = {
     SUPPORTED_DEEPSEEK_PRO: {PROVIDER_OPENROUTER: SUPPORTED_DEEPSEEK_PRO},
     SUPPORTED_DEEPSEEK_FLASH: {PROVIDER_OPENROUTER: SUPPORTED_DEEPSEEK_FLASH},
     SUPPORTED_GLM: {PROVIDER_OPENROUTER: SUPPORTED_GLM},
+    SUPPORTED_KIMI: {PROVIDER_OPENROUTER: SUPPORTED_KIMI},
 }
 
 # Models that support effort="max". Others get downgraded to "high".
@@ -199,6 +212,7 @@ MODELS_SUPPORTING_MAX_EFFORT: frozenset[str] = frozenset(
         SUPPORTED_GPT_SOL,
         SUPPORTED_DEEPSEEK_PRO,
         SUPPORTED_GLM,
+        SUPPORTED_KIMI,
     }
 )
 
