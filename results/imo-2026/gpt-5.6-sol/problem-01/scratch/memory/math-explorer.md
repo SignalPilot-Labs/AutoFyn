@@ -1,1 +1,0 @@
-# Math explorer role rules
