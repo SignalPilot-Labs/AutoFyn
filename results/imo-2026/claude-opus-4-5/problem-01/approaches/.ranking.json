@@ -1,0 +1,26 @@
+{
+  "product-monovariant": {
+    "copied_from": null,
+    "elo": 1484.0,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "product-monovariant",
+    "stale": false,
+    "summary": "Q = P * 2^N monovariant + p-adic invariant for uniqueness"
+  },
+  "valuation-invariant": {
+    "copied_from": null,
+    "elo": 1516.0,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "valuation-invariant",
+    "stale": false,
+    "summary": "p-adic valuation invariant + lexicographic (Omega, count) monovariant"
+  }
+}

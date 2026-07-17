@@ -1,0 +1,14 @@
+{
+  "subset-folding-dyadic-frontier": {
+    "copied_from": null,
+    "elo": 1500.0,
+    "expanded": 1,
+    "last_note": "Complete minimax proof verified: draft identity, tree-component lower invariant, legal folding cut count, and matching upper bound all check out.",
+    "last_outcome": "verified-milestone",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "subset-folding-dyadic-frontier",
+    "stale": true,
+    "summary": "Subset-sum folding gives Xiang Yu\u2019s obstruction; a dyadic threshold/frontier invariant is sought for Liu Bang\u2019s guarantee."
+  }
+}

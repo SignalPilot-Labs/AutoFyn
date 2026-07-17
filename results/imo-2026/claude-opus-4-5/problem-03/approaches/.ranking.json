@@ -1,0 +1,74 @@
+{
+  "exchange-argument": {
+    "copied_from": null,
+    "elo": 1459.4244036143248,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "exchange-argument",
+    "stale": false,
+    "summary": "Variational proof that geometric marking is uniquely LB-optimal"
+  },
+  "geometric-dominance": {
+    "copied_from": null,
+    "elo": 1527.5031334592866,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "geometric-dominance",
+    "stale": false,
+    "summary": "Direct casework on geometric marking; LB creates 1:2:4:...:2^n pieces, largest dominates"
+  },
+  "induction-on-n": {
+    "copied_from": null,
+    "elo": 1629.2851560048905,
+    "expanded": 1,
+    "last_note": "Case B sandwich case complete; proof solved",
+    "last_outcome": "verified-milestone",
+    "last_round": 4,
+    "selected": 0,
+    "slug": "induction-on-n",
+    "stale": false,
+    "summary": "Induction via reciprocal recurrence 1/c(n) = 1/c(n-1) + 2^{-n}; reduction to smaller game"
+  },
+  "n2-explicit-casework": {
+    "copied_from": null,
+    "elo": 1503.8875469145382,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "n2-explicit-casework",
+    "stale": false,
+    "summary": "Direct 4-case exhaustive analysis for n=2, then induction"
+  },
+  "pairing-interleave": {
+    "copied_from": null,
+    "elo": 1407.8672613277936,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "pairing-interleave",
+    "stale": false,
+    "summary": "Dyadic pairing structure; XY copy strategy creates interleaved pairs, LB takes one from each tier"
+  },
+  "ratio-based-induction": {
+    "copied_from": null,
+    "elo": 1472.0324986791663,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "ratio-based-induction",
+    "stale": false,
+    "summary": "Induction via ratio threshold 2; XY halves if ratio>2, clones if <=2"
+  }
+}

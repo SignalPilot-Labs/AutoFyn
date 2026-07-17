@@ -1,0 +1,26 @@
+{
+  "p-position-small-prime-classification": {
+    "copied_from": null,
+    "elo": 1516.0,
+    "expanded": 1,
+    "last_note": "Complete proof verified: P-position recursion, prime stripping/descent, signature invariance, and indexed block shift are all rigorous.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "p-position-small-prime-classification",
+    "stale": true,
+    "summary": "Identify sequence terms as P-positions, prove small-prime signature invariance by stripping and descent, then translate by the primorial."
+  },
+  "translation-equivariant-greedy-set": {
+    "copied_from": null,
+    "elo": 1484.0,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "translation-equivariant-greedy-set",
+    "stale": false,
+    "summary": "Prove small-prime signature invariance directly for the greedy scan by minimal counterexample, then deduce exact translation invariance."
+  }
+}

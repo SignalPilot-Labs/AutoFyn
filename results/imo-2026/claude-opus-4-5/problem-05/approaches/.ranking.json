@@ -1,0 +1,38 @@
+{
+  "differentiability-squeeze": {
+    "copied_from": null,
+    "elo": 1500.0339081301693,
+    "expanded": 1,
+    "last_note": "Steps 1-5 correct; Step 6 has gaps in surjectivity argument",
+    "last_outcome": "partial",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "differentiability-squeeze",
+    "stale": true,
+    "summary": "Differentiate L at minimum x=f(y) to force f'=1"
+  },
+  "direct-squeeze": {
+    "copied_from": null,
+    "elo": 1468.7023986633528,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "direct-squeeze",
+    "stale": false,
+    "summary": "Direct means characterization: (f(x)+y)/2 = AM(x,f(y))"
+  },
+  "orbit-invariance": {
+    "copied_from": null,
+    "elo": 1531.263693206478,
+    "expanded": 1,
+    "last_note": "Complete proof verified: f(x) = x + c for c >= 0",
+    "last_outcome": "verified-milestone",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "orbit-invariance",
+    "stale": true,
+    "summary": "Orbit-invariance of g=f-id with growth contradiction for non-constant g"
+  }
+}
