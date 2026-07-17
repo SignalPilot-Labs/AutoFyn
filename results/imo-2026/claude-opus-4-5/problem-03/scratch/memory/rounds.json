@@ -1,0 +1,25 @@
+{
+  "pr_title": "IMO 2026 P3: c(n) = 2^n/(2^{n+1}-1) proven via scale-invariant induction",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "IMO 2026 P3: answer identified, lower bound proven, upper bound gap remains",
+      "ended_at": "2026-07-16T19:44:25Z"
+    },
+    {
+      "n": 2,
+      "summary": "UB proof gap: Lemma 5 false; answer verified, proof incomplete",
+      "ended_at": "2026-07-16T20:28:50Z"
+    },
+    {
+      "n": 3,
+      "summary": "UB Case A proven with k*-largest; sandwich case gap remains",
+      "ended_at": "2026-07-16T21:36:41Z"
+    },
+    {
+      "n": 4,
+      "summary": "Sandwich case proven; IMO 2026 P3 solved",
+      "ended_at": "2026-07-16T22:29:23Z"
+    }
+  ]
+}

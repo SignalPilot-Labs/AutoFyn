@@ -1,0 +1,10 @@
+{
+  "pr_title": "Solve IMO 2026 P3 with a verified minimax proof",
+  "rounds": [
+    {
+      "n": 2,
+      "summary": "solve IMO 2026 P3 via folding and tree invariant",
+      "ended_at": "2026-07-16T21:58:06Z"
+    }
+  ]
+}

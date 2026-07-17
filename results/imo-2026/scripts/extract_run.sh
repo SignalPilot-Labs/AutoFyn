@@ -43,9 +43,20 @@ cd "$WORK"
 git checkout HEAD -- "results/$SLUG" 2>&1
 echo "[$SLUG] branch files:"; find "results/$SLUG" -type f | sort
 
+# current.md is mandatory — a run with no proof document is a failed extraction.
 cp "results/$SLUG/current.md" "$DEST/current.md"
-cp -a "results/$SLUG/approaches/." "$DEST/approaches/"
-cp -a "results/$SLUG/lemmas/." "$DEST/lemmas/"
+
+# approaches/ and lemmas/ are optional: a proof that needs no standalone sublemmas
+# legitimately ships without lemmas/. Absent -> drop the empty dest dir rather than
+# commit an empty one that reads as "artifacts lost".
+for SUBDIR in approaches lemmas; do
+  if [ -d "results/$SLUG/$SUBDIR" ]; then
+    cp -a "results/$SLUG/$SUBDIR/." "$DEST/$SUBDIR/"
+  else
+    echo "[$SLUG] no $SUBDIR/ on branch — omitting"
+    rmdir "$DEST/$SUBDIR"
+  fi
+done
 
 # Loose root-level files (verification scripts/data the proof cites) -> code/,
 # only when present. maxdepth 1 -type f excludes current.md, approaches/, lemmas/.

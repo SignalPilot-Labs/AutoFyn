@@ -1,0 +1,15 @@
+{
+  "pr_title": "IMO 2026 P2 (OM=ON): Solved via polynomial ideal membership certificate",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "Setup + 4 approaches, 2 built, both CHANGES REQUESTED (shared algebraic gap)",
+      "ended_at": "2026-07-16T23:58:04Z"
+    },
+    {
+      "n": 2,
+      "summary": "Decoupling breakthrough + explicit certificate → complex-identity SOLVED",
+      "ended_at": "2026-07-17T01:01:34Z"
+    }
+  ]
+}
