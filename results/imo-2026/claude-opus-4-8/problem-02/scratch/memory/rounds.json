@@ -1,0 +1,15 @@
+{
+  "pr_title": "Prove OM=ON in IMO 2026 P2 — complete rigorous proof via Law-of-Sines Weierstrass certificate",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "3 rival approaches opened; shared reduction certified",
+      "ended_at": "2026-07-17T06:04:25Z"
+    },
+    {
+      "n": 2,
+      "summary": "SOLVED imo-2026-02: OM=ON proven, reviewer APPROVE",
+      "ended_at": "2026-07-17T06:57:30Z"
+    }
+  ]
+}

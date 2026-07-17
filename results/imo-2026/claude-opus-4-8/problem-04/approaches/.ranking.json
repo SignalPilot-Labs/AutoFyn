@@ -1,0 +1,50 @@
+{
+  "and-or-closure-rank-induction": {
+    "copied_from": null,
+    "elo": 1573.6806649960413,
+    "expanded": 2,
+    "last_note": "SOLVED: \u2286 closed by boolean F-free invariant (Sub-lemma B 4-case, verified by hand + 201k exact splits) + rank induction; full characterization \u03b8=180/m proved. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 3,
+    "selected": 1,
+    "slug": "and-or-closure-rank-induction",
+    "stale": true,
+    "summary": "Attacker-side global induction on AND-OR winning-set rank W_k; lift device classification to \"T in W_k without theta carries a C(theta)-vertex\", so generic triangle is outside W(theta). Closes the shared crux structurally."
+  },
+  "explicit-ffree-strategy": {
+    "copied_from": null,
+    "elo": 1514.691010553708,
+    "expanded": 1,
+    "last_note": "SOLVED: same engine (Sub-lemma B) via explicit Shan-Yu defender strategy \u03a3 + move-number induction; architecturally distinct, complete and correct. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 3,
+    "selected": 0,
+    "slug": "explicit-ffree-strategy",
+    "stale": true,
+    "summary": "Constructive defender strategy: Shan-Yu always keeps an F-free child (Sub-lemma B guarantees one exists); boolean F-free invariant maintained along actual play. Closes Direction III with no transcendence, different structure from the fixpoint induction."
+  },
+  "explicit-shanyu-peel-potential": {
+    "copied_from": null,
+    "elo": 1454.070986744974,
+    "expanded": 1,
+    "last_note": "Headline dyadic answer (72,80,40 winnable) is FALSE \u2014 reviewer search finds no win for them; no construction exists. Broken invariant/target; correct sub-lemmas subsumed by the two integer approaches.",
+    "last_outcome": "dead-end",
+    "last_round": 2,
+    "selected": 1,
+    "slug": "explicit-shanyu-peel-potential",
+    "stale": false,
+    "summary": "Defender-side explicit Shan-Yu child-choice rule + discrete potential Phi (min distance-to-theta inside C(theta)); prove Phi=infinity is preserved from a generic start when theta not in C(theta). Concrete/checkable form of the Guaranteed-Constant Lemma."
+  },
+  "transcendence-genericity-invariant": {
+    "copied_from": null,
+    "elo": 1457.5573377052765,
+    "expanded": 1,
+    "last_note": "Same correct answer \u03b8=180/m; complete rigorous \u2287 (Lemma A peel + Lemma B seed, verified) + \u03b8>90. Direction III generic-survival self-restoration lemma still open.",
+    "last_outcome": "advanced",
+    "last_round": 2,
+    "selected": 1,
+    "slug": "transcendence-genericity-invariant",
+    "stale": false,
+    "summary": "Defender-side self-restoring field-theoretic invariant over Q(theta): each angle is either algebraic-and-in-C(theta) or transcendental, never theta. Shan-Yu keeps a theta-free child preserving it. Naive tr.deg-2 form already shown false; refined form tracks the algebraic part."
+  }
+}
