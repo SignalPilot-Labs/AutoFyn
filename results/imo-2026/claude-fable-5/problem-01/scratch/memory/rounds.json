@@ -1,0 +1,10 @@
+{
+  "pr_title": "Solve IMO 2026 P1: complete proofs of (a) termination and (b) uniqueness of M via per-prime gcd invariant and Newman confluence",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "imo-2026-01 solved: both approaches APPROVED",
+      "ended_at": "2026-07-17T01:35:12Z"
+    }
+  ]
+}
