@@ -1,4 +1,0 @@
-ALWAYS: Certify only deductions actually displayed in the approach body, not claims appearing solely in a builder report (because round-1 files asserted missing ray/sign derivations).
-ALWAYS: Independently re-derive load-bearing coordinate reductions and demand the final residual identity explicitly (because correct reductions can still stop immediately before the theorem).
-NEVER: Accept a named telescoping or sine-product cancellation without its exact equations, multipliers, factor accounting, and zero-denominator cases (because all round-1 built approaches stalled there).
-4. ALWAYS: Independently expand displayed determinant/residual coefficient tables before certifying them (because the first round-2 table was off by a generically nonzero term, while the repaired table and factorization survived direct reproduction).

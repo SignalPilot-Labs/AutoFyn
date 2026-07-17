@@ -1,1 +1,0 @@
-ALWAYS: In affine predecessor proofs, first test whether every generated constraint has the stronger normal form “one state coordinate is an integer multiple of the target”; exhaustive pairing may reduce a general cell-classification problem to four elementary eliminations (this closed the load-bearing necessity gap for imo-2026-04, round 1).

@@ -1,7 +1,0 @@
-ALWAYS: Run the simulator first for blackboard/process problems to identify the invariant empirically before reasoning abstractly (because small-case simulation quickly reveals gcd-of-valuations formula and per-prime structure, round 1)
-ALWAYS: For gcd/lcm replacement processes, check per-prime behavior -- the move acts on valuations as (e,f) -> (min(e,f), |e-f|) which is the Euclidean subtraction step (round 1)
-NEVER: Trust "gcd of all entries" as invariant for gcd/lcm processes without per-prime check -- the correct invariant is per-prime gcd of valuations gcd(v_p(a_i)), not gcd of entries as integers (round 1)
-ALWAYS: Verify the combined (P, count>1) lex monovariant for termination of replacement processes where single monovariant may be non-strict (round 1)
-ALWAYS: For gcd/lcm operation termination, use W = sum_Omega(x_i) + count_{x_i>1} as the strict monovariant -- it decreases by >= 1 in ALL three cases: gcd=1 (count drops), gcd>1 m=n (Omega drops + count drops), gcd>1 m!=n (Omega drops) (because imo-2026-01 round 1)
-ALWAYS: Verify gcd(min(a,b), |a-b|) = gcd(a,b) as the key identity for invariance of per-prime gcd of valuations; it follows from the subtraction step gcd(a,b)=gcd(a,b-a) (because imo-2026-01 round 1)
-NEVER: Use sum of entries as monovariant for gcd/lcm operations -- coprime moves (m,n)->(1,mn) increase the max entry and the sum (because imo-2026-01 round 1)

@@ -1,2 +1,0 @@
-ALWAYS: When a displacement absolute-value bound uses positivity of its coefficient, first retain the two signed slack identities and establish nonnegative displacement from orbit positivity before taking absolute values (because stating the absolute bound earlier would be circular, round 1).
-ALWAYS: Write repository artifacts through the assigned worktree path when the file tool rejects the shared-checkout path (because subagents are isolated to their worktrees and the round loop merges those changes, round 1).
