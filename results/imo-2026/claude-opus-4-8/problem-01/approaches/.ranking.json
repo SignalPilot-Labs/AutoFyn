@@ -1,0 +1,26 @@
+{
+  "global-lex-monovariant": {
+    "copied_from": null,
+    "elo": 1516.0,
+    "expanded": 1,
+    "last_note": "Complete correct proof of both parts; termination via lex (N,P), value via g_p invariant, N=0 excluded non-circularly. Verified by simulation. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "global-lex-monovariant",
+    "stale": true,
+    "summary": "Termination via global lex monovariant (N=#entries>1, P=product); value via per-prime exponent-gcd invariant g_p."
+  },
+  "per-prime-valuation-descent": {
+    "copied_from": null,
+    "elo": 1484.0,
+    "expanded": 1,
+    "last_note": "Complete correct proof of both parts; termination via lex (Omega,N) with explicit bound, value via g_p invariant. Verified by simulation. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "per-prime-valuation-descent",
+    "stale": true,
+    "summary": "Termination via per-prime valuation-mass potential (Omega, N) lex, with minimal-counterexample fallback; same g_p invariant for value."
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "convex-duality": {
+    "copied_from": null,
+    "elo": 1467.3558966791115,
+    "expanded": 1,
+    "last_note": "Same verified spine via Legendre framing; correctly avoids the tight-on-Im(f)-only trap, rigidity from lever (\u2217) valid for all a,b. APPROVE/solved.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "convex-duality",
+    "stale": true,
+    "summary": "Read (R) as a Legendre conjugate in a=\u221ax; tightness at x=f(y) + (L) upper cap forces the profile affine. Far framing; closing steps vague."
+  },
+  "mixed-defect-contradiction": {
+    "copied_from": null,
+    "elo": 1515.362039086379,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "mixed-defect-contradiction",
+    "stale": false,
+    "summary": "Extremal inf/sup g + orbit interleaving to contradict two defect labels; same crux and residual zero-gap as orbit-interleaving (finite framing)."
+  },
+  "monotone-continuity": {
+    "copied_from": null,
+    "elo": 1471.454243906308,
+    "expanded": 1,
+    "last_note": "Same verified spine; squeeze (\u2666) order/continuity at image points is a-posteriori only, not used in close, so no quantifier slip. APPROVE/solved.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "monotone-continuity",
+    "stale": true,
+    "summary": "Earn strict monotonicity then continuity from the sandwich, then pin g constant via (\u2217)+connectedness. Far framing; monotone/continuity steps vague."
+  },
+  "orbit-interleaving": {
+    "copied_from": null,
+    "elo": 1545.8278203282016,
+    "expanded": 1,
+    "last_note": "Complete correct proof both directions; all identities sympy-verified, closing openness+connectedness airtight. Cleanest \u2014 written to current.md. APPROVE/solved.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "orbit-interleaving",
+    "stale": true,
+    "summary": "(\u2605)+orbit AP, interleave two orbits at \u221e via (\u2217) to force all positive defects equal, then close zero-coexistence by openness+connectedness."
+  }
+}
