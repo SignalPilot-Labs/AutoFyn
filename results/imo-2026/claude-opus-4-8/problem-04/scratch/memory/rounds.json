@@ -1,0 +1,20 @@
+{
+  "pr_title": "IMO 2026 P4: Mulan wins iff θ=180°/m (m≥2 integer) — full proof",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": " ended without summary -- autocommit",
+      "ended_at": "2026-07-17T05:25:07Z"
+    },
+    {
+      "n": 2,
+      "summary": "Corrected answer to θ=180/m; proved ⊇ + θ>90",
+      "ended_at": "2026-07-17T06:36:13Z"
+    },
+    {
+      "n": 3,
+      "summary": "SOLVED: closed ⊆ survival gap via F-free invariant",
+      "ended_at": "2026-07-17T06:58:54Z"
+    }
+  ]
+}

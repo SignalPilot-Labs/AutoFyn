@@ -1,0 +1,50 @@
+{
+  "complex-swap-symmetry": {
+    "copied_from": null,
+    "elo": 1426.9825922398836,
+    "expanded": 1,
+    "last_note": "L1 (OM=ON\u27faRe(O)=Re(a)/2) cleanly proved+certified; L2 sign-encoding is numerically pinned not proven; crux Tnum=0 only numeric (saturation open).",
+    "last_outcome": "advanced",
+    "last_round": 1,
+    "selected": 1,
+    "slug": "complex-swap-symmetry",
+    "stale": false,
+    "summary": "Complex numbers with sigma involution (B<->C,K<->L,M<->N); encode E1-E3 as reality conditions and prove Re(O)=Re(a)/2."
+  },
+  "inversion-at-A": {
+    "copied_from": null,
+    "elo": 1485.9504539344648,
+    "expanded": 1,
+    "last_note": "Exact circle\u2192line reformulation proven but honestly shown tautological (\u2113* is polar of A); E2/E3 coupling identity G-scalar remains open. Partial, CHANGES REQUESTED.",
+    "last_outcome": "partial",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "inversion-at-A",
+    "stale": true,
+    "summary": "Inversion at A sends omega to a line l*=K*L*; A',A'' become inverse images of AB and l*, AC and l*; pin l* from E1-E3 via reversed similarity, then core identity in foot-distances."
+  },
+  "power-of-point-BC": {
+    "copied_from": null,
+    "elo": 1559.569999586669,
+    "expanded": 2,
+    "last_note": "Proved E2',E3' gap-free (now certified); but final scalar identity G3 still open and Lemma O / one G2 betweenness sub-step not fully closed synthetically. Partial, CHANGES REQUESTED.",
+    "last_outcome": "advanced",
+    "last_round": 2,
+    "selected": 1,
+    "slug": "power-of-point-BC",
+    "stale": true,
+    "summary": "Synthetic power-of-a-point: reduce OM=ON to pow(B)-pow(C)=(AB^2-AC^2)/2 via second intersections BK*BK2, CL*CL2, prove from angle conditions."
+  },
+  "trig-lawofsines": {
+    "copied_from": null,
+    "elo": 1527.4969542389827,
+    "expanded": 2,
+    "last_note": "SOLVED: closed the (T) gap via an exact Weierstrass pseudo-division certificate lc(P)lc(Q)TN=fP+gQ mod Pythagorean; reviewer independently reproduced P,Q,TN, R2\u22610, both lc nonzero, and (T)\u27faOM=ON. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 2,
+    "selected": 1,
+    "slug": "trig-lawofsines",
+    "stale": true,
+    "summary": "Law of Sines parametrization by theta; compute O and prove the fixed-line projection (O-mid(MN))*(C-B)=0 by trig elimination."
+  }
+}
