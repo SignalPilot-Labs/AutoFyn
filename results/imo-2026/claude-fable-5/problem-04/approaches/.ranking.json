@@ -1,0 +1,26 @@
+{
+  "circle-group-quotient": {
+    "copied_from": null,
+    "elo": 1484.0,
+    "expanded": 1,
+    "last_note": "Complete correct proof, certified as the Full proof in current.md; cleanest write-up (Lemma 4.2 handles the early-stop case explicitly; layered quotient/lift structure airtight).",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "circle-group-quotient",
+    "stale": true,
+    "summary": "Same characterization via projection to G = \u211d/\u03b8\u2124: quotient-game dichotomy on \u03c3 = [180], then separate lifting lemmas isolating all size/boundary bookkeeping."
+  },
+  "residue-divisibility-characterization": {
+    "copied_from": null,
+    "elo": 1516.0,
+    "expanded": 1,
+    "last_note": "Complete correct proof verified independently (cut model, 4-case invariant, descent, n-1 bound all re-derived + simulated); only nit: Lemma 2 step omits the trivial \"triangle may already contain \u03b8\" remark.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "residue-divisibility-characterization",
+    "stale": true,
+    "summary": "Mulan wins iff 180/\u03b8 \u2208 \u2124: mod-\u03b8 residue invariant for necessity + fork-to-multiples with downward induction (Lemma A) for sufficiency; gaps are write-up level."
+  }
+}

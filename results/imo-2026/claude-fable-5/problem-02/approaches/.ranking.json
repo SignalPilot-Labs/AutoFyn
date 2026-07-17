@@ -1,0 +1,50 @@
+{
+  "complex-certificate": {
+    "copied_from": null,
+    "elo": 1515.362039086379,
+    "expanded": 1,
+    "last_note": "APPROVED solved: certificate 2sinA\u00b7G = \u03b1\u2113_K+\u03b2\u2113_L and every Fourier-table row reviewer-verified symbolically; non-collinearity proven; canonical proof copied to current.md.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "complex-certificate",
+    "stale": true,
+    "summary": "Complex-number encoding of the hypotheses as real-vanishing polynomials; exhibit an explicit component-aware polynomial certificate for pow(B,\u03c9)\u2212pow(C,\u03c9)=(c\u00b2\u2212b\u00b2)/2."
+  },
+  "family-invariance-boundary": {
+    "copied_from": null,
+    "elo": 1454.0430238262613,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "family-invariance-boundary",
+    "stale": false,
+    "summary": "Show F(\u03c6)=pow(B,\u03c9)\u2212pow(C,\u03c9) is constant along the 1-parameter family (centre moves \u22a5 BC) and evaluate at a closed-form boundary anchor."
+  },
+  "midpoint-reflection-isogonal": {
+    "copied_from": null,
+    "elo": 1484.7671167591582,
+    "expanded": 1,
+    "last_note": "Lemmas 1-4 (reflection dictionary + reduction to identity (I)) verified correct; synthetic derivation of (I) still open; superseded by two approved solved siblings.",
+    "last_outcome": "partial",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "midpoint-reflection-isogonal",
+    "stale": true,
+    "summary": "Reflect K in M, L in N to put K*, L* on isogonal rays through A (exact dictionary); prove the transferred power identity synthetically via a yet-unfound auxiliary circle/spiral map."
+  },
+  "secant-trig-identity": {
+    "copied_from": null,
+    "elo": 1545.8278203282016,
+    "expanded": 1,
+    "last_note": "APPROVED solved: KI identity, constraints (K)/(L), and full reduction chain all reviewer-verified symbolically + independent end-to-end configuration test; no gaps.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "secant-trig-identity",
+    "stale": true,
+    "summary": "Reduce OM=ON to c\u00b7AP\u2212b\u00b7AQ=(c\u00b2\u2212b\u00b2)/2 via median formula + power of a point, then prove one trig identity modulo the verified E1\u2013E6 system (identity confirmed branch-free at 1e-48)."
+  }
+}
