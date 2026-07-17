@@ -1,0 +1,26 @@
+{
+  "cone-graph-rigidity": {
+    "copied_from": null,
+    "elo": 1484.0,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "cone-graph-rigidity",
+    "stale": false,
+    "summary": "Recast the residual inequalities as paired cone bounds and seek rigidity of the displacement graph."
+  },
+  "orbit-displacement-approximation": {
+    "copied_from": null,
+    "elo": 1516.0,
+    "expanded": 1,
+    "last_note": "Complete classification verified: residual algebra, arithmetic-orbit quantifiers, nearest-integer alignment, clopen-fiber connectedness argument, and direct candidate substitution all check.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "orbit-displacement-approximation",
+    "stale": true,
+    "summary": "Residual equality yields arithmetic forward orbits; align positive orbits and use bisection to exclude zero/positive coexistence."
+  }
+}
