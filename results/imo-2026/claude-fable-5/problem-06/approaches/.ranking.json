@@ -1,0 +1,38 @@
+{
+  "greedy-clique-closure": {
+    "copied_from": null,
+    "elo": 1468.7023986633528,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "greedy-clique-closure",
+    "stale": false,
+    "summary": "Limit-object framing: reduce to finiteness of the minimal constraint antichain E_inf via density/first-moment bounds, then exact periodicity of V_inf"
+  },
+  "small-prime-core": {
+    "copied_from": null,
+    "elo": 1531.263693206478,
+    "expanded": 1,
+    "last_note": "Complete rigorous proof: SCPL descent + companion (threshold a_1) + mod-M periodic enumeration; all lemmas proven; verified a_1 in {15,26,32,48,49,77,105}",
+    "last_outcome": "verified-milestone",
+    "last_round": 3,
+    "selected": 0,
+    "slug": "small-prime-core",
+    "stale": true,
+    "summary": "Fix prime universe Q = {p <= a_1} up front; SCPL by minimal-counterexample descent (companion lemma), collapse constraints mod M = prod Q, greedy enumeration of periodic set"
+  },
+  "wqo-domination": {
+    "copied_from": null,
+    "elo": 1500.0339081301693,
+    "expanded": 1,
+    "last_note": "Complete rigorous proof: independent SCPL descent + minimal family E_inf in finite 2^Q + exact L-periodicity; no gaps",
+    "last_outcome": "verified-milestone",
+    "last_round": 3,
+    "selected": 0,
+    "slug": "wqo-domination",
+    "stale": true,
+    "summary": "Independent SCPL descent, then antichain endgame: minimal family E_inf lives in finite 2^Q, large-prime constraints dominated, V_inf exactly periodic"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "pr_title": "IMO 2026 P3: c(n)=2^n/(2^{n+1}-1), near-complete two-sided proof (both cruxes reduced to adaptive tight-face residuals)",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": " ended without summary -- autocommit",
+      "ended_at": "2026-07-16T16:38:58Z"
+    },
+    {
+      "n": 2,
+      "summary": "P3: Status→partial; certify G1+R; refute induction",
+      "ended_at": "2026-07-16T17:05:44Z"
+    },
+    {
+      "n": 3,
+      "summary": "P3: certify Lemma H, close upper-bound Case A",
+      "ended_at": "2026-07-16T18:09:04Z"
+    },
+    {
+      "n": 4,
+      "summary": "P3: Case B→one hard regime; unify lower bound",
+      "ended_at": "2026-07-16T19:30:55Z"
+    },
+    {
+      "n": 5,
+      "summary": "P3: descent-lemma lower bound (clustered gap); IH(q) 94%",
+      "ended_at": "2026-07-16T20:35:46Z"
+    },
+    {
+      "n": 6,
+      "summary": "P3: lower confined CLOSED (dyadic split); UB thru IH(4); 3 lemmas",
+      "ended_at": "2026-07-16T21:51:49Z"
+    },
+    {
+      "n": 7,
+      "summary": "Upper bound→single vertex stmt (V); B2-large closed; 3 lemmas",
+      "ended_at": "2026-07-16T22:57:21Z"
+    },
+    {
+      "n": 8,
+      "summary": "(V) superseded by 1-homog σ-face; 5 lemmas; 2 tight-face gaps",
+      "ended_at": "2026-07-17T00:13:47Z"
+    }
+  ]
+}

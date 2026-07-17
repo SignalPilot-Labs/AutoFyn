@@ -1,0 +1,15 @@
+{
+  "pr_title": "Solve IMO 2026 P6: greedy gcd-linked sequence is shift-periodic",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "Explored+outlined 4 approaches; built 2; K_k^2 claim false but structure sound",
+      "ended_at": "2026-07-16T19:23:36Z"
+    },
+    {
+      "n": 2,
+      "summary": "Solved IMO 2026 P6: dichotomy lemma + CRT periodicity proof APPROVED",
+      "ended_at": "2026-07-16T20:03:47Z"
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "caseB-matching": {
+    "copied_from": null,
+    "elo": 1484.357921112194,
+    "expanded": 1,
+    "last_note": "Core Lemma M (finite matching menu => A<=1/D) REFUTED by exact n=3 counterexample (menu best 0.0683>1/15, cascade 0.0288); menu framing insufficient for hard regime. Salvaged+certified Lemma X, Reduction 1, Reduction 2",
+    "last_outcome": "dead-end",
+    "last_round": 4,
+    "selected": 0,
+    "slug": "caseB-matching",
+    "stale": false,
+    "summary": "Finite matching-exchange for the Case-B upper bound: XY menu = matchings (cut larger at smaller -> cancelling copy) + halve singletons; best matching forces A<=1/D. Induction-free, non-graveyard. Reuses G1/R/H + direct-constructive lower bound. Open core: Lemma M exchange proof."
+  },
+  "direct-constructive": {
+    "copied_from": null,
+    "elo": 1707.8595330835733,
+    "expanded": 8,
+    "last_note": "Certified reformulation A>=1<=>E_F<=O_G and injection N_F<=N_G+1=>A>=1; honest: true minimiser has E_F>0, both bypasses fail, residual=within-group flat move on tight face E_F=O_G.",
+    "last_outcome": "advanced",
+    "last_round": 8,
+    "selected": 0,
+    "slug": "direct-constructive",
+    "stale": true,
+    "summary": "Explicit optimal strategies both sides: greedy=odd-ranked reduction, LB geometric marks + dominance identity (lower bound), XY interleave+halve response (upper bound)."
+  },
+  "induction-recursion": {
+    "copied_from": null,
+    "elo": 1327.6198318643685,
+    "expanded": 1,
+    "last_note": "n->(n-1) game separation H2 refuted (F1 budget non-decrement, F2 global re-ranking); Step1 + AltSum reformulation salvaged but engine broken",
+    "last_outcome": "dead-end",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "induction-recursion",
+    "stale": false,
+    "summary": "Induction on n via recursion c(n)=2c(n-1)/(2c(n-1)+1); decompose game at big-piece boundary into renormalized (n-1)-subgame. Crux: game-separation lemma H2."
+  },
+  "potential-duality": {
+    "copied_from": null,
+    "elo": 1406.6163008822768,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "potential-duality",
+    "stale": false,
+    "summary": "Certify game value with a single dyadic-ladder potential Phi that upper-bounds under XY play and lower-bounds under LB play, meeting at c(n). Crux: explicit closed-form Phi (P2), vacuity risk."
+  },
+  "upper-general-cascade": {
+    "copied_from": "direct-constructive",
+    "elo": 1667.7697252782182,
+    "expanded": 7,
+    "last_note": "arithmetic overclaim corrected (3*2^(n-2)/D); certified GreedyCascade closes B2-large all n; residual B2-small a1<1/2 open",
+    "last_outcome": "advanced",
+    "last_round": 7,
+    "selected": 0,
+    "slug": "upper-general-cascade",
+    "stale": false,
+    "summary": "Copy of direct-constructive focusing new work on general-n Case-B upper bound: strengthened dual-bound induction IH+(m) (carry sum AND max<2^{m-1}/D) + B2 double-pair-cancel entry; imports lower bound and IH(q<=4)."
+  },
+  "upper-vertex-reduction": {
+    "copied_from": "direct-constructive",
+    "elo": 1677.1718943110495,
+    "expanded": 8,
+    "last_note": "(V) killed; certified f-homogeneous, sigma-migration, TwoLevelCascade; sole gap c2b q>=5 (bulk of flat residual, adaptive).",
+    "last_outcome": "advanced",
+    "last_round": 8,
+    "selected": 0,
+    "slug": "upper-vertex-reduction",
+    "stale": true,
+    "summary": "Different-framing upper bound: global PL-max-at-vertex characterization of f(b)=min_XY A over the hard-regime polytope K_q; vertices classified T(tie->IH(q-1))/G(gap=1/D->Red2)/S(sum-boundary geometric leaf). Evades r6 step-descent + r3 concavity. Imports lower bound + IH(q<=4)."
+  }
+}

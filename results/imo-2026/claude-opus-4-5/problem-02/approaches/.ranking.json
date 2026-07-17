@@ -1,0 +1,50 @@
+{
+  "complex-identity": {
+    "copied_from": null,
+    "elo": 1547.1418727395378,
+    "expanded": 2,
+    "last_note": "Complete proof via polynomial certificate identity - SOLVED",
+    "last_outcome": "verified-milestone",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "complex-identity",
+    "stale": true,
+    "summary": "Complex algebra with A=0: encode angles as real-ratio constraints, derive circumcenter identity"
+  },
+  "dot-product-identity": {
+    "copied_from": null,
+    "elo": 1486.1712817804967,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "dot-product-identity",
+    "stale": false,
+    "summary": "Direct dot product: reduce OM=ON to 4(b-c)\u00b7O_0 = |b|\u00b2-|c|\u00b2, derive from angle conditions"
+  },
+  "power-balance": {
+    "copied_from": null,
+    "elo": 1497.8804913729502,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "power-balance",
+    "stale": false,
+    "summary": "Power of a point + sine rule: prove pow(M) = pow(N) via lever identity AB\u00b7MP_B = AC\u00b7NP_N"
+  },
+  "sigma-symmetry": {
+    "copied_from": null,
+    "elo": 1468.8063541070153,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "sigma-symmetry",
+    "stale": false,
+    "summary": "B<->C symmetry (sigma): trivial for isoceles, extend to general via algebraic identity principle"
+  }
+}
