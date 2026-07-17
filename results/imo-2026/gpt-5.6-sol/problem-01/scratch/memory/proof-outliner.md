@@ -1,0 +1,1 @@
+ALWAYS: Recompute pairwise product and valuation changes directly before trusting explorer prose (because for this process the replacement product is lcm(m,n)=mn/gcd(m,n), and a mistaken factor would spoil the monovariant, round 1).

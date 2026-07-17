@@ -1,0 +1,1 @@
+ALWAYS: Compute exponent-vector descent using the complete initial prime support, not a truncated sample of primes (because omitted coordinates can falsely make a genuinely decreasing move appear unchanged, round 1).

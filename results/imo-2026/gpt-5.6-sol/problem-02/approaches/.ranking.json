@@ -1,0 +1,26 @@
+{
+  "oblique-circle-linearization": {
+    "copied_from": null,
+    "elo": 1501.4695015289756,
+    "expanded": 2,
+    "last_note": "Verified the two quadratic eliminations, every determinant-table coefficient, the coefficient-audited certificate, all denominator branches, and the final circle criterion; complete proof solved.",
+    "last_outcome": "verified-milestone",
+    "last_round": 2,
+    "selected": 4,
+    "slug": "oblique-circle-linearization",
+    "stale": true,
+    "summary": "Oblique affine coordinates make the circle target linear, leaving explicit ray determinants and cancellation."
+  },
+  "trig-sine-factorization": {
+    "copied_from": null,
+    "elo": 1498.5304984710244,
+    "expanded": 1,
+    "last_note": "Verified branch control, closure equations, circle formulas, and midpoint-power reduction; explicit derivation of identity (8) from the two closure residuals remains open.",
+    "last_outcome": "advanced",
+    "last_round": 1,
+    "selected": 4,
+    "slug": "trig-sine-factorization",
+    "stale": false,
+    "summary": "Directed sine-law parametrization reduces equal midpoint powers to an explicit factorization by two closure equations."
+  }
+}

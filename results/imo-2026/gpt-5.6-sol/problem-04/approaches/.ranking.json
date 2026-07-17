@@ -1,0 +1,14 @@
+{
+  "semigroup-crossing-binary-descent": {
+    "copied_from": null,
+    "elo": 1500.0,
+    "expanded": 1,
+    "last_note": "Complete characterization verified: safe-child necessity, strict crossing sufficiency, legal geometry, and finite integral-label descent all close rigorously.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "semigroup-crossing-binary-descent",
+    "stale": true,
+    "summary": "Normalize angles; use a safe nonintegral branch for necessity and force then halve an integral angle label for sufficiency."
+  }
+}

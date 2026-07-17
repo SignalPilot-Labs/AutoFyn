@@ -1,0 +1,26 @@
+{
+  "arithmetic-product-content": {
+    "copied_from": null,
+    "elo": 1516.0,
+    "expanded": 1,
+    "last_note": "Complete proof verified: weighted-product descent terminates every schedule and prime-column gcd invariance forces the unique terminal nonunit.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "arithmetic-product-content",
+    "stale": true,
+    "summary": "Direct weighted-product descent plus invariant prime-exponent gcds gives the explicit terminal integer."
+  },
+  "valuation-vector-normal-form": {
+    "copied_from": null,
+    "elo": 1484.0,
+    "expanded": 1,
+    "last_note": "Complete proof verified: exponent-vector Phi descent terminates every schedule and coordinate subgroup invariance forces the unique normal form.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "valuation-vector-normal-form",
+    "stale": true,
+    "summary": "Exponent-vector L1 normalization plus invariant coordinate subgroups forces a unique normal form."
+  }
+}
