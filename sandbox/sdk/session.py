@@ -15,6 +15,7 @@ from claude_agent_sdk.types import (
     ToolPermissionContext,
 )
 
+from config.loader import load_project_mcp_servers, merge_mcp_servers
 from constants import SDK_MAX_BUFFER_BYTES, SESSION_ENV
 from sdk.event_log import SessionEventLog, SessionEventLogOverflow, SESSION_EVENT_LOG_MAX_BYTES
 from sdk.gate import SessionGate
@@ -111,7 +112,9 @@ class Session:
         """Build ClaudeAgentOptions from the options dict."""
         opts = self.options_dict
         gate = SecurityGate(opts["github_repo"], opts["branch_name"])
-        mcp = dict(opts.get("mcp_servers") or {})
+        # Project .autofyn/mcp.json is the base layer; the run-start modal's
+        # mcp_servers config supersedes any server of the same name.
+        mcp = merge_mcp_servers(load_project_mcp_servers(), opts.get("mcp_servers"))
         gate_cfg = opts.get("session_gate")
         if gate_cfg:
             mcp["session_gate"] = self._gate.build_mcp(gate_cfg)
