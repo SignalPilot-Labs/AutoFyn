@@ -27,6 +27,9 @@ autofyn/monitor/static/
 .autofyn/
 *.tar
 
+# Technical report (maintained in a separate Overleaf git source)
+/docs/technical_report/
+
 # Python tooling caches
 .pytest_cache/
 .ruff_cache/
