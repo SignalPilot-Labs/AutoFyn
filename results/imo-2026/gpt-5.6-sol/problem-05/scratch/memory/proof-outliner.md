@@ -1,0 +1,2 @@
+ALWAYS: Cross-check candidate classifications across explorer reports before designing dynamics (because the reflected-dynamics scout guessed identity only, while exact substitution shows all nonnegative translations work, round 1)
+NEVER: Globalize a reflected substitution before checking its argument remains in the positive domain (because positive translations make \(2x-f(x)\le 0\) near zero, round 1)
