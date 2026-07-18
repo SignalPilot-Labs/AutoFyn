@@ -13,6 +13,7 @@ function computeLiveStats(events: FeedEvent[]) {
   // null until a usage event reports a cost — the agent sends null when no
   // usage has settled, and collapsing that to 0 here would hide it.
   let costUsd: number | null = null;
+  let tokens = ZERO_TOKENS;
 
   for (const e of events) {
     if (e._kind === "tool") {
@@ -20,10 +21,16 @@ function computeLiveStats(events: FeedEvent[]) {
     } else if (e._kind === "usage") {
       contextTokens = e.data.context_tokens;
       costUsd = e.data.total_cost_usd;
+      tokens = {
+        input: e.data.total_input_tokens,
+        output: e.data.total_output_tokens,
+        cacheWrite: e.data.cache_creation_input_tokens,
+        cacheRead: e.data.cache_read_input_tokens,
+      };
     }
   }
 
-  return { toolCount, contextTokens, costUsd };
+  return { toolCount, contextTokens, costUsd, tokens };
 }
 
 function formatTokenCount(n: number): string {
@@ -68,6 +75,46 @@ export function formatContextStat(liveTokens: number, settledTokens: number | nu
 }
 
 /**
+ * Cumulative token counters for a run. Distinct from `context_tokens`, which is
+ * a snapshot of the last message's window and moves both up and down.
+ */
+export interface TokenTotals {
+  input: number;
+  output: number;
+  cacheWrite: number;
+  cacheRead: number;
+}
+
+export const ZERO_TOKENS: TokenTotals = { input: 0, output: 0, cacheWrite: 0, cacheRead: 0 };
+
+export function sumTokens(t: TokenTotals): number {
+  return t.input + t.output + t.cacheWrite + t.cacheRead;
+}
+
+/**
+ * Total tokens processed across the run: uncached input + output (thinking
+ * included) + cache writes + cache reads. Live totals win while the run
+ * streams; the settled DB row takes over once it ends. Zero on both sides
+ * means no usage was ever reported, which renders as `—` rather than a
+ * misleading `0`.
+ */
+export function formatTokensStat(live: TokenTotals, settled: TokenTotals): string {
+  if (sumTokens(live) > 0) return formatTokenCount(sumTokens(live));
+  if (sumTokens(settled) > 0) return formatTokenCount(sumTokens(settled));
+  return NO_DATA;
+}
+
+/** Hover text spelling out where the total came from. */
+export function formatTokensBreakdown(t: TokenTotals): string {
+  return [
+    `Input ${formatTokenCount(t.input)}`,
+    `Output ${formatTokenCount(t.output)}`,
+    `Cache write ${formatTokenCount(t.cacheWrite)}`,
+    `Cache read ${formatTokenCount(t.cacheRead)}`,
+  ].join(" · ");
+}
+
+/**
  * Extract the PR number from a GitHub pull request URL.
  * Strips a trailing slash before splitting so URLs like
  * `https://github.com/owner/repo/pull/42/` return `"42"` instead of `""`.
@@ -81,14 +128,16 @@ function Stat({
   label,
   value,
   accent,
+  title,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
   accent?: string;
+  title?: string;
 }) {
   return (
-    <div className="flex items-center gap-1.5 min-w-0 shrink-0">
+    <div className="flex items-center gap-1.5 min-w-0 shrink-0" title={title}>
       <span className="text-text-dim">{icon}</span>
       <span className="text-caption text-text-dim">{label}</span>
       <span className={`text-content font-semibold tabular-nums truncate ${accent ?? "text-text"}`}>
@@ -113,6 +162,19 @@ export function StatsRow({
   const cost = formatCostStat(run?.total_cost_usd, live.costUsd);
   const toolValue = run ? formatToolStat(run.total_tool_calls, live.toolCount) : NO_DATA;
   const contextValue = run ? formatContextStat(live.contextTokens, run.context_tokens) : NO_DATA;
+  // The DB columns are non-null with a 0 default; the optional/nullable types
+  // are defensive, so coerce to 0 and let a 0 total render as no-data.
+  const settledTokens: TokenTotals = useMemo(
+    () => ({
+      input: run?.total_input_tokens ?? 0,
+      output: run?.total_output_tokens ?? 0,
+      cacheWrite: run?.cache_creation_input_tokens ?? 0,
+      cacheRead: run?.cache_read_input_tokens ?? 0,
+    }),
+    [run],
+  );
+  const tokensValue = run ? formatTokensStat(live.tokens, settledTokens) : NO_DATA;
+  const tokensTitle = sumTokens(live.tokens) > 0 ? live.tokens : settledTokens;
 
   if (!run) {
     return (
@@ -158,6 +220,16 @@ export function StatsRow({
         label="Cost"
         value={cost.value}
         accent={cost.accent}
+      />
+      <Stat
+        icon={
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M1 3h8M1 5h8M1 7h5" />
+          </svg>
+        }
+        label="Tokens"
+        value={tokensValue}
+        title={formatTokensBreakdown(tokensTitle)}
       />
       <Stat
         icon={

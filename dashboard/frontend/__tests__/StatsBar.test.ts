@@ -6,7 +6,18 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { NO_DATA, formatCostStat, formatToolStat, formatContextStat, extractPrNumber } from "@/components/stats/StatsBar";
+import {
+  NO_DATA,
+  ZERO_TOKENS,
+  formatCostStat,
+  formatToolStat,
+  formatContextStat,
+  formatTokensStat,
+  formatTokensBreakdown,
+  sumTokens,
+  extractPrNumber,
+  type TokenTotals,
+} from "@/components/stats/StatsBar";
 
 describe("formatCostStat", () => {
   it("uses settled value when present (no tilde)", () => {
@@ -68,6 +79,43 @@ describe("formatContextStat", () => {
 
   it("renders no-data when both are zero", () => {
     expect(formatContextStat(0, 0)).toBe(NO_DATA);
+  });
+});
+
+describe("formatTokensStat", () => {
+  const live: TokenTotals = { input: 1000, output: 2000, cacheWrite: 500, cacheRead: 6500 };
+  const settled: TokenTotals = { input: 10, output: 20, cacheWrite: 5, cacheRead: 65 };
+
+  it("sums all four counters, not just input+output", () => {
+    // Regression: cache tokens dominate agentic runs; omitting them
+    // under-reports the total by an order of magnitude.
+    expect(formatTokensStat(live, ZERO_TOKENS)).toBe("10.0k");
+  });
+
+  it("prefers live totals over settled while a run streams", () => {
+    expect(formatTokensStat(live, settled)).toBe("10.0k");
+  });
+
+  it("falls back to settled totals once live is empty", () => {
+    expect(formatTokensStat(ZERO_TOKENS, settled)).toBe("100");
+  });
+
+  it("renders no-data rather than 0 when nothing was ever reported", () => {
+    // A pipeline that never emitted usage must not look like a free run.
+    expect(formatTokensStat(ZERO_TOKENS, ZERO_TOKENS)).toBe(NO_DATA);
+  });
+
+  it("does not confuse a context snapshot with a cumulative total", () => {
+    // context_tokens goes up and down; these counters only accumulate.
+    expect(sumTokens(live)).toBe(10000);
+  });
+});
+
+describe("formatTokensBreakdown", () => {
+  it("spells out every component of the total", () => {
+    expect(formatTokensBreakdown({ input: 1500, output: 2_000_000, cacheWrite: 0, cacheRead: 300 })).toBe(
+      "Input 1.5k · Output 2.0M · Cache write 0 · Cache read 300",
+    );
   });
 });
 
