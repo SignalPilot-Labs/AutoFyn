@@ -1,0 +1,50 @@
+{
+  "algebraic-independence-generic": {
+    "copied_from": null,
+    "elo": 1501.5018521500222,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "algebraic-independence-generic",
+    "stale": false,
+    "summary": "Necessity via explicit algebraically-independent starting triangle plus dimension-counting on Mulan's single real d.o.f. per move; one-move identity-collapse-at-\u03b8=90 verified."
+  },
+  "game-tree-backward-induction": {
+    "copied_from": null,
+    "elo": 1454.0769439403546,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "game-tree-backward-induction",
+    "stale": false,
+    "summary": "Necessity via formal Win/Loss backward-induction closure argument on the hyperplane structure of W; shares its core hard lemma with algebraic-independence-generic, more abstract packaging."
+  },
+  "interval-partition-topological": {
+    "copied_from": null,
+    "elo": 1545.8278203282016,
+    "expanded": 1,
+    "last_note": "Full proof verified correct: S1 chain lemma + S2 universal double-forcing move give sufficiency for theta=180/n; N1 lattice-safety invariant + N2 explicit safe start give necessity; independently re-derived algebra and cross-checked with exact-arithmetic computation (39000+ / 20000+ trials, 0 failures). Promoted to current.md as solved.",
+    "last_outcome": "verified-milestone",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "interval-partition-topological",
+    "stale": true,
+    "summary": "Necessity via \u03b8-safe interval-cell invariant generalizing the fully-proved \u03b8>90 acute-triangle defense; base case verified by 2000-trial simulation."
+  },
+  "resonance-lattice-invariant": {
+    "copied_from": null,
+    "elo": 1498.5933835814217,
+    "expanded": 1,
+    "last_note": "Independent complete proof of the same theorem (Chain Lemma + interval-covering existence for sufficiency; 4-case lattice combinatorial argument unifying necessity/sufficiency). The stated open risk (does the invariant survive Mulan's continuum choice of cut point) is genuinely resolved via the 4-combination exhaustive case check, verified correct by re-derivation and exact computation. Agrees exactly with interval-partition-topological's characterization.",
+    "last_outcome": "verified-milestone",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "resonance-lattice-invariant",
+    "stale": true,
+    "summary": "Necessity via a rank-2 lattice/residue-mod-\u03b8 invariant tracking survivor's independence from \u03b8 under Mulan's continuum a1; honest about the pure-shave-only limitation."
+  }
+}

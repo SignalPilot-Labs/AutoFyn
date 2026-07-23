@@ -1,0 +1,26 @@
+{
+  "confluence-newman": {
+    "copied_from": null,
+    "elo": 1484.0,
+    "expanded": 1,
+    "last_note": "Independent complete proof via multiset rewriting + Newman's Lemma (proved from scratch) + Overlap Localization Lemma (verified exhaustive: |L| in {3,4} via |delta1|+|delta2|=|L|+|delta1 AND delta2|); local confluence cases checked correct, cross-verified computationally against exhaustive small-board simulation. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "confluence-newman",
+    "stale": true,
+    "summary": "Rewriting-system framing: same termination monovariant for (a); part (b) via Newman's Lemma (termination + local confluence => global confluence/unique normal form), with local confluence's overlapping case reducing to a 3-variable gcd identity."
+  },
+  "prime-valuation-invariant": {
+    "copied_from": null,
+    "elo": 1516.0,
+    "expanded": 1,
+    "last_note": "Full, self-contained, gap-free proof of both parts via per-prime valuation invariant g_p=gcd(exponent multiset) + lexicographic (Omega,C) termination; closed form for M verified computationally. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "prime-valuation-invariant",
+    "stale": true,
+    "summary": "Per-prime p-adic valuation bookkeeping: gcd(min,|diff|)=gcd identity gives a per-prime multiset-gcd invariant, (Omega,C) lexicographic monovariant gives termination; closed form M=prod p^gcd_i v_p(x_i)."
+  }
+}

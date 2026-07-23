@@ -1,0 +1,83 @@
+## Goal
+
+Base: Solve IMO-2026-02 (hard geometry, difficulty_rating 8), a proof_only problem with no numeric answer.
+
+Statement: Let ABC be a triangle, M and N midpoints of AB and AC. Points K inside triangle BMC and L inside triangle BNC such that K lies inside angle LBA, L lies inside angle ACK, and ∠KBA = ∠ACL, ∠LBK = ∠LNC, ∠LCK = ∠BMK. Let O be the circumcenter of triangle AKL. Prove OM = ON.
+
+Eval: results/imo-2026-02/current.md `## Status` field, set/verified by proof-reviewer via APPROVE/CHANGES REQUESTED/RETHINK verdicts on each approach in results/imo-2026-02/approaches/. Target: Status = solved with a rigorous ## Full proof section (no gaps, all rigor rules in CLAUDE.md satisfied).
+
+Baseline (round 1 start): No workspace existed. Status = unsolved, 0 approaches on file.
+
+Constraint: One problem only (imo-2026-02) for the whole run. Never re-attempt if marked solved.
+
+## Goal Updates
+
+## Eval History
+
+- Round 1 baseline: results/imo-2026-02/ created fresh. Status: unsolved. 0 approaches.
+- Round 1 end: Status: partial. 5 approaches registered (coordinate-trig-bash, labeling-duality, nine-point-link, two-step-spiral-chain, complex-circle-power); 3 built this round.
+  - coordinate-trig-bash: CHANGES REQUESTED/partial. Proved OM=ON ⟺ O_x=p/2 (coords B=(-1,0),C=(1,0),A=(p,q)) and explicit circumcenter formula. Gröbner-basis check shows raw angle equalities alone do NOT force the identity — orientation/containment constraints must be used to isolate the correct branch (open gap). Strong numerical corroboration (~1e-15) across many configs.
+  - labeling-duality: CHANGES REQUESTED/partial, strongest progress. Proved (via Apollonius median-length identity) that OM=ON ⟺ power_Γ(B) − power_Γ(C) = (AB²−AC²)/2 where Γ = circumcircle(AKL) — a genuine certified iff-reduction. Gap: deriving this power-of-a-point identity from the three angle hypotheses.
+  - two-step-spiral-chain: RETHINK/unsolved (dead end, confirmed independently). Both candidate sub-lemmas (spiral similarity ratio, a concyclicity) numerically refuted on 2 triangles. Do not retry this exact mechanism.
+  - Certified reusable lemmas promoted to results/imo-2026-02/lemmas/: median-length-power-reduction.md, coordinate-om-on-reduction.md.
+  - IMPROVED — outsized for a round 1: two independent, reviewer-certified reductions of OM=ON to a single scalar target now exist; remaining work is closing one of two well-defined gaps.
+- Round 2 end: Status: still partial. Both round-1 approaches had converged onto the SAME scalar target (shared-gap plateau risk flagged in round 1) — diversified this round with a new approach (antipode-perp-bisector) attacking via a different top-level reduction. All three built slugs got CHANGES REQUESTED (real progress, no solve):
+  - coordinate-trig-bash: builder claimed a "Sweep Lemma" fully proving monotonicity of F1/F2 (previously only numeric) plus closed-form endpoint identities reducing existence to inequality (★) min(β,γ)<∠A+2δ. Reviewer caught the claims were FALSE — found explicit counterexample (p,q)=(0.0025,5.0), θ≈60.57°: F1 not monotone (goes +18.09→−23.6→+40.8, hidden unproved ray-ordering assumption), and (★) violated (slack ≈+16.75° there). Reviewer added a correction section to the approach file. The genuinely correct parts (Decoupling Lemma, Sweep Lemma itself, two endpoint angle identities) ARE certified — promoted to lemmas/decoupling-and-sweep-lemma.md. Final substitution (O_x=p/2) still fully open.
+  - antipode-perp-bisector (NEW): steps 1-4 fully verified gap-free by reviewer — OM=ON ⟺ A*B=A*C via A*=2O−A antipode + Thales right angles at K,L. Certified to lemmas/antipode-reduction.md. Step 5 (closing A*B=A*C from angle hypotheses) open; 3 candidate mechanisms tried and refuted numerically (270°-angle-sum pattern, spiral-similarity-center reading of hyp 2, tangency/secant shortcuts) — do not retry these.
+  - labeling-duality: radical-axis reformulation (TI″) proved algebraically EQUIVALENT to O_x=p/2 (not a bypass) — certified to lemmas/radical-axis-form-of-TI.md, confirms all three live approaches' gaps are deeply linked. Secant-line identification of Γ's second intersection with named points ruled out (numerically, 3 triangles).
+  - PLATEAU on the underlying difficulty (no scalar-target approach closed it, one false-positive caught and corrected) but BREAKTHROUGH on diversification: a structurally independent reduction (antipode-perp-bisector) is now live and does NOT reduce to the same algebra as the other two, giving genuine population diversity for round 3.
+
+- Round 4 end: Status: SOLVED. BREAKTHROUGH — problem closed after 3 rounds of plateau.
+  math-explorer-substitution found (via sympy polynomial division + Gröbner basis) that trig-ceva-chase's Lemma T1 quadratics Q1(R1),Q2(R2) satisfy an unconditional Bézout identity Δ·T = P1·Q2+P2·Q1 forcing O_x=p/2 regardless of branch — the key that had eluded 3 rounds of monotonicity/existence machinery. proof-outliner/outline-reviewer promoted this into build set {coordinate-trig-bash (revise), antipode-perp-bisector (revise)}. First builder pass on coordinate-trig-bash claimed solved but had 2 real errors (inverted R1=r1/|AB| rescaling written backwards, and a Bézout identity claimed "unconditional" that a first reviewer wrongly refuted at a miscalculated test point). A second builder pass fixed the rescaling; a THIRD independent reviewer pass rebuilt everything from scratch, found the Bézout identity actually IS unconditionally true in all 6 free variables (the "refutation" was the reviewer's own arithmetic error, corrected), verified containment/orientation on 2 fresh configs, and APPROVED. current.md Status=solved with full proof (625 lines), approaches/coordinate-trig-bash.md has the complete write-up (526 lines). New certified lemma lemmas/bezout-identity-Q1Q2-T.md. antipode-perp-bisector also improved (cleaner signed identities, no longer dead) but not needed — coordinate-trig-bash closed the problem. GOAL ACHIEVED.
+- Round 3 end: Status: still partial. Broke the round-2 shared-gap plateau: antipode-perp-bisector found a new, structurally different sub-target (angle formulas L1/L2), coordinate-trig-bash fully repaired round 2's false monotonicity claim with a rigorous domain-correction, and a genuinely new 4th approach (trig-ceva-chase) was opened and built. All three got CHANGES REQUESTED (real progress, no solve):
+  - antipode-perp-bisector: builder claimed a new complete case-exhaustive proof "L1∧L2 ⟹ A*B=A*C" using directed angles. Reviewer found a real gap: the "symmetric argument at C" step has the wrong sign in its directed-angle relation (claimed mirrored-minus, should be `dir(C,A*)=dir(C,A)+L2`) — happens not to break the final unsigned conclusion (abs value erases the sign) but is an uncaught error, must be rewritten correctly next round. L1 (`∠ABA*=θ+90°−γ`) and L2 (`∠ACA*=θ+90°−β`) themselves remain open/unproved synthetically (strong numerical evidence only). A new structural reformulation found this round: `∠O'BA*=∠ABK=θ` where O' = circumcenter of ABC (fixed point) — a "full spiral similarity at B" reading was tested and refuted (ratio BK/BA ≠ BA*/BO'), correctly reported as negative.
+  - coordinate-trig-bash: fully repaired round 2's false Lemma 6/7 by restricting to the corrected domain `(0, min(r2max(θ), r2_signflip(θ)))` — the old "sign convention" assumption holds by construction there (it's exactly equivalent to hypothesis "K lies inside angle LBA"). New Lemmas 8/8′ (closed forms for r2_signflip, r1_signflip), 9 (sign convention restored), 10/10′ (dichotomy r2_signflip≤r2max ⟺ θ≥δ), 12/12′ (unconditional endpoint-sign, no analog of false (★) needed) all independently re-derived from scratch by the reviewer and confirmed correct, including re-scanning the exact round-2 counterexample (p,q)=(0.0025,5.0) across its full θ-range. Existence+uniqueness of (r1(θ),r2(θ)) for every θ∈(0,min(β,γ)) is now FULLY CLOSED and certified to `lemmas/existence-uniqueness-r1-r2.md`. Final substitution step O_x(θ)=p/2 in closed form remains open (no closed form found for r1(θ),r2(θ) — each solves one transcendental equation).
+  - trig-ceva-chase (NEW, plateau-diversification approach per CLAUDE.md): derived and reviewer-verified-from-scratch Lemma T1 (angle-matching on a ray reduces to a degree≤2 polynomial) giving explicit closed-form quadratics for r1(θ), r2(θ) — replacing IVT/monotonicity machinery with an explicit algebraic root, verified against the counterexample point to 8+ sig figs. Certified to `lemmas/angle-matching-ray-quadratic.md` (Lemma T1 only). Builder honestly found and reviewer confirmed: the final OM=ON step in this pure-trig medium is NOT a genuine bypass of the shared wall — it reintroduces frame-equivalent information (O's position relative to fixed B,C), so it's equivalent in difficulty to the incumbent wall, not an escape from it.
+  - labeling-duality: deliberately not built this round (confirmed algebraically equivalent to coordinate-trig-bash's gap, dormant by explicit outline-reviewer decision, not silently stalled).
+  - IMPROVED, real breakthrough on one front: coordinate-trig-bash's existence/uniqueness machinery is now fully gap-free end-to-end except the single final substitution O_x(θ)=p/2 — the sharpest, most isolated remaining target in the whole field. antipode-perp-bisector's L1/L2 conjecture is the other live lead but needs a synthetic proof (still purely numerical) plus a sign fix in the case-chase.
+
+## Rules
+
+- ALWAYS install numpy/scipy/sympy via pip in round 1 setup (not preinstalled), because CLAUDE.md requires them for computational exploration (round 1).
+- ALWAYS keep rival approaches diversified in framing/route, not just technique variation (single-gap trap), per CLAUDE.md.
+- ALWAYS run outline-reviewer every round (no fast-path), per CLAUDE.md.
+- ALWAYS route build results per-slug (APPROVE/CHANGES REQUESTED/RETHINK independently), not as a whole-round gate, per CLAUDE.md.
+- ALWAYS check certified lemmas in results/imo-2026-02/lemmas/ before re-deriving reductions — median-length-power-reduction.md and coordinate-om-on-reduction.md already reduce OM=ON to a single scalar target; new approaches should import these rather than re-deriving from scratch (round 1).
+- NEVER retry two-step-spiral-chain's exact mechanism (spiral similarity △BKL~△NLC via BK/BL=NL/NC ratio, or concyclicity of C,K,M+candidate 4th point) — numerically refuted independently by builder and reviewer on 2 scalane triangles (round 1).
+- The crux corpus currently has zero geometry entries — do not expect crux hits for this problem; work from knowledge_base.md and first principles (round 1, reconfirmed round 2).
+- ALWAYS have the proof-reviewer independently re-run/re-derive numeric "verified over N trials" claims before trusting them — round 2's coordinate-trig-bash builder claimed monotonicity "proved" and an inequality "verified over 20000 trials, always negative," both false (reviewer found explicit counterexample at (p,q)=(0.0025,5.0), θ≈60.57°); the error was a hidden unproved ray-ordering assumption in a sign-convention step.
+- NEVER retry these refuted antipode-perp-bisector step-5 mechanisms (round 2): the "∠AKB+∠A*KB=270°" pattern (circular/branch-dependent), a spiral-similarity-center reading of ∠LBK=∠LNC, or tangency/secant shortcuts for Γ vs BC.
+- The three live approaches' remaining gaps are now KNOWN to be algebraically equivalent for coordinate-trig-bash and labeling-duality (both reduce to O_x=p/2, confirmed round 2 via radical-axis-form-of-TI.md) but antipode-perp-bisector's step 5 (A*B=A*C) is a structurally different target — prioritize keeping antipode-perp-bisector alive as the diversification approach.
+- ALWAYS re-derive a builder's "fully proved, no-gap" claim independently before certifying it, even when it's a small directed-angle/sign step — round 3's antipode-perp-bisector builder got the sign wrong in a "symmetric argument at C" directed-angle relation (claimed mirrored-minus, actual is `dir(C,A*)=dir(C,A)+L2`); it happened not to break the final unsigned conclusion but was still a genuine uncaught error in a step marked "complete."
+- coordinate-trig-bash's existence/uniqueness of (r1(θ),r2(θ)) is now FULLY CLOSED and certified (`lemmas/existence-uniqueness-r1-r2.md`, round 3) — do not re-derive it; the ONLY remaining gap on this approach is the final substitution O_x(θ)=p/2 in closed form (no closed form yet found for r1(θ),r2(θ), each solves one transcendental equation). This is now the single sharpest, most isolated target in the whole field — prioritize it.
+- trig-ceva-chase's Lemma T1 (closed-form quadratics for r1(θ),r2(θ) via angle-matching-on-a-ray) is certified (`lemmas/angle-matching-ray-quadratic.md`, round 3) but its final OM=ON step is CONFIRMED NOT a bypass of the shared wall (reintroduces frame-equivalent info about O's position vs B,C) — do not expect this approach to escape the O_x=p/2-equivalent computation; its value is the explicit quadratic for r1/r2, which might feed into closing coordinate-trig-bash's final substitution gap instead.
+- antipode-perp-bisector's L1 (`∠ABA*=θ+90°−γ`) and L2 (`∠ACA*=θ+90°−β`) remain OPEN (numerical only, not synthetic) — this is now the approach's sole real gap once the sign-fix above is applied. A refuted lead: "full spiral similarity at B" via ∠O'BA*=∠ABK=θ (O'=circumcenter of ABC) — ratio BK/BA ≠ BA*/BO*, do not retry verbatim.
+
+- ALWAYS have a reviewer re-derive a "counterexample" to a claimed identity from scratch before trusting it as a refutation — round 4 found that a reviewer's own claimed disagreement at a specific rational test point was itself an arithmetic error, causing a valid unconditional identity to be temporarily weakened/mistrusted; a third independent pass caught this. Refutations are claims too and need the same independent scrutiny as the original claim.
+- SOLVED: imo-2026-02 closed in round 4 via coordinate-trig-bash (full proof in results/imo-2026-02/current.md and approaches/coordinate-trig-bash.md, APPROVE after 3 adversarial review passes). Do not re-attempt.
+
+## State
+
+### Done (Round 1)
+- Set up environment: installed numpy/scipy/sympy.
+- Created results/imo-2026-02/{approaches,lemmas}/ directories.
+- Established goal + baseline in run_state.md.
+- 3 math-explorers (synthetic, coordinate, projective lenses) converged on: 3 angle conditions leave a 1-parameter family of valid (K,L); OM=ON reduces to a fixed-line/scalar condition on O.
+- proof-outliner registered 5 approaches; outline-reviewer ranked and emitted build set of 3.
+- 3 proof-builders + 1 proof-reviewer pass: 2 partials with certified reduction lemmas, 1 confirmed dead-end.
+
+### Done (Round 2)
+- 3 math-explorers dispatched proactively (shared-gap plateau risk from round 1) — 2 dug into the shared power-of-point gap, 1 scouted a genuinely new framing and found the antipode construction A*=2O−A.
+- proof-outliner + outline-reviewer produced build set: coordinate-trig-bash, antipode-perp-bisector (new), labeling-duality.
+- 3 proof-builders + 1 proof-reviewer pass: all 3 CHANGES REQUESTED/partial. Reviewer caught and corrected a false monotonicity/inequality claim in coordinate-trig-bash. 3 new certified lemmas promoted: decoupling-and-sweep-lemma.md, antipode-reduction.md, radical-axis-form-of-TI.md.
+
+### Done (Round 3)
+- 3 math-explorers dispatched: antipode-gap (found new L1/L2 angle-formula lead), newframing (ruled out spiral-similarity and reflection-involution framings, flagged trig-Ceva and complex-on-ABC framings), monofix (found round-2's counterexample was outside the true configuration domain, proposed domain correction).
+- proof-outliner + outline-reviewer produced build set: antipode-perp-bisector (revise), coordinate-trig-bash (revise), trig-ceva-chase (new, plateau diversification); labeling-duality explicitly deprioritized as dormant (confirmed same wall as coordinate-trig-bash).
+- 3 proof-builders + 1 proof-reviewer pass: all 3 CHANGES REQUESTED/partial. coordinate-trig-bash's existence/uniqueness of (r1,r2) now FULLY CLOSED (certified lemmas/existence-uniqueness-r1-r2.md) — only the final O_x=p/2 substitution remains. trig-ceva-chase's Lemma T1 certified (lemmas/angle-matching-ray-quadratic.md) but confirmed not a bypass. antipode-perp-bisector has a real sign error caught in its case-chase (L1/L2 still open numerically).
+
+### Broken
+(none — three live partial approaches, real progress on all three; no dead ends this round)
+
+### Next
+- PROBLEM SOLVED (round 4). Per CLAUDE.md: never re-attempt a solved problem. Nothing further to do on imo-2026-02 — end session.

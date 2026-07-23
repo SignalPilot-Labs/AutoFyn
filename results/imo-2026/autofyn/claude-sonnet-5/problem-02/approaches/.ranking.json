@@ -1,0 +1,98 @@
+{
+  "antipode-perp-bisector": {
+    "copied_from": null,
+    "elo": 1616.1383732471431,
+    "expanded": 3,
+    "last_note": "Rewrote (L1,L2)-based reduction as sign-determinate (I),(II), removing round 3's bug; reviewer independently confirmed the (I)/(II)-conditional Steps 1-4 reduction A*B=A*C is complete and gap-free (certified to lemmas/signed-isosceles-reduction.md), and spot-checked (I),(II) numerically to machine precision. (I),(II) themselves remain unproved from the hypotheses -- correctly self-reported as the sole open gap, no overclaiming found.",
+    "last_outcome": "partial",
+    "last_round": 4,
+    "selected": 0,
+    "slug": "antipode-perp-bisector",
+    "stale": true,
+    "summary": "Reduce OM=ON to A*B=A*C where A*=2O-A is A's antipode on circ(AKL); A* is characterized purely synthetically (Thales) as the intersection of the perpendiculars to AK at K and to AL at L, avoiding power-of-a-point on B,C entirely. Steps 1-4 fully rigorous; open gap is deriving A*B=A*C from the angle hypotheses."
+  },
+  "complex-circle-power": {
+    "copied_from": null,
+    "elo": 1393.823690579746,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 1,
+    "slug": "complex-circle-power",
+    "stale": false,
+    "summary": "Place O at origin in C with A,K,L on |z|=R; translate angle hypotheses into argument equations and attack the target via power-of-a-point/secant relations through B,C rather than explicit parametrization."
+  },
+  "coordinate-trig-bash": {
+    "copied_from": null,
+    "elo": 1659.1027242510781,
+    "expanded": 5,
+    "last_note": "Third solved-claim this round; full from-scratch independent re-derivation of every piece (rescaling, Bezout identity, sign-matching, 2 fresh root-found configs with containment checks, D!=0 well-posedness) found no gap. Bonus: found the Bezout identity is actually unconditional (prior round's \"Error B\" refutation was itself a computational mistake), certified as a stronger lemma. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 4,
+    "selected": 1,
+    "slug": "coordinate-trig-bash",
+    "stale": true,
+    "summary": "Coordinates B=(-1,0),C=(1,0),A=(p,q); reduce OM=ON to O_x=p/2; parametrize K,L by shared angle t, eliminate r1,r2 via resultants, verify O_x=p/2 symbolically with branch/orientation tracking."
+  },
+  "inversive-swap-line": {
+    "copied_from": null,
+    "elo": 1491.594666863695,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "inversive-swap-line",
+    "stale": false,
+    "summary": "A-centered inversive similarity sigma=rho\u2218iota (swaps B,C) maps circ(AKL) to a line through sigma(K),sigma(L); reconstructs O's direction+magnitude from A without ever computing O as an explicit coordinate pair. Reconnaissance stage only \u2014 cheap-kill check (does angle sigma(K)A\u03c3(L)=\u2220KAL reduce cheaply?) not yet run."
+  },
+  "labeling-duality": {
+    "copied_from": null,
+    "elo": 1527.4009774555138,
+    "expanded": 2,
+    "last_note": "Radical-axis restatement (TI\") of the (TI) target verified correct and confirmed genuinely equivalent (not a bypass) to coordinate-trig-bash's O_x=p/2, now certified; secant-identification correctly ruled out numerically as a shortcut; core gap (deriving TI/O_x=p/2 from angle hypotheses) still open.",
+    "last_outcome": "partial",
+    "last_round": 2,
+    "selected": 1,
+    "slug": "labeling-duality",
+    "stale": false,
+    "summary": "Synthetic sigma:B<->C,K<->L,M<->N relabeling symmetry of the hypothesis system; expand OM^2-ON^2 via Cramer's-rule circumcenter formula and seek forced cancellation from the sigma-swap pair of conditions 2,3."
+  },
+  "nine-point-link": {
+    "copied_from": null,
+    "elo": 1399.8362194970944,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 1,
+    "slug": "nine-point-link",
+    "stale": false,
+    "summary": "Link circle(AKL) to the nine-point circle of ABC (which already passes through M,N) via an unconfirmed inversion/spiral-similarity transformation, aiming to put O and the nine-point center on the same line without O equaling it."
+  },
+  "trig-ceva-chase": {
+    "copied_from": null,
+    "elo": 1506.488152636522,
+    "expanded": 1,
+    "last_note": "New approach: Lemma T1 (angle-matching on ray reduces to degree-\u22642 polynomial) verified correct and reusable, giving clean closed-form quadratics for r1(\u03b8),r2(\u03b8). Correctly and non-trivially argued (not just asserted) that the final OM=ON step is not a bypass of the shared wall \u2014 reintroduces frame-equivalent info. No progress on the shared gap itself.",
+    "last_outcome": "partial",
+    "last_round": 3,
+    "selected": 0,
+    "slug": "trig-ceva-chase",
+    "stale": false,
+    "summary": "Pure trig/Ceva chase (no coordinate frame): express AK,AL,r1(\u03b8),r2(\u03b8) via Law of Sines in the hypothesis sub-triangles, then show OM\u00b2-ON\u00b2\u22610 as a trig identity via Apollonius \u2014 risk flagged that it may reduce to the same transcendental wall as coordinate-trig-bash."
+  },
+  "two-step-spiral-chain": {
+    "copied_from": null,
+    "elo": 1405.6151954692075,
+    "expanded": 1,
+    "last_note": "Both proposed mechanisms (spiral similarity BKL~NLC, concyclicity through C,K,M+X) numerically refuted on two independent triangles; reviewer independently reproduced the exact numeric values, confirming the test rig and refutation are sound. Do not re-attempt these two mechanisms.",
+    "last_outcome": "dead-end",
+    "last_round": 1,
+    "selected": 1,
+    "slug": "two-step-spiral-chain",
+    "stale": false,
+    "summary": "Search for two local spiral similarities/Miquel-type concyclicities (BKL~NLC; C,M,K,X concyclic) motivated by the crossed structure of conditions 2,3, distinct from the already-refuted global BMK~CNL similarity."
+  }
+}
