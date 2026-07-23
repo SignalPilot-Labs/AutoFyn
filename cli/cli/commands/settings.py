@@ -68,6 +68,8 @@ def set_settings(
     github_repo: Optional[str] = typer.Option(None, metavar="<owner/repo>", help="GitHub repo (owner/name)"),
     budget: Optional[str] = typer.Option(None, "--budget", metavar="<amount>", help="Max budget in USD"),
     api_key: Optional[str] = typer.Option(None, "--api-key", metavar="<key>", help="Dashboard API key"),
+    max_concurrent_runs: Optional[str] = typer.Option(None, "--max-concurrent-runs", metavar="<n>", help="Max simultaneous agent runs (1-20)"),
+    runs_page_size: Optional[str] = typer.Option(None, "--runs-page-size", metavar="<n>", help="Runs shown in the dashboard feed (1-200)"),
 ) -> None:
     """Update one or more settings.
 
@@ -77,6 +79,7 @@ def set_settings(
       autofyn settings set --github-repo owner/repo
       autofyn settings set --budget 10.00
       autofyn settings set --api-key my-secret-key
+      autofyn settings set --max-concurrent-runs 10 --runs-page-size 30
     """
     # Claude token goes to the pool, not generic settings.
     if claude_token is not None:
@@ -92,6 +95,10 @@ def set_settings(
         body["max_budget_usd"] = budget
     if api_key is not None:
         body["dashboard_api_key"] = api_key
+    if max_concurrent_runs is not None:
+        body["max_concurrent_runs"] = max_concurrent_runs
+    if runs_page_size is not None:
+        body["runs_page_size"] = runs_page_size
 
     if not body:
         if claude_token is not None:

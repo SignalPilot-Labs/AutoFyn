@@ -41,6 +41,7 @@ agent:
   # A subagent thinking inside one turn emits nothing until the turn ends, so
   # a long think is indistinguishable from a hang. 600s killed real work.
   subagent_idle_kill_sec: 900
+  # Overridable at runtime via the dashboard settings (max_concurrent_runs key).
   max_concurrent_runs: 5
   cost_per_input_token: 0.000015        # 15.0 / 1_000_000
   cost_per_output_token: 0.000075       # 75.0 / 1_000_000

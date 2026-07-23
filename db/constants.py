@@ -302,6 +302,36 @@ GITHUB_REPO_PATTERN: str = r"^[a-zA-Z0-9_\-\.]+/[a-zA-Z0-9_\-\.]+$"
 GITHUB_REPO_RE: re.Pattern[str] = re.compile(GITHUB_REPO_PATTERN)
 
 
+# ── Dashboard-Tunable Limits ──
+# Setting-table keys for numeric limits configurable from the dashboard.
+# When a key is unset, the consumer uses its config default: config.yml
+# agent.max_concurrent_runs (agent) / RUNS_PAGE_SIZE (dashboard backend).
+SETTING_MAX_CONCURRENT_RUNS: str = "max_concurrent_runs"
+SETTING_RUNS_PAGE_SIZE: str = "runs_page_size"
+
+# Bounds enforced by PUT /api/settings. max_concurrent_runs bounds mirror
+# _AGENT_BOUNDS in config/loader.py.
+MAX_CONCURRENT_RUNS_MIN: int = 1
+MAX_CONCURRENT_RUNS_MAX: int = 20
+RUNS_PAGE_SIZE_MIN: int = 1
+RUNS_PAGE_SIZE_MAX: int = 200
+
+# Max string length for integer-valued settings (stored as TEXT).
+INT_SETTING_MAX_LEN: int = 10
+
+
+def validate_int_setting(v: str | None, name: str, minimum: int, maximum: int) -> str | None:
+    """Shared integer-range validator for numeric settings stored as strings."""
+    if v is None:
+        return v
+    if not v.isdigit():
+        raise ValueError(f"{name} must be a positive integer")
+    n = int(v)
+    if n < minimum or n > maximum:
+        raise ValueError(f"{name} must be between {minimum} and {maximum}")
+    return v
+
+
 def validate_prompt_length(v: str | None) -> str | None:
     """Shared prompt length validator for Pydantic models."""
     if v is not None and len(v) > PROMPT_MAX_LEN:

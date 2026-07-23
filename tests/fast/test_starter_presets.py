@@ -78,6 +78,7 @@ class TestPresetResolutionInEndpoint:
 
         with (
             patch("endpoints.run.db.create_run_starting", side_effect=capture_create_run),
+            patch("endpoints.run.db.effective_max_concurrent_runs", AsyncMock(return_value=5)),
             patch("endpoints.run.log_audit", AsyncMock()),
             patch("server.AgentServer.execute_run", AsyncMock()),
         ):

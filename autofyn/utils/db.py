@@ -20,8 +20,10 @@ from db.constants import (
     RUN_STATUS_RATE_LIMITED,
     RUN_STATUS_RUNNING,
     RUN_STATUS_STARTING,
+    SETTING_MAX_CONCURRENT_RUNS,
 )
 from db.models import AuditLog, ControlSignal, Run, Setting, ToolCall
+from utils.constants import max_concurrent_runs
 from utils.db_helpers import swallow_errors
 from utils.models import UserAction
 
@@ -363,6 +365,14 @@ async def get_setting_value(key: str) -> str | None:
         if setting is None:
             return None
         return setting.value
+
+
+async def effective_max_concurrent_runs() -> int:
+    """Max simultaneous runs — the dashboard setting, else config.yml."""
+    value = await get_setting_value(SETTING_MAX_CONCURRENT_RUNS)
+    if value is None:
+        return max_concurrent_runs()
+    return int(value)
 
 
 async def update_run_sandbox_id(run_id: str, sandbox_id: str) -> None:

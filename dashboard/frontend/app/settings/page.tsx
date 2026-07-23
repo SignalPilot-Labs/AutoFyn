@@ -21,7 +21,7 @@ import { DEFAULT_PROVIDER } from "@/lib/constants";
 import { clsx } from "clsx";
 import { apiFetch } from "@/lib/fetch";
 
-type StringSettingsKey = "git_token" | "github_repo" | "max_budget_usd";
+type StringSettingsKey = "git_token" | "github_repo" | "max_budget_usd" | "max_concurrent_runs" | "runs_page_size";
 
 const FIELDS: CredentialFieldConfig[] = [
   {
@@ -38,6 +38,20 @@ const FIELDS: CredentialFieldConfig[] = [
     placeholder: "50",
     secret: false,
     helpText: "Default max spend per run. 0 = unlimited",
+  },
+  {
+    key: "max_concurrent_runs",
+    label: "Max Concurrent Runs",
+    placeholder: "5",
+    secret: false,
+    helpText: "Max simultaneous agent runs (1–20). Default 5",
+  },
+  {
+    key: "runs_page_size",
+    label: "Run History Page Size",
+    placeholder: "15",
+    secret: false,
+    helpText: "Recent runs shown in the dashboard feed (1–200). Default 15",
   },
 ];
 
