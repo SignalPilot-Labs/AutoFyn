@@ -410,6 +410,8 @@ export interface Settings {
   github_repo?: string;
   max_budget_usd?: string;
   default_model?: string;
+  max_concurrent_runs?: string;
+  runs_page_size?: string;
 }
 
 export interface PoolToken {

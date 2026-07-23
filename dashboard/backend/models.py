@@ -4,7 +4,7 @@ from fastapi import Path
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from common.constants import DEFAULT_MODEL, DEFAULT_PROVIDER, VALID_MODELS_PATTERN, VALID_PROVIDERS_PATTERN, providers_for_model
-from db.constants import DEFAULT_EFFORT, ENV_VAR_KEY_RE, ENV_VAR_MAX_KEY_LEN, ENV_VAR_MAX_VALUE_LEN, GITHUB_REPO_MAX_LEN, GITHUB_REPO_PATTERN, MAX_ENV_VARS, MAX_HOST_MOUNTS, MAX_MCP_SERVERS, MAX_SUBAGENTS, TOKEN_LABEL_MAX_LEN, TOKEN_VALUE_MAX_LEN, VALID_EFFORTS_PATTERN, VALID_PRESET_PATTERN, validate_prompt_length
+from db.constants import DEFAULT_EFFORT, ENV_VAR_KEY_RE, ENV_VAR_MAX_KEY_LEN, ENV_VAR_MAX_VALUE_LEN, GITHUB_REPO_MAX_LEN, GITHUB_REPO_PATTERN, INT_SETTING_MAX_LEN, MAX_CONCURRENT_RUNS_MAX, MAX_CONCURRENT_RUNS_MIN, MAX_ENV_VARS, MAX_HOST_MOUNTS, MAX_MCP_SERVERS, MAX_SUBAGENTS, RUNS_PAGE_SIZE_MAX, RUNS_PAGE_SIZE_MIN, SETTING_MAX_CONCURRENT_RUNS, SETTING_RUNS_PAGE_SIZE, TOKEN_LABEL_MAX_LEN, TOKEN_VALUE_MAX_LEN, VALID_EFFORTS_PATTERN, VALID_PRESET_PATTERN, validate_int_setting, validate_prompt_length
 
 
 RunId = Path(min_length=36, max_length=36, pattern=r"^[0-9a-f\-]{36}$")
@@ -60,6 +60,20 @@ class UpdateSettingsRequest(BaseModel):
     max_budget_usd: str | None = Field(None, min_length=1, max_length=20)
     dashboard_api_key: str | None = Field(None, min_length=20, max_length=256)
     model: str | None = Field(None, pattern=VALID_MODELS_PATTERN, description="Default Claude model.")
+    max_concurrent_runs: str | None = Field(None, min_length=1, max_length=INT_SETTING_MAX_LEN)
+    runs_page_size: str | None = Field(None, min_length=1, max_length=INT_SETTING_MAX_LEN)
+
+    @field_validator("max_concurrent_runs")
+    @classmethod
+    def max_concurrent_runs_in_bounds(cls, v: str | None) -> str | None:
+        """Validate max_concurrent_runs is an integer within bounds."""
+        return validate_int_setting(v, SETTING_MAX_CONCURRENT_RUNS, MAX_CONCURRENT_RUNS_MIN, MAX_CONCURRENT_RUNS_MAX)
+
+    @field_validator("runs_page_size")
+    @classmethod
+    def runs_page_size_in_bounds(cls, v: str | None) -> str | None:
+        """Validate runs_page_size is an integer within bounds."""
+        return validate_int_setting(v, SETTING_RUNS_PAGE_SIZE, RUNS_PAGE_SIZE_MIN, RUNS_PAGE_SIZE_MAX)
 
 
 class SetActiveRepoRequest(BaseModel):

@@ -18,7 +18,8 @@ API_KEY_PATH = "/data/api.key"
 # Agent service URL (Docker network) — port from config/config.yml
 AGENT_API_URL = f"http://agent:{_agent_config()['port']}"
 
-# Pagination
+# Pagination — RUNS_PAGE_SIZE is the default when the runs_page_size
+# setting is unset (see SETTING_RUNS_PAGE_SIZE in db/constants.py).
 RUNS_PAGE_SIZE = 15
 QUERY_MAX_LIMIT = 5001
 
