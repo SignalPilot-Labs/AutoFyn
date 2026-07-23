@@ -1,2 +1,0 @@
-ALWAYS: for continuous-geometry game simulations, re-verify any coarse-grid "stuck"/dead-end result at a finer resolution before trusting it — integer-degree grids can produce false fixed points (parity artifacts) that vanish at finer resolution (round 1, imo-2026-04: θ=55/85/89 falsely looked stuck at 1° grid, unstuck at 0.5°).
-NEVER: assume "an angle in a triangle can only shrink under repeated cevian cuts" — the new point-angle created at the cut (180−β−α₁) can be much larger than any original angle; there is no such monovariant (round 1, imo-2026-04).

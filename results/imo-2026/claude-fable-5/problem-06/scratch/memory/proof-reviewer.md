@@ -1,3 +1,0 @@
-ALWAYS: for the IMO2026-P6 greedy-gcd problem, re-derive the SCPL double induction carefully — the two "sharing" facts come from DIFFERENT sources (Step-2 pair (i',i) from the IH since i<j; Step-4 pair (s,j) from minimality of i, NOT the IH). Confusing them is the natural false-flaw; the proof is actually sound (round 3).
-ALWAYS: companion-lemma threshold must be z=a_1, not rad(a_1) or max P(a_1) — fails for a_1=48, term 56=2^3·7 (verified computationally, round 3).
-ALWAYS: the ranker is an MCP server (.autofyn/approach_ranker.py); call its @mcp.tool functions directly via importlib (they're plain functions, no .fn attribute), e.g. m.record_outcome('id','slug',round,'verified-milestone','note') (round 3).

@@ -1,8 +1,0 @@
-# proof-builder rules
-
-ALWAYS: Keep the whole proof self-contained in your own approaches/<slug>.md and only PROPOSE lemmas under "## Promotable lemmas" — do not write lemmas/*.md yourself when builders run in parallel, or two builders will collide on the same lemma file (round 3, two builders both told to "create lemma files").
-ALWAYS: Use the companion threshold z = a_1 ("small prime" = prime <= a_1) for imo-2026-06 — the rad(a_1) threshold provably fails for a_1 = 48 (term 56 = 2^3*7 has no {2}-companion in [48,56)) (round 3).
-ALWAYS: Define the constraint set W_n = {m > 1 : gcd(m,a_i) > 1 for i <= n} with NO lower bound when stating valid-below-are-terms for imo-2026-06 — the V_n = {m > a_n : ...} version makes the lemma vacuous (outline-reviewer caught this, round 3).
-ALWAYS: Run a quick numeric sanity check (sympy) of the key lemma AND the final T,L formula on several seeds including a non-squarefree and a prime-power a_1 before writing — it caught nothing this round but validates the endgame formula cheaply (round 3).
-ALWAYS: when a proof reduces membership to "m mod M in R" with M = product of many primes, numerically verify the membership CHARACTERIZATION (m in A iff sigma(m) hits every realized sigma-class) on the generated range instead of enumerating Z/M — M is astronomically large already for a_1=48 and a range(M) loop times out (round 3, imo-2026-06).
-ALWAYS: for imo-2026-06-style greedy-gcd problems, use the unbounded constraint set W_n = {m>1 : gcd(m,a_i)>1, i<=n} for "valid-below-are-terms"; the outliner's V_n = {m>a_n : ...} makes that lemma vacuous (round 3 reviewer fix, confirmed load-bearing in the SCPL descent).

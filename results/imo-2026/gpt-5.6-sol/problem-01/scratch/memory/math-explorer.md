@@ -1,1 +1,0 @@
-ALWAYS: Verify the target's exact `difficulty_level` even when dispatch fixes the problem, and report any mismatch rather than silently substituting another problem (the explicitly dispatched imo-2026-01 is tagged medium although the repository normally targets hard entries, round 1).

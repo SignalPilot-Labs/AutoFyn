@@ -1,2 +1,0 @@
-ALWAYS: for gcd/lcm blackboard-style invariant problems, the winning invariant is g_p=gcd over the whole board of p-adic valuations, and the move sends valuation pair (a,b)->(min(a,b),|a-b|) preserving gcd (subtractive Euclid). (worked cleanly, round 1)
-ALWAYS: prove lex well-foundedness explicitly (first coord eventually constant => strictly-decreasing positive-integer second coord is impossible) rather than just citing "lex is well-founded". (round 1)

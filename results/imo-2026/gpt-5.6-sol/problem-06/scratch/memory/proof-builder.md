@@ -1,1 +1,0 @@
-ALWAYS: When identifying a recursively generated greedy set with P-positions, explicitly prove that the least candidate has no intervening P-position before applying the P-position recursion (because pairwise compatibility with earlier P-positions alone does not immediately identify the next P-position, round 1).

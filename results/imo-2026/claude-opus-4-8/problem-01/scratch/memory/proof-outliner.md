@@ -1,3 +1,0 @@
-ALWAYS: for gcd/lcm blackboard-move problems, the product P transforms as P_new=P_old/gcd(m,n) — so P is UNCHANGED (not increased) on coprime moves; pair it with N=#{>1} lexicographically, not the SUM (sum can rise on a coprime pair). (round 1, imo-2026-01)
-NEVER: manufacture false diversity on a part whose answer is forced (here part b's g_p=gcd-of-exponents invariant is one-line-given-part-a); diversify only where genuine choices exist (here: the termination arg for part a). (round 1)
-ALWAYS: when two approaches share one wall, give the second a structurally different fallback engine (e.g. minimal-counterexample/extremal descent) so the field doesn't collapse if the shared step is fragile. (round 1)
