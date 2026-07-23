@@ -60,6 +60,7 @@ class TestRunStartingEvent:
 
         with (
             patch("endpoints.run.db.create_run_starting", AsyncMock()),
+            patch("endpoints.run.db.effective_max_concurrent_runs", AsyncMock(return_value=5)),
             patch("endpoints.run.log_audit", side_effect=capture_log_audit),
             patch("server.AgentServer.execute_run", AsyncMock()),
         ):
@@ -103,6 +104,7 @@ class TestRunStartingEvent:
 
         with (
             patch("endpoints.run.db.create_run_starting", AsyncMock()),
+            patch("endpoints.run.db.effective_max_concurrent_runs", AsyncMock(return_value=5)),
             patch("endpoints.run.log_audit", side_effect=capture_log_audit),
             patch("endpoints.run.asyncio.create_task", side_effect=tracking_create_task),
         ):

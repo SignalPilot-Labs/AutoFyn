@@ -14,7 +14,6 @@ from endpoints.helpers import merge_tokens_into_env
 from prompts.loader import load_markdown
 from utils import db
 from utils.db_logging import log_audit
-from utils.constants import max_concurrent_runs
 from utils.models_http import HealthResponse, HealthRunEntry, StartRequest
 
 if TYPE_CHECKING:
@@ -44,7 +43,7 @@ def register_run_routes(app: FastAPI, server: "AgentServer") -> None:
         return HealthResponse(
             status="running" if server.active_count() > 0 else "idle",
             active_runs=server.active_count(),
-            max_concurrent=max_concurrent_runs(),
+            max_concurrent=await db.effective_max_concurrent_runs(),
             runs=runs_list,
         )
 
@@ -71,9 +70,10 @@ def register_run_routes(app: FastAPI, server: "AgentServer") -> None:
             )
 
         run_id = str(uuid.uuid4())
+        max_runs = await db.effective_max_concurrent_runs()
         # Reserve the slot atomically — no await between capacity check and
         # registration, so concurrent requests cannot both pass the check.
-        active = server.check_and_reserve_run(run_id)
+        active = server.check_and_reserve_run(run_id, max_runs)
         try:
             await db.create_run_starting(
                 run_id,

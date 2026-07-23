@@ -47,7 +47,6 @@ from utils.constants import (
     INTERNAL_SECRET_HEADER,
     SANDBOX_LOG_TAIL_LINES,
     SERVER_HOST,
-    max_concurrent_runs,
     server_port,
 )
 from utils.models import ActiveRun, BootstrapResult, RunContext
@@ -147,17 +146,19 @@ class AgentServer:
                 return r
         raise HTTPException(status_code=409, detail="No run in progress")
 
-    def check_and_reserve_run(self, run_id: str) -> ActiveRun:
+    def check_and_reserve_run(self, run_id: str, max_runs: int) -> ActiveRun:
         """Atomically check capacity and reserve a slot for the given run_id.
 
         Creates and registers an ActiveRun before any async operations begin,
         closing the TOCTOU window between ensure_capacity and register_run.
+        max_runs is resolved by the caller (async DB read) before this
+        synchronous check so no await sits between check and registration.
         Raises HTTPException(409) if at capacity.
         """
-        if self.active_count() >= max_concurrent_runs():
+        if self.active_count() >= max_runs:
             raise HTTPException(
                 status_code=409,
-                detail=f"Max concurrent runs ({max_concurrent_runs()}) reached",
+                detail=f"Max concurrent runs ({max_runs}) reached",
             )
         active = ActiveRun(run_id=run_id)
         self._runs[run_id] = active
