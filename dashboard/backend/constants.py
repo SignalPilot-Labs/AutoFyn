@@ -19,7 +19,7 @@ API_KEY_PATH = "/data/api.key"
 AGENT_API_URL = f"http://agent:{_agent_config()['port']}"
 
 # Pagination
-RUNS_PAGE_SIZE = 15
+RUNS_PAGE_SIZE = 50
 QUERY_MAX_LIMIT = 5001
 
 # SSE
