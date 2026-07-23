@@ -52,7 +52,6 @@ Give AutoFyn a repo, a goal, and a time limit. Walk away. Come back to a PR.
 ### Math
 
 - **[Zhang–Zagier height](https://github.com/Neehan/zhang-zagier-82a)** — improved the upper bound on the essential minimum (Tao's constant 82a) from Doche's 0.25443677 to a certified 0.2538893183, via a machine-searched ladder of adjoined blocks. Since superseded by [Gri26]'s 0.2536331090.
-- **[IMO 2026](results/imo-2026/)** — solved the day-1 problems (1–3) end-to-end with no human intervention. Final solutions verified by three past IMO medalists (including a gold medalist).
 
 ## Quick start
 
