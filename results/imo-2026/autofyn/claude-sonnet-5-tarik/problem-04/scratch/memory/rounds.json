@@ -1,0 +1,15 @@
+{
+  "pr_title": "Solve IMO 2026 P4 (Mulan/Shan-Yu triangle game): full proof that Mulan wins iff θ=180°/n",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": " ended without summary -- autocommit",
+      "ended_at": "2026-07-16T08:22:09Z"
+    },
+    {
+      "n": 3,
+      "summary": "Solved IMO 2026 P4: θ=180°/n characterization, proof APPROVED",
+      "ended_at": "2026-07-16T09:22:32Z"
+    }
+  ]
+}

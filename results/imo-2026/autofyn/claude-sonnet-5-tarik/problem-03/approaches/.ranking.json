@@ -1,0 +1,62 @@
+{
+  "concavity-minimax-duality": {
+    "copied_from": null,
+    "elo": 1276.2301116700949,
+    "expanded": 6,
+    "last_note": "Refuted the dispatched \u00a714.4 mechanism (concrete 8->4->2->1 counterexample on D_3, reviewer-confirmed); proved and I independently re-verified two new general lemmas (Superincreasing Preservation, Slot-Replacement) plus one D_m-specific lemma (Value-Order=Dominant-Index-Order), correctly reducing Distinct-Bucket to one precise Local Claim (reviewer independently reproduced the exact m=6 transition count, 0 violations); proved a real negative result ((4,3) counterexample) ruling out the natural \"superincreasing alone\" closing route. Local Claim itself still open, and the approach's own honest scope note (even full closure gives no new leverage beyond the already-closed lower bound) is accurate, not overclaimed.",
+    "last_outcome": "partial",
+    "last_round": 9,
+    "selected": 9,
+    "slug": "concavity-minimax-duality",
+    "stale": false,
+    "summary": "Convex-analysis/minimax framing: characterize LB's optimal partition via concavity of g(a)=min over XY responses and KKT stationarity, conjectured to force ratio 2. Most abstract; finite-pattern piecewise-affine claim unjustified and stationarity algebra not carried out at all \u2014 highest risk."
+  },
+  "dyadic-cascade-induction": {
+    "copied_from": null,
+    "elo": 1728.684959483266,
+    "expanded": 6,
+    "last_note": "Closed the entire \"all-cycles\" D/M-completeness caveat via an exhaustive #X-parity dichotomy + Cycle Common-State Lemma; independently re-verified the closed-form/sign-dominance mechanism on ~1200 fresh trials (0 mismatches) -- gives the fully unconditional lower bound g(D_m,m)>=e_m*S(D_m) for every m, modulo one inherited (uncontradicted) abstraction dependency on the base peeling lemma's forest/tie-graph reconciliation. File Status stays partial (whole theorem still needs the upper bound + n>=4).",
+    "last_outcome": "verified-milestone",
+    "last_round": 8,
+    "selected": 9,
+    "slug": "dyadic-cascade-induction",
+    "stale": false,
+    "summary": "Explicit strategy proof: reduce claiming phase to order-statistic sum via greedy Lemma G; prove duplicate-pair Lemma P; construct dyadic lower bound by induction (self-similar top-piece peeling); prove upper bound by case-split induction on a_1 vs 2a_2. Most concrete, both lemmas verified correct by hand."
+  },
+  "elementary-exchange-smoothing": {
+    "copied_from": null,
+    "elo": 1398.0420128956714,
+    "expanded": 1,
+    "last_note": "Proved a correct conditional local-uniqueness result near the dyadic point in Case ii via concave-min-of-affines + gradient certificate (2/7,1/7,4/7), verified by hand; narrower scope than dyadic-cascade, still depends on unproven g(dyadic)=1/7 import and covers only a sub-region of Case ii.",
+    "last_outcome": "advanced",
+    "last_round": 2,
+    "selected": 9,
+    "slug": "elementary-exchange-smoothing",
+    "stale": false,
+    "summary": "Elementary local two-piece mass-shift smoothing on LB's partition: show any ratio a_i/a_{i+1} != 2 admits a strictly improving shift toward ratio 2, forcing the dyadic partition as the unique optimum. Central two-sided slope lemma is conjectural but the ratio-2 crossover was independently hand-verified (n=1 case)."
+  },
+  "pigeonhole-subset-sum-upper-bound": {
+    "copied_from": null,
+    "elo": 1501.3749045404854,
+    "expanded": 2,
+    "last_note": "Case A fix independently re-verified from scratch (symbolic + 2,095+ fresh trials + two independent game-solver checks of n=1,2 against the final answer); no remaining gap; whole theorem solved, c(n)=2^n/(2^{n+1}-1).",
+    "last_outcome": "verified-milestone",
+    "last_round": 19,
+    "selected": 0,
+    "slug": "pigeonhole-subset-sum-upper-bound",
+    "stale": true,
+    "summary": "Non-recursive plateau-break route to the whole upper bound: pigeonhole on the 2^k subset sums of Liu Bang's opening (proved) + Signed-Sum Realizability Lemma turning the sign-optimal witness into a legal D/M merge sequence (open \u2014 explorer's specific mechanism falsified by counterexample (36,48,4), but the underlying existence claim survives 0/300+0/600+0/150 fresh brute-force checks); imports Slack Collapse, Lemma D/M, and the unconditional lower bound by citation."
+  },
+  "potential-weighting-upper-bound": {
+    "copied_from": null,
+    "elo": 1595.6680114104822,
+    "expanded": 15,
+    "last_note": "Closed the exact gap round 18 flagged (KEEP b0<=w1 target at |W|=3) via a new Two-Variable Reflection Bound + 5-term case analysis, independently re-derived and verified 0/50000 fresh trials; Two-Touch |W|<=3 is now genuinely, unconditionally proved (this time earning what round 18 rejected). Section 34 (|C|=2 general touch-bound) honestly still open. Certified new lemma two-variable-reflection-bound.md.",
+    "last_outcome": "advanced",
+    "last_round": 19,
+    "selected": 9,
+    "slug": "potential-weighting-upper-bound",
+    "stale": true,
+    "summary": "Potential/monovariant hedge on the upper-bound direction: define a rank-weighted potential Phi and show every XY cut decreases it by a uniform amount, bounding L after n moves. Weight sequence undetermined; naive choice collapses to L itself \u2014 exploratory stage."
+  }
+}

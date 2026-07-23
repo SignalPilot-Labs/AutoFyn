@@ -1,0 +1,80 @@
+{
+  "pr_title": "IMO 2026 P6 solved: eventual periodicity proved via similarity-dichotomy adaptation of IMO-SL 2013 N5",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "3 approaches to IMO26-P6 built, all partial, converge on backbone gap",
+      "ended_at": "2026-07-17T03:17:11Z"
+    },
+    {
+      "n": 2,
+      "summary": "Refuted false backbone-gap formalization, found correct target W",
+      "ended_at": "2026-07-17T04:11:47Z"
+    },
+    {
+      "n": 3,
+      "summary": "Closed periodicity-from-n=1; sole gap now FCBC",
+      "ended_at": "2026-07-17T05:07:15Z"
+    },
+    {
+      "n": 4,
+      "summary": "FCBC sharpened to single conjecture (MRS), 3-way convergence on canonical set",
+      "ended_at": "2026-07-17T06:32:15Z"
+    },
+    {
+      "n": 5,
+      "summary": "All 3 approaches converge, sharpen gap to V_S-finiteness",
+      "ended_at": "2026-07-17T07:55:15Z"
+    },
+    {
+      "n": 6,
+      "summary": "Isolated multi-companion bundling as sole gap, killed 1 dead architecture",
+      "ended_at": "2026-07-17T09:32:55Z"
+    },
+    {
+      "n": 7,
+      "summary": "2 new lemmas, killed GW dead-end, caught false depth-2 claim",
+      "ended_at": "2026-07-17T11:07:00Z"
+    },
+    {
+      "n": 8,
+      "summary": "Reduced entire gap to one hypothesis (UB_S)",
+      "ended_at": "2026-07-17T12:08:40Z"
+    },
+    {
+      "n": 9,
+      "summary": "Refuted (UB_S) dead end, narrowed FCBC to doubly-infinite core-pairs",
+      "ended_at": "2026-07-17T13:54:23Z"
+    },
+    {
+      "n": 10,
+      "summary": "3 lemmas certified, Stabilization Conj. sharpened to 3 sub-Qs",
+      "ended_at": "2026-07-17T15:20:30Z"
+    },
+    {
+      "n": 11,
+      "summary": "4 new lemmas, (JW)/(PD)/(MRS_S) all sharpened, no synergy",
+      "ended_at": "2026-07-17T16:31:06Z"
+    },
+    {
+      "n": 12,
+      "summary": "2 new mechanisms opened, 1 overclaim caught",
+      "ended_at": "2026-07-17T17:56:07Z"
+    },
+    {
+      "n": 13,
+      "summary": "a_1=247 fully solved; EBS refuted; risky shortcut caught pre-build",
+      "ended_at": "2026-07-17T19:56:49Z"
+    },
+    {
+      "n": 14,
+      "summary": "5 solved instances (was 1) via new witness-chaining generalization",
+      "ended_at": "2026-07-17T21:05:26Z"
+    },
+    {
+      "n": 15,
+      "summary": "SOLVED: crux aimo-0030 adaptation gives full proof",
+      "ended_at": "2026-07-17T22:19:03Z"
+    }
+  ]
+}

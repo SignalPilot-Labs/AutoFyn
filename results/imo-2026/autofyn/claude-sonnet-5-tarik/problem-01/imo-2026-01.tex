@@ -1,0 +1,519 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{enumitem}
+
+\theoremstyle{plain}
+\newtheorem{lemma}{Lemma}
+\renewcommand{\thelemma}{\Alph{lemma}}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+\renewcommand{\qedsymbol}{$\blacksquare$}
+
+\title{Confucius's GCD/LCM Blackboard Problem\\[2pt]\large IMO 2026, Problem 1}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{Problem Statement}
+
+\noindent\textbf{(IMO 2026, Problem 1.)} There are $2026$ integers greater than
+$1$ written on a blackboard, not necessarily different. In a move, Confucius
+chooses two integers $m>1$ and $n>1$ from different places on the blackboard
+and replaces these two integers with $\gcd(m,n)$ and
+$\dfrac{\operatorname{lcm}(m,n)}{\gcd(m,n)}$. He continues to make moves while
+it is possible to do so.
+\begin{enumerate}[label=(\alph*)]
+\item Prove that, regardless of the choices of Confucius, after finitely many
+moves, exactly one integer $M$ on the blackboard is greater than $1$.
+\item Prove that the value of $M$ does not depend on the choices of Confucius.
+\end{enumerate}
+
+\section{Setup, Model, and Notation}
+
+Throughout, let $N = 2026$. Model the blackboard as an ordered $N$-tuple
+$(x_1,\dots,x_N)$ of positive integers, where position $i$ holds the value
+$x_i$. Initially every $x_i > 1$. A \textbf{move} chooses two \emph{distinct}
+positions $i \ne j$ whose current values $m := x_i$ and $n := x_j$ both satisfy
+$m>1$ and $n>1$, and replaces the pair $(m,n)$ occupying those two positions by
+\[
+g := \gcd(m,n), \qquad h := \frac{\operatorname{lcm}(m,n)}{\gcd(m,n)},
+\]
+leaving all other $N-2$ positions unchanged. (Lemma~\ref{lem:B} below shows
+$g \mid \operatorname{lcm}(m,n)$, so $h$ is a positive integer, and the move is
+well-defined.) Which of $g,h$ is written at position $i$ and which at $j$ will
+never matter, because every quantity we track is symmetric in the two touched
+positions. A move is \textbf{legal} exactly while it is possible to make one,
+i.e.\ while at least two positions hold values $> 1$. The board is
+\textbf{terminal} when no legal move remains, i.e.\ when at most one position
+holds a value $> 1$.
+
+\subsection*{Notation and Conventions}
+
+\begin{itemize}
+\item For a prime $p$ and a positive integer $k$, $v_p(k)$ is the exponent of
+$p$ in the prime factorization of $k$ (the \textbf{$p$-adic valuation}); thus
+$v_p(1)=0$, and $v_p(k) \ge 1$ for at least one prime $p$ whenever $k>1$.
+
+\item For a finite list of nonnegative integers $a_1,\dots,a_r$,
+$\gcd(a_1,\dots,a_r)$ denotes their greatest common divisor under the standard
+conventions $\gcd(a,0)=a$ and $\gcd(0,\dots,0)=0$. Because every integer
+divides $0$, the gcd is characterized by the universal property
+\begin{equation*}
+d \mid \gcd(a_1,\dots,a_r)\iff d\mid a_i\ \text{for every } i,
+\qquad \text{for every integer } d\ge 1. \tag{$\ast$}
+\end{equation*}
+(When some $a_i>0$, the common divisors of the list form a finite nonempty set
+of positive integers with maximum $\gcd$; when all $a_i=0$, both sides of
+$(\ast)$ hold for every $d\ge1$ and $\gcd=0$. In particular, if some $a_i \ge 1$
+then $\gcd(a_1,\dots,a_r) \ge 1$.)
+\end{itemize}
+
+We first assemble a prime-valuation toolkit (Lemmas~\ref{lem:A}--\ref{lem:F}),
+then build the two process invariants (Lemmas~\ref{lem:G} and~\ref{lem:H}),
+then prove Parts (a) and (b).
+
+\section{A Prime-Valuation Toolkit}
+
+\begin{lemma}[Unique factorization / valuation basics]\label{lem:A}
+Every positive integer $k$ has $k = \prod_p p^{v_p(k)}$ (a finite product, all
+but finitely many exponents zero). For positive integers $a,b$:
+$v_p(ab)=v_p(a)+v_p(b)$; if $b\mid a$ then $v_p(a/b)=v_p(a)-v_p(b)$; and
+$b \mid a \iff v_p(b)\le v_p(a)$ for every prime $p$. Consequently two positive
+integers are equal iff they have the same $p$-adic valuation at every prime.
+\end{lemma}
+
+\begin{proof}
+These are the standard consequences of the \textbf{Fundamental Theorem of
+Arithmetic} (unique factorization into primes), the ``$v_p$ count'' tool in
+\texttt{knowledge\_base.md} (Number Theory; Meta-Strategy ``a multiplicity or
+$v_p$ count''). Existence and uniqueness of the factorization give the product
+formula and the additivity $v_p(ab)=v_p(a)+v_p(b)$ directly by collecting
+powers of each prime. If $b\mid a$, write $a=bc$ with $c$ a positive integer;
+then $v_p(a)=v_p(b)+v_p(c)$, so $v_p(c)=v_p(a)-v_p(b)\ge 0$ for all $p$, giving
+$v_p(a/b)=v_p(a)-v_p(b)$. For divisibility: if $b\mid a$ then $v_p(b)\le
+v_p(a)$ for all $p$ by the previous line; conversely if $v_p(b)\le v_p(a)$ for
+all $p$, then $a/b := \prod_p p^{\,v_p(a)-v_p(b)}$ is a positive integer with
+$b\cdot(a/b)= a$, so $b\mid a$. Finally, if $v_p(a)=v_p(b)$ for all $p$ then
+$a=\prod_p p^{v_p(a)}=\prod_p p^{v_p(b)}=b$.
+\end{proof}
+
+\begin{lemma}[Valuations of gcd and lcm; the valuation transform]\label{lem:B}
+For all positive integers $m,n$ and every prime $p$,
+\[
+v_p(\gcd(m,n)) = \min\bigl(v_p(m),v_p(n)\bigr), \qquad
+v_p(\operatorname{lcm}(m,n)) = \max\bigl(v_p(m),v_p(n)\bigr).
+\]
+In particular $\gcd(m,n) \mid \operatorname{lcm}(m,n)$, so
+$h=\operatorname{lcm}(m,n)/\gcd(m,n)$ is a positive integer, and writing
+$x=v_p(m)$, $y=v_p(n)$,
+\[
+v_p(g)=\min(x,y),\qquad
+v_p(h)=v_p\!\left(\tfrac{\operatorname{lcm}(m,n)}{\gcd(m,n)}\right)=\max(x,y)-\min(x,y)=|x-y|.
+\]
+\end{lemma}
+
+\begin{proof}
+Put $D := \prod_p p^{\min(v_p(m),v_p(n))}$ (a finite product, hence a positive
+integer). For every prime $p$, $v_p(D)=\min(v_p(m),v_p(n))\le v_p(m)$ and $\le
+v_p(n)$, so by Lemma~\ref{lem:A} $D\mid m$ and $D\mid n$; thus $D$ is a common
+divisor of $m,n$. Conversely, if $d\mid m$ and $d\mid n$ then $v_p(d)\le
+v_p(m)$ and $v_p(d)\le v_p(n)$ for all $p$ (Lemma~\ref{lem:A}), hence
+$v_p(d)\le \min(v_p(m),v_p(n))=v_p(D)$, so $d\mid D$. Therefore $D$ is the
+greatest common divisor: $\gcd(m,n)=D$ and $v_p(\gcd(m,n))=\min(v_p(m),v_p(n))$.
+The identical argument with $\max$ in place of $\min$, ``multiple'' in place of
+``divisor'', and $\mid$ reversed, shows
+$\operatorname{lcm}(m,n)=\prod_p p^{\max(v_p(m),v_p(n))}$, so
+$v_p(\operatorname{lcm}(m,n))=\max(v_p(m),v_p(n))$. Since $\min\le\max$ at
+every prime, $v_p(\gcd)\le v_p(\operatorname{lcm})$ for all $p$, so
+$\gcd(m,n)\mid\operatorname{lcm}(m,n)$ by Lemma~\ref{lem:A}, and $h$ is a
+positive integer. Finally, using $v_p(h)=v_p(\operatorname{lcm})-v_p(\gcd)$
+(Lemma~\ref{lem:A}, since $\gcd\mid\operatorname{lcm}$),
+$v_p(h)=\max(x,y)-\min(x,y)=|x-y|$.
+\end{proof}
+
+\begin{remark}
+This valuation transform --- reading the multiplicative gcd/lcm move as, at
+each prime $p$ independently, the map $(x,y)\mapsto(\min(x,y),\,|x-y|)$ on the
+exponents --- is the central reformulation (``Reformulate: translate to
+another domain'', \texttt{knowledge\_base.md} Problem-Solving Heuristics). It
+decouples the whole problem into one additive problem per prime.
+\end{remark}
+
+\begin{lemma}[$\gcd\cdot\operatorname{lcm}$ product identity]\label{lem:C}
+For all positive integers $m,n$: $\gcd(m,n)\cdot\operatorname{lcm}(m,n)=mn$.
+Equivalently $g\cdot h=\operatorname{lcm}(m,n)=mn/g$.
+\end{lemma}
+
+\begin{proof}
+For every prime $p$, by Lemma~\ref{lem:B},
+\[
+v_p(\gcd(m,n))+v_p(\operatorname{lcm}(m,n))
+=\min(v_p(m),v_p(n))+\max(v_p(m),v_p(n))
+=v_p(m)+v_p(n)=v_p(mn),
+\]
+using that $\min(x,y)+\max(x,y)=x+y$ for any reals, and
+$v_p(mn)=v_p(m)+v_p(n)$ (Lemma~\ref{lem:A}). Two positive integers with equal
+valuation at every prime are equal (Lemma~\ref{lem:A}), so
+$\gcd(m,n)\cdot\operatorname{lcm}(m,n)=mn$. Rearranging,
+\[
+g\cdot h=\gcd(m,n)\cdot\frac{\operatorname{lcm}(m,n)}{\gcd(m,n)}
+=\operatorname{lcm}(m,n)=\frac{mn}{\gcd(m,n)}=\frac{mn}{g}.
+\]
+\end{proof}
+
+\begin{lemma}[Squeeze Lemma]\label{lem:D}
+For positive integers $m,n$, $\gcd(m,n)\le\operatorname{lcm}(m,n)$, with
+equality iff $m=n$. Consequently, if $m\ne n$ then
+$\gcd(m,n)<\operatorname{lcm}(m,n)$, and
+$h=\operatorname{lcm}(m,n)/\gcd(m,n)\ge 2$.
+\end{lemma}
+
+\begin{proof}
+Since $\gcd(m,n)$ divides $m$ and $m$ divides $\operatorname{lcm}(m,n)$ (gcd is
+a common divisor, lcm is a common multiple), we have
+$\gcd(m,n)\mid \operatorname{lcm}(m,n)$, hence
+$\gcd(m,n)\le\operatorname{lcm}(m,n)$ (both positive). If $m=n$ then
+$\gcd(m,m)=m=\operatorname{lcm}(m,m)$, giving equality. Conversely, suppose
+$\gcd(m,n)=\operatorname{lcm}(m,n)$. From the divisibility chain
+$\gcd(m,n)\mid m\mid\operatorname{lcm}(m,n)=\gcd(m,n)$ we get
+$m\mid \gcd(m,n)$ and $\gcd(m,n)\mid m$, so $m=\gcd(m,n)$ (mutual divisibility
+of positive integers). Symmetrically
+$\gcd(m,n)\mid n\mid\operatorname{lcm}(m,n)= \gcd(m,n)$ gives $n=\gcd(m,n)$.
+Hence $m=\gcd(m,n)=n$, i.e.\ $m=n$. This proves the equivalence. If $m\ne n$,
+equality fails, so $\gcd(m,n)<\operatorname{lcm}(m,n)$; and since
+$h=\operatorname{lcm}(m,n)/\gcd(m,n)$ is a positive integer (Lemma~\ref{lem:B})
+strictly greater than $1$, we have $h\ge 2$.
+\end{proof}
+
+\begin{lemma}[Subtraction / Euclid-step Lemma]\label{lem:E}
+For all integers $x,y\ge 0$, $\gcd\bigl(\min(x,y),\,|x-y|\bigr)=\gcd(x,y)$.
+\end{lemma}
+
+\begin{proof}
+Both sides are symmetric in $x,y$ (swapping $x,y$ fixes $\min(x,y)$ and
+$|x-y|$, and $\gcd$ is symmetric), so we may assume $x\ge y\ge 0$; then
+$\min(x,y)=y$ and $|x-y|=x-y\ge 0$. We show the pairs $\{x,y\}$ and
+$\{y,\,x-y\}$ have exactly the same positive common divisors. For any integer
+$d\ge 1$: if $d\mid x$ and $d\mid y$, then $d\mid(x-y)$ (a $\mathbb{Z}$-linear
+combination of $x,y$), so $d$ divides both $y$ and $x-y$; conversely, if
+$d\mid y$ and $d\mid(x-y)$, then $d\mid\bigl((x-y)+y\bigr)=x$, so $d$ divides
+both $x$ and $y$. Hence the two pairs share identical sets of positive common
+divisors. If $(x,y)\ne(0,0)$, at least one entry of each pair is positive, so
+each gcd equals the maximum of this common set, and the two maxima agree; if
+$x=y=0$, both sides equal $\gcd(0,0)=0$. In every case
+$\gcd(\min(x,y),|x-y|)=\gcd(x,y)$. (This is one step of the subtractive
+Euclidean algorithm.)
+\end{proof}
+
+\begin{lemma}[Grouping Lemma]\label{lem:F}
+Let $a_1,\dots,a_N$ be nonnegative integers and $i\ne j$ two indices. Form the
+$(N-1)$-element list obtained by deleting $a_i,a_j$ and appending the single
+value $\gcd(a_i,a_j)$. Then this list has the same gcd as the original:
+\[
+\gcd(a_1,\dots,a_N)=\gcd\Bigl(\gcd(a_i,a_j),\ \{a_k\}_{k\ne i,j}\Bigr).
+\]
+\end{lemma}
+
+\begin{proof}
+For any integer $d\ge 1$, the universal property $(\ast)$ of gcd gives
+$d\mid a_i$ and $d\mid a_j\iff d\mid\gcd(a_i,a_j)$. Hence
+\begin{align*}
+d\mid a_k\ \text{for all }k
+&\iff \bigl(d\mid a_i\text{ and }d\mid a_j\text{ and }d\mid a_k\ \forall k\ne i,j\bigr)\\
+&\iff \bigl(d\mid\gcd(a_i,a_j)\text{ and }d\mid a_k\ \forall k\ne i,j\bigr),
+\end{align*}
+i.e.\ $d$ divides every entry of the original list iff $d$ divides every entry
+of the regrouped list. Thus the two lists have the same positive common
+divisors, and (arguing as in Lemma~\ref{lem:E}: their common gcd is the
+maximum of that common set when not all entries vanish, and is $0$ when all
+entries vanish) the same gcd.
+\end{proof}
+
+\section{The Invariant $\Gamma$ and the Monovariant $\Psi$}
+
+We now define the two quantities tracked through the process.
+
+\begin{definition}[The invariant $\Gamma$]\label{def:Gamma}
+For a board $y=(y_1,\dots,y_N)$ of positive integers and a prime $p$, set
+\[
+\gamma_p(y):=\gcd\bigl(v_p(y_1),\dots,v_p(y_N)\bigr)\ \ (\ge 0),
+\qquad
+\Gamma(y):=\prod_{p\ \text{prime}} p^{\,\gamma_p(y)}.
+\]
+\end{definition}
+
+\noindent\emph{$\Gamma(y)$ is a well-defined positive integer.} Only finitely
+many primes divide any single $y_i$, so only finitely many primes divide some
+$y_i$; for every other prime $p$ we have $v_p(y_i)=0$ for all $i$, hence
+$\gamma_p(y)=\gcd(0,\dots,0)=0$ and the factor $p^{0}=1$. Thus the product is
+really a finite product of positive integers, so $\Gamma(y)$ is a positive
+integer (and $\ge 1$).
+
+\begin{definition}[The monovariant $\Psi$]\label{def:Psi}
+For a board $y=(y_1,\dots,y_N)$, set
+\[
+\Phi(y):=\prod_{i=1}^N y_i,\qquad
+c(y):=\#\{\,i: y_i>1\,\},\qquad
+\Psi(y):=\Phi(y)\cdot 2^{\,c(y)}.
+\]
+\end{definition}
+
+\noindent Each $y_i$ is a positive integer, so $\Phi(y)\ge 1$; and
+$2^{c(y)}\ge 1$; hence $\Psi(y)$ is a positive integer, $\Psi(y)\ge 1$.
+
+\begin{lemma}[$\Gamma$-invariance]\label{lem:G}
+A single legal move leaves $\Gamma$ unchanged. Consequently, along any finite
+sequence of legal moves, $\Gamma$ of the board never changes; in particular
+$\Gamma(\text{final board})=\Gamma(\text{initial board})$ for any play that
+reaches a terminal board.
+\end{lemma}
+
+\begin{proof}
+Consider one legal move at positions $i\ne j$, with old values $m=y_i,\
+n=y_j$ replaced by $g=\gcd(m,n)$ and $h=\operatorname{lcm}(m,n)/\gcd(m,n)$ (in
+either order at the two positions); all other positions are unchanged. Fix a
+prime $p$ and write $x=v_p(m),\ y=v_p(n)$. By Lemma~\ref{lem:B}, after the
+move the valuations at positions $i,j$ are $\min(x,y)$ and $|x-y|$ (in the
+corresponding order). Apply the Grouping Lemma (Lemma~\ref{lem:F}) to the two
+touched positions, both before and after the move:
+\begin{align*}
+\gamma_p(\text{before})&=\gcd\Bigl(\gcd(x,y),\ \{v_p(y_k)\}_{k\ne i,j}\Bigr),\\
+\gamma_p(\text{after})&=\gcd\Bigl(\gcd(\min(x,y),|x-y|),\ \{v_p(y_k)\}_{k\ne i,j}\Bigr).
+\end{align*}
+The untouched entries $\{v_p(y_k)\}_{k\ne i,j}$ are literally identical on both
+sides, and by the Subtraction Lemma (Lemma~\ref{lem:E}, valid since
+$x,y\ge 0$) $\gcd(\min(x,y),|x-y|)=\gcd(x,y)$. Hence
+$\gamma_p(\text{after})= \gamma_p(\text{before})$. This holds for every prime
+$p$ (note the symmetry in $i,j$ makes the placement of $g,h$ irrelevant), so
+\[
+\Gamma(\text{after})=\prod_p p^{\gamma_p(\text{after})}=\prod_p
+p^{\gamma_p(\text{before})}=\Gamma(\text{before}).
+\]
+
+For a finite sequence of moves we induct on the number of moves $t$. For $t=0$
+there is nothing to prove. If $\Gamma$ is unchanged after $t$ moves and one
+more legal move is made, the single-move statement just proved gives that
+$\Gamma$ is unchanged after $t+1$ moves. Hence $\Gamma$ is constant along any
+finite play. This argument uses nothing about whether or when the process
+terminates, so it is valid as stated.
+\end{proof}
+
+\begin{lemma}[$\Psi$-descent]\label{lem:H}
+On every legal move, $\Phi_{\mathrm{new}}=\Phi_{\mathrm{old}}/g$, and
+\[
+\Psi_{\mathrm{new}}\le\tfrac12\,\Psi_{\mathrm{old}}.
+\]
+Moreover, whenever a move is legal, $\Psi_{\mathrm{old}}\ge 4$, so this is a
+strict decrease $\Psi_{\mathrm{new}}<\Psi_{\mathrm{old}}$ of positive
+integers.
+\end{lemma}
+
+\begin{proof}
+A move replaces $m,n$ (with $m,n>1$) at positions $i,j$ by $g,h$, and leaves
+the other $N-2$ entries fixed. By Lemma~\ref{lem:C},
+$g\cdot h=\operatorname{lcm}(m,n)=mn/g$, so
+\[
+\Phi_{\mathrm{new}}=\Phi_{\mathrm{old}}\cdot\frac{g\cdot h}{m\cdot n}
+=\Phi_{\mathrm{old}}\cdot\frac{mn/g}{mn}
+=\frac{\Phi_{\mathrm{old}}}{g}.
+\]
+Only the two touched positions can change the count $c$; the change
+$\Delta c:= c_{\mathrm{new}}-c_{\mathrm{old}}$ is determined by how many of
+$g,h$ exceed $1$, minus $2$ (both $m,n$ exceeded $1$). We split into three
+cases according to the \emph{exact boolean conditions} on $(m,n)$ (both
+$>1$):
+
+\medskip
+\noindent\textbf{Case (i): $g=1$.} Then
+$h=\operatorname{lcm}(m,n)/1=\operatorname{lcm}(m,n)$, and by Lemma~\ref{lem:C},
+$g\cdot h = mn$, so $h=mn>1$ (as $m,n>1$). The new pair is $\{g,h\}=\{1,\
+mn\}$: exactly one entry $>1$, so $\Delta c=1-2=-1$. Here
+$\Phi_{\mathrm{new}}=\Phi_{\mathrm{old}}/g=\Phi_{\mathrm{old}}$, so
+\[
+\Psi_{\mathrm{new}}=\Phi_{\mathrm{old}}\cdot 2^{\,c_{\mathrm{old}}-1}
+=\tfrac12\,\Psi_{\mathrm{old}}.
+\]
+
+\medskip
+\noindent\textbf{Case (ii): $g>1$ and $m=n$.} (Consistent:
+$m=n>1\Rightarrow g=\gcd(m,m)=m>1$; this case is exactly ``$m=n$''.) By
+Lemma~\ref{lem:D}, $m=n$ gives $\operatorname{lcm}(m,n)= \gcd(m,n)=g$, so
+$h=\operatorname{lcm}(m,n)/g=1$. The new pair is $\{g,h\}=\{m,\ 1\}$ with
+$m=g>1$: exactly one entry $>1$, so $\Delta c=-1$. Since
+$\Phi_{\mathrm{new}}=\Phi_{\mathrm{old}}/g$ with $g=m\ge 2$,
+\[
+\Psi_{\mathrm{new}}=\frac{\Phi_{\mathrm{old}}}{g}\cdot 2^{\,c_{\mathrm{old}}-1}
+=\frac{\Psi_{\mathrm{old}}}{2g}\le\tfrac14\,\Psi_{\mathrm{old}}
+\le\tfrac12\,\Psi_{\mathrm{old}}.
+\]
+
+\medskip
+\noindent\textbf{Case (iii): $g>1$ and $m\ne n$.} By Lemma~\ref{lem:D}
+(Squeeze), $m\ne n$ gives $h=\operatorname{lcm}(m,n)/\gcd(m,n)\ge 2>1$; and
+$g>1$. So both new entries exceed $1$: $\Delta c=2-2=0$. Since
+$\Phi_{\mathrm{new}}=\Phi_{\mathrm{old}}/g$ with $g\ge 2$,
+\[
+\Psi_{\mathrm{new}}=\frac{\Phi_{\mathrm{old}}}{g}\cdot 2^{\,c_{\mathrm{old}}}
+=\frac{\Psi_{\mathrm{old}}}{g}\le\tfrac12\,\Psi_{\mathrm{old}}.
+\]
+
+\medskip
+\noindent\emph{These three cases are exhaustive and pairwise disjoint.} Any
+pair $(m,n)$ with $m,n>1$ has either $g=1$ (case i) or $g>1$; if $g>1$, then
+either $m=n$ (case ii) or $m\ne n$ (case iii). The combination ``$g=1$ and
+$m=n$'' cannot occur, since $m=n>1\Rightarrow g=m>1\ne 1$; so the three
+conditions $\{g=1\},\{g>1,m=n\},\{g>1,m\ne n\}$ partition all legal pairs. In
+every case $\Psi_{\mathrm{new}}\le\frac12\Psi_{\mathrm{old}}$.
+
+\begin{remark}
+The reason $\Psi=\Phi\cdot 2^c$ works while neither factor alone does: case
+(i) is precisely when $\Phi$ fails to shrink --- but then $c$ drops; case
+(iii) is precisely when $c$ fails to shrink --- but then $\Phi$ drops by a
+factor $\ge2$. The two stalls are complementary, so the product always at
+least halves.
+\end{remark}
+
+Finally, a legal move requires two distinct positions with values $>1$, so
+$c_{\mathrm{old}}\ge 2$, whence
+$\Psi_{\mathrm{old}}=\Phi_{\mathrm{old}}\cdot 2^{c_{\mathrm{old}}}\ge
+1\cdot 2^2=4>0$. Combined with $\Psi_{\mathrm{new}}\le
+\frac12\Psi_{\mathrm{old}}$ and $\Psi_{\mathrm{old}}>0$, this yields the
+strict inequality $\Psi_{\mathrm{new}}<\Psi_{\mathrm{old}}$ between positive
+integers.
+\end{proof}
+
+\section{Proof of Part (a)}
+
+\begin{proof}[Proof of Part (a)]
+\textbf{Step 1 --- the process terminates after finitely many moves.}
+Consider any sequence of legal moves. By Lemma~\ref{lem:H}, each move
+strictly decreases the positive integer $\Psi$:
+$\Psi(\text{after move})<\Psi(\text{before move})$. A strictly decreasing
+sequence of positive integers must be finite --- this is the \textbf{well-ordering
+principle} on $\mathbb{N}$ (equivalently \textbf{infinite descent};
+\texttt{knowledge\_base.md}, General Proof Methods, ``Induction / Infinite
+descent'', and ``Invariant / monovariant''): if the sequence of $\Psi$-values
+could continue forever, its infinitely many distinct terms would form a
+subset of the positive integers with no least element, which is impossible.
+Concretely, since each move at least halves $\Psi$ and $\Psi\ge 1$ always,
+after $t$ moves $1\le\Psi\le \Psi_0/2^{t}$, forcing $2^{t}\le\Psi_0$, i.e.\
+$t\le\log_2\Psi_0$, where $\Psi_0=\Psi(\text{initial board})$ is a fixed
+positive integer. Hence at most $\lfloor\log_2\Psi_0\rfloor$ moves are
+possible: the process halts after finitely many moves, regardless of the
+choices made.
+
+\medskip
+\textbf{Step 2 --- at termination, $c\le 1$.} The process stops precisely
+when no legal move remains. A legal move needs two distinct positions holding
+values $>1$; this is possible iff $c\ge 2$. Hence at termination $c\le 1$,
+i.e.\ the terminal board has $c\in\{0,1\}$.
+
+\medskip
+\textbf{Step 3 --- the terminal board cannot be all $1$'s ($c\ne 0$).}
+Suppose, for contradiction, that the terminal board is $(1,1,\dots,1)$ (i.e.\
+$c=0$). Then $v_p(y_i)=0$ for every $i$ and every prime $p$, so
+$\gamma_p(\text{terminal})= \gcd(0,\dots,0)=0$ for every prime $p$, and
+therefore
+\[
+\Gamma(\text{terminal})=\prod_p p^{0}=\prod_p 1=1.
+\]
+(Here $p^0=1$ is definitional; the all-zero-exponent product is $1$, not $0$.)
+On the other hand, consider the initial board $(x_1,\dots,x_N)$, all entries
+$>1$. In particular $x_1>1$, so $x_1$ has some prime factor $p_0$ with
+$v_{p_0}(x_1)\ge 1$. Then
+\[
+\gamma_{p_0}(\text{initial})=\gcd\bigl(v_{p_0}(x_1),\dots,v_{p_0}(x_N)\bigr)\ge 1,
+\]
+because this is a gcd of nonnegative integers whose first entry is $\ge 1$,
+and a gcd of a list containing a positive term is $\ge 1$ (property
+$(\ast)$: $1$ is a common divisor, so the gcd, being the greatest common
+divisor of a not-all-zero list, is at least $1$). Every prime's exponent
+$\gamma_p(\text{initial})\ge 0$ contributes a factor
+$p^{\gamma_p(\text{initial})}\ge 1$, so dropping all factors except the one at
+$p_0$ can only decrease the product:
+\[
+\Gamma(\text{initial})=\prod_p p^{\gamma_p(\text{initial})}
+\ \ge\ p_0^{\,\gamma_{p_0}(\text{initial})}\ \ge\ p_0^{\,1}\ \ge\ 2\ >\ 1.
+\]
+But the terminal board is reached from the initial board by the finite
+sequence of moves of this play (Step 1), so by Lemma~\ref{lem:G}
+($\Gamma$-invariance) $\Gamma(\text{terminal})=\Gamma(\text{initial})$. This
+gives
+\[
+1=\Gamma(\text{terminal})=\Gamma(\text{initial})\ge 2,
+\]
+a contradiction. Hence $c\ne 0$ at termination.
+
+\medskip
+\textbf{Conclusion of (a).} By Steps 1--3, every play halts after finitely
+many moves (Step 1) at a terminal board with $c\le 1$ (Step 2) and $c\ne 0$
+(Step 3), hence $c=1$: exactly one entry $M$ on the blackboard is $>1$. This
+holds regardless of Confucius's choices.
+\end{proof}
+
+\section{Proof of Part (b)}
+
+\begin{proof}[Proof of Part (b)]
+Fix any complete play; by Part (a) it terminates at a board with exactly one
+entry $>1$, namely $M$, and the other $N-1$ entries equal to $1$. Compute
+$\Gamma$ of this terminal board. For each prime $p$, the list of valuations is
+$v_p(M)$ at the position holding $M$ and $0$ at the other $N-1$ positions, so
+\[
+\gamma_p(\text{terminal})=\gcd\bigl(v_p(M),0,\dots,0\bigr)=v_p(M),
+\]
+using $\gcd(a,0,\dots,0)=a$ for $a\ge 0$ (property $(\ast)$: the common
+divisors of $\{v_p(M),0,\dots,0\}$ are exactly the divisors of $v_p(M)$, whose
+greatest is $v_p(M)$; and if $v_p(M)=0$ both sides are $0$). Therefore, by
+Lemma~\ref{lem:A},
+\[
+\Gamma(\text{terminal})=\prod_p p^{\,v_p(M)}=M.
+\]
+By Lemma~\ref{lem:G}, $\Gamma$ is preserved by the whole play, so
+\[
+M=\Gamma(\text{terminal})=\Gamma(\text{initial})
+=\prod_p p^{\ \gcd\bigl(v_p(x_1),\dots,v_p(x_N)\bigr)}.
+\]
+The right-hand side depends only on the initial numbers $x_1,\dots,x_N$ and
+not on any choice made during the process. Since the play was arbitrary,
+every legal sequence of moves ends with the \textbf{same} value
+\[
+\boxed{\,M=\Gamma(x_1,\dots,x_N)=\prod_p p^{\ \gcd\left(v_p(x_1),\dots,v_p(x_N)\right)}\, }.
+\]
+Thus $M$ does not depend on the choices of Confucius.
+\end{proof}
+
+\section*{Self-Check of the Closed Form}
+
+The formula $M=\prod_p p^{\gcd_i v_p(x_i)}$ can be sanity-checked on a small
+board. Take $(x_1,x_2)=(4,8)$ (the mechanism is identical for any $N$; here
+$N=2$). Only the prime $p=2$ occurs, with $v_2(4)=2,\ v_2(8)=3$ and
+$\gcd(2,3)=1$; every other prime contributes exponent $\gcd(0,0)=0$. So the
+formula predicts $M=2^{1}=2$. Running the process directly:
+\begin{align*}
+(4,8) &\ \to\ \bigl(\gcd(4,8),\ \operatorname{lcm}(4,8)/\gcd(4,8)\bigr)=(4,\ 8/4)=(4,2)\\
+&\ \to\ \bigl(\gcd(4,2),\ \operatorname{lcm}(4,2)/\gcd(4,2)\bigr)=(2,\ 4/2)=(2,2)\\
+&\ \to\ \bigl(\gcd(2,2),\ \operatorname{lcm}(2,2)/\gcd(2,2)\bigr)=(2,\ 2/2)=(2,1),
+\end{align*}
+which is terminal with the single value $M=2>1$. The two agree. (For a
+pairwise-coprime board such as $(2,3,5,7)$, every $\gcd_i v_p(x_i)$ equals the
+lone nonzero exponent $1$, so $M=2\cdot3\cdot5\cdot7=210$, the ordinary
+product --- consistent with the general fact that on pairwise-coprime input
+nothing can be shared and the numbers merge into their product.)
+
+\medskip
+\noindent This completes the solution.
+
+\end{document}
