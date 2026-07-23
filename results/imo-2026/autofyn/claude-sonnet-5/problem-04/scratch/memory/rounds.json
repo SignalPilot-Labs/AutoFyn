@@ -1,0 +1,15 @@
+{
+  "pr_title": "IMO 2026 P4 solved: Mulan wins iff θ=180°/n, n≥2 integer",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": " ended without summary -- autocommit",
+      "ended_at": "2026-07-23T16:51:25Z"
+    },
+    {
+      "n": 2,
+      "summary": "Reviewed & approved 2 independent full proofs; goal achieved",
+      "ended_at": "2026-07-23T17:00:05Z"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "monotonicity-first": {
+    "copied_from": null,
+    "elo": 1484.0,
+    "expanded": 1,
+    "last_note": "Independently reaches the same complete correct proof (re-derives KEY bound via a different algebraic path, verified) plus a genuine negative result ruling out three cheap order-theoretic monotonicity routes with explicit witnesses; no gaps found.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "monotonicity-first",
+    "stale": true,
+    "summary": "Attempts to prove f strictly increasing directly from the sandwich, then uses order-preservation of AP orbits to pin S constant; f-increasing step and reverse-monotonicity step both unproven strategies, real risk of stalling."
+  },
+  "quadratic-difference-chaining": {
+    "copied_from": null,
+    "elo": 1516.0,
+    "expanded": 1,
+    "last_note": "Full correct proof: equality-forcing identity, orbit AP gives f>=id, KEY quadratic bound via X=f(x) substitution, subdivision/telescoping forces S globally constant, sufficiency verified; all algebra independently re-checked with sympy \u2014 no gaps found.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "quadratic-difference-chaining",
+    "stale": true,
+    "summary": "X=f(x) substitution into GM-inequality + exact identity f(f(x))=2f(x)-x yields two-sided quadratic bound on S(x)-S(y); n-fold subdivision telescopes to global constancy of S. Algebra independently verified with sympy; essentially complete."
+  }
+}

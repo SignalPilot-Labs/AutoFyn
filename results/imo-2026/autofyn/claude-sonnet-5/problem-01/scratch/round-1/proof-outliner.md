@@ -1,0 +1,41 @@
+## imo-2026-01
+
+prime-valuation-invariant: new
+Target: (a) the process terminates after finitely many moves with exactly one board entry >1; (b) that value M = ∏_p p^{gcd_i v_p(x_i)} is independent of Confucius's choices — both parts, end to end.
+Technique: Per-prime p-adic valuation bookkeeping. A move on values m,n sends the exponent pair (v_p(m),v_p(n))=(α,β) to (min(α,β),|α-β|) for every prime p simultaneously. Track (i) the invariant g_p = gcd of all 2026 exponents of p (constant forever), and (ii) the lexicographic monovariant (Ω_total, #entries>1) (strictly decreasing forever) — both elementary, no heavy machinery.
+Skeleton:
+  1. Reduction to exponents — v_p(gcd)=min, v_p(lcm)=max, so a move acts on (α,β)↦(min(α,β),|α-β|) — by definition of gcd/lcm valuation formulas.
+  2. Euclidean subtraction identity gcd(min(α,β),|α-β|)=gcd(α,β) — proved by case split α=β / α<β / α>β, using gcd(a,b)=gcd(a,b-a) for a≤b.
+  3. Per-prime multiset-gcd g_p(S) invariant under every move — by associativity of gcd over the multiset (g_p(S)=gcd(G',gcd(touched pair))) plus step 2.
+  4. Termination via lexicographic (Ω,C) — Ω_total=Σ Ω(a_i), C=#{a_i>1}; every move strictly decreases (Ω,C) lexicographically (coprime move: Ω flat, C drops by 1; non-coprime move: Ω strictly drops since v_p(gcd)+v_p(lcm/gcd)=max(α,β)<α+β for the shared prime) — well-founded descent on ℕ×ℕ ⇒ finite termination.
+  5. At least one survivor always — pick p_0 | x_1, so g_{p_0}(initial)>0; invariance (step 3) keeps g_{p_0}>0 forever, so the exponent multiset of p_0 can never be all-zero ⇒ some entry always >1.
+  6. Assemble (a): terminal state has C≤1 by definition of "no legal move" and C≥1 by step 5 ⇒ C=1 exactly.
+  7. Assemble (b): at termination, g_p(terminal) = gcd(0,...,0,v_p(M)) = v_p(M); by invariance this equals g_p(initial), a quantity fixed by the initial board only ⇒ M's every valuation is fixed ⇒ M is the same for every play, with closed form M=∏_p p^{gcd_i v_p(x_i)}.
+Key lemmas (claim + mechanism):
+  - gcd(min(α,β),|α-β|)=gcd(α,β) — because gcd(a,b)=gcd(a,b-a) for a≤b (common-divisor-set argument).
+  - g_p(S) invariant — because gcd of a multiset is associative/computable as gcd(untouched part, gcd(touched pair)), and the touched pair's gcd is preserved by the identity above.
+  - (Ω,C) strictly decreases every move — because v_p(gcd)+v_p(lcm/gcd)=max(α,β)≤α+β always, strict exactly when gcd(m,n)>1 for that prime (Ω drops), and when gcd(m,n)=1 one of the two new entries is exactly 1 (C drops).
+  - "always ≥1 survivor" — because g_{p_0}(initial)>0 for a prime dividing x_1, and this positivity is preserved forever by invariance, which is incompatible with an all-1s board.
+Open gaps: (i) one-line justification that gcd extends associatively to a finite multiset; (ii) full write-out of the two termination sub-cases with explicit C-bookkeeping; (iii) explicit statement that "gcd of a multiset with a positive entry is positive"; (iv) note that n=2026 plays no special role (works for any n≥2).
+Cases to cover: gcd(m,n)=1 vs >1 (termination step); α=β / α<β / α>β and the α=β=0 boundary (Euclidean identity step).
+Watch out for: the gcd(0,...,0)=0 convention must be handled explicitly (it's exactly what distinguishes "prime never appears in M" from "prime present"); don't conflate Ω (additive) with C (count) — a move can be Ω-flat but still make C-progress; explicitly reject the false naive guesses M=gcd(x_i) and M=∏p^{max_i v_p(x_i)} (both numerically refuted by all three explorers).
+
+confluence-newman: new
+Target: same as above, both parts, end to end — but part (b)'s uniqueness is proved as an abstract rewriting-system fact (Newman's Lemma / diamond property) rather than by computing M's closed form as the engine of the proof.
+Technique: View board states as nodes of a rewriting system, moves as the relation →. Part (a) uses the same termination monovariant as the sibling approach (this half of the problem has one natural elementary proof, imported without re-derivation). Part (b) is proved via Newman's Lemma: termination + local confluence (any two one-step divergences from a state are joinable) ⇒ global confluence ⇒ unique terminal state reached by every play — a genuinely different top-level architecture for uniqueness than "both terminal states satisfy the same closed formula."
+Skeleton:
+  1. Termination monovariant (Ω,C) — same construction and proof as the sibling approach, imported as a shared elementary fact.
+  2. Part (a) assembly — terminal C≤1 by definition, C≥1 by the "prime dividing x_1 forces a survivor" argument (also shared/imported as a local per-move lemma, since it only needs the *single-move* Euclidean identity, not the full closed-form machinery).
+  3. Rewriting-system framing — define local confluence (two one-step divergences from S are joinable at a common D); state Newman's Lemma (terminating + locally confluent ⇒ globally confluent, unique normal form).
+  4. Local confluence, disjoint case — two moves on disjoint position-pairs commute trivially (edits to disjoint coordinates never interact) — joinable in 1 step each.
+  5. Local confluence, overlapping case (positions share exactly one index j) — reduce to a 3-slot sub-board (a,b,c) at positions i,j,l; show each of the two divergent one-step results has at most one forced continuation within the 3-slot sub-board (since after either first move, at most 2 of the 3 positions remain >1); the remaining open gap is verifying the two forced terminal 3-tuples coincide.
+  6. Newman's Lemma assembly — with step 4 closed and step 5's gap closed, local confluence holds; by step 1 (termination) Newman's Lemma gives global confluence, i.e. every play from the initial board reaches the same terminal state — proves (b) without needing the closed form as the proof engine (closed form recoverable afterward as a corollary via the sibling lemma if desired).
+Key lemmas (claim + mechanism):
+  - Disjoint moves commute exactly — because a move reads/writes only its two chosen coordinates, and edits to disjoint coordinate sets always commute.
+  - Overlapping moves force a unique continuation in the 3-slot sub-board — because after either first move, no more than 2 of the 3 positions remain >1, collapsing branching to "at most one legal move left."
+  - Newman's Lemma (cited rewriting-system theorem: terminating + locally confluent ⇒ unique normal form) — standard, provable in a few lines by strong induction on the termination measure if the builder wants full self-containment.
+Open gaps: THE open gap is Step 5's 3-variable identity — verifying the two forced terminal values of the {i,j,l} sub-board agree regardless of which of the two initial overlapping moves fires first. Suggested closing tactic (fallback, keeps the approach viable even if a slick direct 3-variable argument doesn't materialize): invoke the sibling approach's per-prime multiset-gcd invariance lemma restricted to the 3-slot sub-board, which forces both terminal exponents to equal gcd(α,β,γ) for every prime — this closes the gap by importing one lemma while preserving the confluence architecture for the rest of the proof. Also open: Newman's Lemma's own short inductive proof if full self-containment is wanted (minor, standard); the general-n phrasing of Step 5 when overlap chains extend through more than 2 shared positions (needs a sentence of structural-induction care).
+Cases to cover: disjoint move pairs (closed); overlapping move pairs sharing exactly one position (open, mechanism given); identical move pairs (trivial, A=B).
+Watch out for: termination alone (Step 1) only gives existence of a terminal state — do not let the writeup silently conflate that with uniqueness; Newman's Lemma is the genuinely extra ingredient. The 3-slot reduction in Step 5 must justify "no other position interferes" via the disjointness lemma (Step 4) applied repeatedly, not just asserted. Be transparent in the final writeup that this approach's hardest step may end up leaning on the same one-move Euclidean identity as the sibling approach (that's fine and expected — both approaches may share a common one-move primitive — but the overall *proof architecture* for uniqueness is genuinely different: confluence/Newman vs. direct closed-form invariant).
+
+build set: prime-valuation-invariant, confluence-newman
