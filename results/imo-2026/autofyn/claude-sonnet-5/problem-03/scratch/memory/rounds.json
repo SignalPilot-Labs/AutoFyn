@@ -1,0 +1,100 @@
+{
+  "pr_title": "Solve IMO 2026 P3 (Liu Bang/Xiang Yu stick game): c(n) = 2^n/(2^{n+1}-1), proved",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": " ended without summary -- autocommit",
+      "ended_at": "2026-07-17T03:16:34Z"
+    },
+    {
+      "n": 2,
+      "summary": "Certified Lemma G+P, proved n=2 upper bound",
+      "ended_at": "2026-07-17T04:16:33Z"
+    },
+    {
+      "n": 3,
+      "summary": "Proved n=3 Case i + full lower-bound Branch A/B; 3 dead ends ruled out",
+      "ended_at": "2026-07-17T05:20:14Z"
+    },
+    {
+      "n": 4,
+      "summary": "3 lemmas certified, D/M-completeness gap closed 2 ways, 1 dead end ruled out",
+      "ended_at": "2026-07-17T06:30:16Z"
+    },
+    {
+      "n": 5,
+      "summary": "3 lemmas certified; unconditional D/M lower bound proved for all m",
+      "ended_at": "2026-07-17T07:26:33Z"
+    },
+    {
+      "n": 6,
+      "summary": " ended without summary -- autocommit",
+      "ended_at": "2026-07-17T08:01:35Z"
+    },
+    {
+      "n": 7,
+      "summary": "Recovered from stuck reviewer; 3 new certified lemmas, all partial",
+      "ended_at": "2026-07-17T08:41:43Z"
+    },
+    {
+      "n": 8,
+      "summary": "Milestone: full unconditional D_m lower bound proved",
+      "ended_at": "2026-07-17T10:56:51Z"
+    },
+    {
+      "n": 9,
+      "summary": "Unified Case-ii gap into single Match-Recovery Lemma; n>=4 confirmed not separate",
+      "ended_at": "2026-07-17T11:58:54Z"
+    },
+    {
+      "n": 10,
+      "summary": "Killed 2 dead-end proof routes for the sole remaining gap",
+      "ended_at": "2026-07-17T12:29:02Z"
+    },
+    {
+      "n": 11,
+      "summary": "Ruled out Hall's/fresh-framings; sharpened gap to SAR + new lemma",
+      "ended_at": "2026-07-17T14:12:08Z"
+    },
+    {
+      "n": 12,
+      "summary": "SAR bottleneck sharpened; 5 new lemmas, Gap 1 still open",
+      "ended_at": "2026-07-17T15:55:11Z"
+    },
+    {
+      "n": 13,
+      "summary": "Gap 1a scope fixed, Gap 1c shortcut killed, 1 overclaim caught",
+      "ended_at": "2026-07-17T17:21:48Z"
+    },
+    {
+      "n": 14,
+      "summary": "Gap 1a proved for q≤3; Shrink-List lemma certified",
+      "ended_at": "2026-07-17T18:17:55Z"
+    },
+    {
+      "n": 15,
+      "summary": "Gap1a/1c shared mechanism found; q=4 MATCH gap found; 2 lemmas certified",
+      "ended_at": "2026-07-17T19:13:11Z"
+    },
+    {
+      "n": 16,
+      "summary": "3 new lemmas; Gap 1b base case closed",
+      "ended_at": "2026-07-17T20:19:22Z"
+    },
+    {
+      "n": 17,
+      "summary": "Three-Touch 4/5 proved; Gap1a/1b equivalence found",
+      "ended_at": "2026-07-17T21:15:54Z"
+    },
+    {
+      "n": 18,
+      "summary": "Match-branch reduction lemma certified; 3 new dead ends found",
+      "ended_at": "2026-07-17T22:31:01Z"
+    },
+    {
+      "n": 19,
+      "summary": "SOLVED: c(n)=2^n/(2^{n+1}-1), full proof verified 2x",
+      "ended_at": "2026-07-18T00:12:39Z"
+    }
+  ]
+}

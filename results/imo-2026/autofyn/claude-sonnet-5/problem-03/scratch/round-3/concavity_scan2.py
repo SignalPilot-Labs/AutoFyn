@@ -1,0 +1,6 @@
+exec(open('/tmp/round-3/concavity_test.py').read())
+print("\n--- targeted boundary-crossing tests ---")
+test_concavity((0.65,0.325,0.025), (0.5,0.25,0.25), ntrials=80000, label="cross a1=2a2 boundary far from dyadic")
+test_concavity((0.6,0.3,0.1), (0.56,0.28,0.16), ntrials=80000, label="near a1=2a2, both sides")
+test_concavity((0.9,0.1,0.0), (0.5,0.3,0.2), ntrials=80000, label="near-degenerate a3=0 vs interior")
+test_concavity((0.5,0.34,0.16), (0.5,0.30,0.20), ntrials=80000, label="cross a2=2a3 at fixed a1")
