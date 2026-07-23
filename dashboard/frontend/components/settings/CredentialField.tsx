@@ -3,7 +3,7 @@
 import type { SettingsStatus } from "@/lib/types";
 import { IconCheck } from "@/components/ui/icons";
 
-type StringSettingsKey = "git_token" | "github_repo" | "max_budget_usd";
+type StringSettingsKey = "git_token" | "github_repo" | "max_budget_usd" | "max_concurrent_runs" | "runs_page_size";
 
 export interface CredentialFieldConfig {
   key: StringSettingsKey;

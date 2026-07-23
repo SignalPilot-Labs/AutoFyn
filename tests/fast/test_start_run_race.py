@@ -5,7 +5,8 @@ Bug: ensure_capacity() (capacity check) was separated from register_run()
 could both pass the check before either registered, bypassing max_concurrent_runs.
 
 Fix: check_and_reserve_run() atomically checks capacity and registers the
-ActiveRun with no await points between check and registration.
+ActiveRun with no await points between check and registration. The limit is
+resolved by the caller (async DB read) and passed in as max_runs.
 """
 
 from __future__ import annotations
@@ -27,7 +28,7 @@ from utils.models import ActiveRun
 
 
 def _make_server_at_capacity_zero() -> AgentServer:
-    """Build an AgentServer with max_concurrent_runs=1 and no runs registered."""
+    """Build an AgentServer with no runs registered."""
     srv = AgentServer.__new__(AgentServer)
     srv._pool = MagicMock()
     srv._runs = {}
@@ -41,8 +42,7 @@ class TestStartRunRace:
     def test_check_and_reserve_returns_active_run(self) -> None:
         """check_and_reserve_run must return an ActiveRun with the given run_id."""
         srv = _make_server_at_capacity_zero()
-        with patch("server.max_concurrent_runs", return_value=2):
-            active = srv.check_and_reserve_run("run-abc")
+        active = srv.check_and_reserve_run("run-abc", 2)
 
         assert active.run_id == "run-abc"
         assert "run-abc" in srv._runs
@@ -50,8 +50,7 @@ class TestStartRunRace:
     def test_check_and_reserve_registers_before_returning(self) -> None:
         """check_and_reserve_run must register the run before returning."""
         srv = _make_server_at_capacity_zero()
-        with patch("server.max_concurrent_runs", return_value=2):
-            active = srv.check_and_reserve_run("run-abc")
+        active = srv.check_and_reserve_run("run-abc", 2)
 
         assert srv._runs["run-abc"] is active
 
@@ -61,9 +60,8 @@ class TestStartRunRace:
         existing = ActiveRun(run_id="run-existing")
         srv._runs["run-existing"] = existing
 
-        with patch("server.max_concurrent_runs", return_value=1):
-            with pytest.raises(HTTPException) as exc_info:
-                srv.check_and_reserve_run("run-new")
+        with pytest.raises(HTTPException) as exc_info:
+            srv.check_and_reserve_run("run-new", 1)
 
         assert exc_info.value.status_code == 409
         assert "run-new" not in srv._runs
@@ -82,12 +80,11 @@ class TestStartRunRace:
         results: list[ActiveRun | HTTPException] = []
 
         async def try_reserve(run_id: str) -> None:
-            with patch("server.max_concurrent_runs", return_value=1):
-                try:
-                    active = srv.check_and_reserve_run(run_id)
-                    results.append(active)
-                except HTTPException as e:
-                    results.append(e)
+            try:
+                active = srv.check_and_reserve_run(run_id, 1)
+                results.append(active)
+            except HTTPException as e:
+                results.append(e)
 
         await asyncio.gather(
             try_reserve("run-1"),
@@ -106,8 +103,7 @@ class TestStartRunRace:
         """If async ops fail after reserving, remove_run must clean up the slot."""
         srv = _make_server_at_capacity_zero()
 
-        with patch("server.max_concurrent_runs", return_value=2):
-            srv.check_and_reserve_run("run-fail")
+        srv.check_and_reserve_run("run-fail", 2)
 
         assert "run-fail" in srv._runs
 
@@ -120,10 +116,9 @@ class TestStartRunRace:
         """After remove_run, capacity is freed and a new run can be reserved."""
         srv = _make_server_at_capacity_zero()
 
-        with patch("server.max_concurrent_runs", return_value=1):
-            srv.check_and_reserve_run("run-1")
-            srv.remove_run("run-1")
-            active2 = srv.check_and_reserve_run("run-2")
+        srv.check_and_reserve_run("run-1", 1)
+        srv.remove_run("run-1")
+        active2 = srv.check_and_reserve_run("run-2", 1)
 
         assert active2.run_id == "run-2"
         assert "run-2" in srv._runs

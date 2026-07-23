@@ -41,6 +41,8 @@ class TestCliSettingsTokenOnly:
                     github_repo=None,
                     budget=None,
                     api_key=None,
+                    max_concurrent_runs=None,
+                    runs_page_size=None,
                 )
             except typer.Exit as exc:
                 assert exc.exit_code != 1, (
@@ -59,6 +61,8 @@ class TestCliSettingsTokenOnly:
                     github_repo=None,
                     budget=None,
                     api_key=None,
+                    max_concurrent_runs=None,
+                    runs_page_size=None,
                 )
             except typer.Exit:
                 pass
@@ -77,6 +81,8 @@ class TestCliSettingsTokenOnly:
                     github_repo=None,
                     budget=None,
                     api_key=None,
+                    max_concurrent_runs=None,
+                    runs_page_size=None,
                 )
             except typer.Exit:
                 pass
@@ -95,6 +101,8 @@ class TestCliSettingsTokenOnly:
                     github_repo=None,
                     budget=None,
                     api_key=None,
+                    max_concurrent_runs=None,
+                    runs_page_size=None,
                 )
         assert exc_info.value.exit_code == 1
 
@@ -112,6 +120,8 @@ class TestCliSettingsTokenOnly:
                 github_repo=None,
                 budget=None,
                 api_key=None,
+                max_concurrent_runs=None,
+                runs_page_size=None,
             )
 
         client.post.assert_called_once_with("/api/tokens", json={"token": "sk-test-token"})

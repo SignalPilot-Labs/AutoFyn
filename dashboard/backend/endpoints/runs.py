@@ -44,8 +44,9 @@ from db.constants import (
     RUN_STATUS_RATE_LIMITED,
     RUN_STATUS_RUNNING,
     RUN_STATUS_STARTING,
+    SETTING_RUNS_PAGE_SIZE,
 )
-from db.models import AuditLog, Run, ToolCall
+from db.models import AuditLog, Run, Setting, ToolCall
 
 log = logging.getLogger("dashboard.endpoints")
 
@@ -72,11 +73,19 @@ async def issue_sse_token() -> dict[str, str]:
 # Run APIs
 # ---------------------------------------------------------------------------
 
+async def runs_page_size(s: AsyncSession) -> int:
+    """Run-list page size — the runs_page_size setting, else RUNS_PAGE_SIZE."""
+    setting = await s.get(Setting, SETTING_RUNS_PAGE_SIZE)
+    if setting is None:
+        return RUNS_PAGE_SIZE
+    return int(setting.value)
+
+
 @router.get("/runs")
 async def list_runs(repo: str | None = Query(default=None)) -> list:
     """List recent runs, optionally filtered by repo."""
     async with session() as s:
-        stmt = select(Run).order_by(desc(Run.started_at)).limit(RUNS_PAGE_SIZE)
+        stmt = select(Run).order_by(desc(Run.started_at)).limit(await runs_page_size(s))
         if repo:
             stmt = stmt.where(Run.github_repo == repo)
         result = await s.execute(stmt)
