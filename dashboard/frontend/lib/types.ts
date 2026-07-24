@@ -289,6 +289,7 @@ export const TOOL_COLORS: Record<ToolCategory, ToolMeta> = {
 // Must match AUDIT_EVENT_TYPES in db/constants.py — sync test enforces this.
 export type AuditEventType =
   | "usage"
+  | "usage_settle_missed"
   | "llm_text"
   | "llm_thinking"
   | "round_ended"
@@ -341,6 +342,7 @@ export interface AuditEventMeta {
 
 export const AUDIT_EVENT_META: Record<string, AuditEventMeta> = {
   rate_limit:          { label: "Rate Limit",        color: "text-[#ffaa00]",  bg: "bg-[#ffaa00]/[0.04]", iconColor: "#ffaa00" },
+  usage_settle_missed: { label: "Usage Not Settled", color: "text-[#ffaa00]",  bg: "bg-[#ffaa00]/[0.04]", iconColor: "#ffaa00" },
   credentials_exhausted_waiting: { label: "Waiting for credentials", color: "text-[#ffaa00]",  bg: "bg-[#ffaa00]/[0.04]", iconColor: "#ffaa00" },
   run_started:         { label: "Run Started",       color: "text-[#88ccff]",  bg: "bg-[#88ccff]/[0.04]", iconColor: "#88ccff" },
   agent_stop:          { label: "Agent Stopped",     color: "text-[#ff8844]",  bg: "bg-[#ff8844]/[0.04]", iconColor: "#ff8844" },
