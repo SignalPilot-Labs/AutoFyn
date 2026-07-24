@@ -355,31 +355,14 @@ class StreamDispatcher:
         )
 
     async def _handle_result(self, data: dict) -> None:
-        """Persist the SDK session id and settle tokens and cost.
+        """Persist the SDK session id and settle this round's tokens and cost.
 
-        ResultMessage carries the authoritative usage and cost for THIS
-        round's session. model_usage aggregates every API call the CLI made,
-        subagent turns included — which message_delta never carries (subagent
-        partials don't surface), so the delta-accumulated totals are an
-        orchestrator-only undercount that this settles. Cost is added to the
-        prior-rounds baseline and rebased so any late message_delta in this
-        round (rare) can't double-count. A gateway that billed us directly
-        already reported its real cost per message_delta, and the SDK reports
-        0.0 for those rounds because it did not bill them — so the gateway's
-        figure wins.
-
-        Discarding the SDK's figure is only safe because a round bills exactly
-        one provider: acquire_and_inject filters the credential pool to the
-        run's provider, and the fallback model resolves through the same one.
-        If a round could ever span two providers, the loser's cost would be
-        dropped here rather than added.
-
-        On gateway rounds tokens settle to full-session usage while cost keeps
-        the gateway's per-delta figure, which never saw subagent turns — token
-        and cost coverage differ there. Settling assumes one result per round;
-        a second result would re-add its cumulative usage. The estimate branch
-        deliberately does not rebase _cost_baseline: it is an estimate, and a
-        later authoritative result cost must settle against the true baseline.
+        model_usage is the round's full-session usage, subagent turns included
+        (message_delta never carries those), so it settles the token totals;
+        result cost settles cost and rebases so a late delta can't double-count.
+        A gateway's per-delta cost beats the SDK's 0.0 for gateway rounds, and
+        the estimate branch must not rebase _cost_baseline — a later
+        authoritative result cost settles against the true baseline.
         """
         run_id = self._run.run_id
         session_id = data.get("session_id")
