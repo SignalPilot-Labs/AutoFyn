@@ -168,6 +168,9 @@ def serialize_message(message: object) -> dict | None:
                 "total_cost_usd": message.total_cost_usd,
                 "num_turns": message.num_turns,
                 "usage": message.usage,
+                # Full-session usage per model, subagent turns included —
+                # the only place the CLI reports subagent tokens at all.
+                "model_usage": message.model_usage,
             },
         }
     return None

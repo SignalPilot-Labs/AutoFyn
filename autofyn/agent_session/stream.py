@@ -355,14 +355,18 @@ class StreamDispatcher:
         )
 
     async def _handle_result(self, data: dict) -> None:
-        """Persist the SDK session id and settle cost.
+        """Persist the SDK session id and settle tokens and cost.
 
-        ResultMessage carries the authoritative cost for THIS round's session.
-        We add it to the prior-rounds baseline and rebase so any late
-        message_delta in this round (rare) can't double-count. A gateway that
-        billed us directly already reported its real cost per message_delta,
-        and the SDK reports 0.0 for those rounds because it did not bill them —
-        so the gateway's figure wins.
+        ResultMessage carries the authoritative usage and cost for THIS
+        round's session. model_usage aggregates every API call the CLI made,
+        subagent turns included — which message_delta never carries (subagent
+        partials don't surface), so the delta-accumulated totals are an
+        orchestrator-only undercount that this settles. Cost is added to the
+        prior-rounds baseline and rebased so any late message_delta in this
+        round (rare) can't double-count. A gateway that billed us directly
+        already reported its real cost per message_delta, and the SDK reports
+        0.0 for those rounds because it did not bill them — so the gateway's
+        figure wins.
 
         Discarding the SDK's figure is only safe because a round bills exactly
         one provider: acquire_and_inject filters the credential pool to the
@@ -374,6 +378,9 @@ class StreamDispatcher:
         session_id = data.get("session_id")
         if session_id:
             await db.save_session_id(run_id, session_id)
+        model_usage = data.get("model_usage")
+        if model_usage:
+            self._settle_round_tokens(model_usage)
         round_cost = data.get("total_cost_usd")
         if round_cost is not None and self._round_gateway_cost is None:
             settled = (self._cost_baseline or 0.0) + round_cost
@@ -383,7 +390,32 @@ class StreamDispatcher:
             self._output_baseline = self._run.total_output_tokens
             self._cache_create_baseline = self._run.cache_creation_input_tokens
             self._cache_read_baseline = self._run.cache_read_input_tokens
+        elif model_usage and self._round_gateway_cost is None:
+            self._run.total_cost = (
+                self._cost_baseline or 0.0
+            ) + self._estimated_round_cost()
         await self._persist_cost()
+
+    def _settle_round_tokens(self, model_usage: dict) -> None:
+        """Rebase this round's token totals to the result's full-session usage.
+
+        Sums the per-model modelUsage entries (camelCase keys, per the CLI)
+        onto the round-start baselines, replacing the orchestrator-only
+        delta accumulation for this round.
+        """
+        per_model = list(model_usage.values())
+        self._run.total_input_tokens = self._input_baseline + sum(
+            m.get("inputTokens") or 0 for m in per_model
+        )
+        self._run.total_output_tokens = self._output_baseline + sum(
+            m.get("outputTokens") or 0 for m in per_model
+        )
+        self._run.cache_creation_input_tokens = self._cache_create_baseline + sum(
+            m.get("cacheCreationInputTokens") or 0 for m in per_model
+        )
+        self._run.cache_read_input_tokens = self._cache_read_baseline + sum(
+            m.get("cacheReadInputTokens") or 0 for m in per_model
+        )
 
     def _estimated_round_cost(self) -> float:
         """Cost of this round's tokens at the configured (Opus upper-bound) rates."""
