@@ -67,6 +67,9 @@ class StreamDispatcher:
         self._latest_context_tokens: int = 0
         self._tools_in_flight: int = 0
         self._sandbox_session_id: str | None = None
+        # Terminal signal stashed by end_round/end_session; the round ends
+        # at the result event, after it settles subagent usage.
+        self._pending_end: StreamSignal | None = None
         self._dispatch_table: dict[str, EventHandler] = {
             "assistant_message": self._on_assistant_message,
             "stream_event": self._on_stream_event,
@@ -139,6 +142,8 @@ class StreamDispatcher:
 
     async def _on_result(self, data: dict) -> StreamSignal:
         await self._handle_result(data)
+        if self._pending_end is not None:
+            return self._pending_end
         return StreamSignal(kind="round_complete")
 
     # ── Dispatch handlers (complex: build signal from data) ──
@@ -164,22 +169,26 @@ class StreamDispatcher:
         return StreamSignal(kind="continue")
 
     async def _on_end_round(self, data: dict) -> StreamSignal:
+        """Stash the terminal signal; the result event ends the round."""
         round_summary = data.get("round_summary") or ""
         session_summary = data.get("session_summary") or ""
         log.info("[%s] end_round: %s", self._rid, round_summary[:80])
-        return StreamSignal(
+        self._pending_end = StreamSignal(
             kind="round_complete",
             round_summary=round_summary,
             session_summary=session_summary,
         )
+        return StreamSignal(kind="continue")
 
     async def _on_end_session(self, data: dict) -> StreamSignal:
+        """Stash the terminal signal; the result event ends the run."""
         log.info("[%s] end_session received", self._rid)
-        return StreamSignal(
+        self._pending_end = StreamSignal(
             kind="run_ended",
             round_summary=data.get("round_summary"),
             session_summary=data.get("session_summary"),
         )
+        return StreamSignal(kind="continue")
 
     async def _on_end_session_denied(self, data: dict) -> StreamSignal:
         log.info(
@@ -190,6 +199,19 @@ class StreamDispatcher:
         return StreamSignal(kind="continue")
 
     async def _on_session_end(self, data: dict) -> StreamSignal:
+        """Fallback terminator when the stream closes without a result event."""
+        if self._pending_end is not None:
+            log.warning(
+                "[%s] session ended without a result event; round tokens "
+                "stay orchestrator-only",
+                self._rid,
+            )
+            await log_audit(
+                self._run.run_id,
+                "usage_settle_missed",
+                {"round_number": self._round_number},
+            )
+            return self._pending_end
         return StreamSignal(kind="round_complete")
 
     async def _on_session_event_log_overflow(self, data: dict) -> StreamSignal:

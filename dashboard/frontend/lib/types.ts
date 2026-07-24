@@ -289,6 +289,7 @@ export const TOOL_COLORS: Record<ToolCategory, ToolMeta> = {
 // Must match AUDIT_EVENT_TYPES in db/constants.py — sync test enforces this.
 export type AuditEventType =
   | "usage"
+  | "usage_settle_missed"
   | "llm_text"
   | "llm_thinking"
   | "round_ended"

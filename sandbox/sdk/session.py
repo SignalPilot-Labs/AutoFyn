@@ -8,7 +8,12 @@ import asyncio
 import logging
 from typing import Callable
 
-from claude_agent_sdk import ClaudeSDKClient, ClaudeAgentOptions, ClaudeSDKError
+from claude_agent_sdk import (
+    ClaudeSDKClient,
+    ClaudeAgentOptions,
+    ClaudeSDKError,
+    ResultMessage,
+)
 from claude_agent_sdk.types import (
     PermissionResultAllow,
     PermissionResultDeny,
@@ -16,7 +21,7 @@ from claude_agent_sdk.types import (
 )
 
 from config.loader import load_project_mcp_servers, merge_mcp_servers
-from constants import SDK_MAX_BUFFER_BYTES, SESSION_ENV
+from constants import RESULT_DRAIN_TIMEOUT_SEC, SDK_MAX_BUFFER_BYTES, SESSION_ENV
 from sdk.event_log import SessionEventLog, SessionEventLogOverflow, SESSION_EVENT_LOG_MAX_BYTES
 from sdk.gate import SessionGate
 from sdk.hooks import SessionHooks
@@ -70,18 +75,48 @@ class Session:
                 self.client = client
                 await self._check_mcp_status(client)
                 await client.query(self.options_dict["initial_prompt"])
-                async for message in client.receive_messages():
-                    event = serialize_message(message)
-                    if event:
-                        self._emit(event)
-                    if self._ended:
-                        break
+                await self._forward_messages(client)
             self._emit({"event": "session_end", "data": {}})
         except asyncio.CancelledError:
             self._emit({"event": "session_end", "data": {"reason": "cancelled"}})
         except Exception as e:
             log.error("Session %s error: %s", self.session_id, e, exc_info=True)
             self._emit({"event": "session_error", "data": {"error": str(e)}})
+
+    async def _forward_messages(self, client: ClaudeSDKClient) -> None:
+        """Forward each SDK message to the event log until the session ends.
+
+        After the gate sets `_ended`, keep reading until the ResultMessage —
+        the only carrier of subagent token usage — bounded by a deadline.
+        """
+        messages = aiter(client.receive_messages())
+        deadline: float | None = None
+        while True:
+            if self._ended and deadline is None:
+                deadline = (
+                    asyncio.get_running_loop().time() + RESULT_DRAIN_TIMEOUT_SEC
+                )
+            try:
+                if deadline is None:
+                    message = await anext(messages)
+                else:
+                    remaining = deadline - asyncio.get_running_loop().time()
+                    message = await asyncio.wait_for(anext(messages), remaining)
+            except StopAsyncIteration:
+                return
+            except TimeoutError:
+                log.warning(
+                    "Session %s: no ResultMessage within %.0fs of gate end — "
+                    "closing without settled usage",
+                    self.session_id,
+                    RESULT_DRAIN_TIMEOUT_SEC,
+                )
+                return
+            event = serialize_message(message)
+            if event:
+                self._emit(event)
+            if self._ended and isinstance(message, ResultMessage):
+                return
 
     def _mark_ended(self) -> None:
         """Called by SessionGate when end_round/end_session fires."""

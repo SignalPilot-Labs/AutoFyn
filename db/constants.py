@@ -477,5 +477,6 @@ AUDIT_EVENT_TYPES: frozenset[str] = frozenset(
         "llm_text",
         "llm_thinking",
         "usage",
+        "usage_settle_missed",
     }
 )
