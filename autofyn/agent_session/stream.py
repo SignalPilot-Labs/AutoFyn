@@ -373,6 +373,13 @@ class StreamDispatcher:
         run's provider, and the fallback model resolves through the same one.
         If a round could ever span two providers, the loser's cost would be
         dropped here rather than added.
+
+        On gateway rounds tokens settle to full-session usage while cost keeps
+        the gateway's per-delta figure, which never saw subagent turns — token
+        and cost coverage differ there. Settling assumes one result per round;
+        a second result would re-add its cumulative usage. The estimate branch
+        deliberately does not rebase _cost_baseline: it is an estimate, and a
+        later authoritative result cost must settle against the true baseline.
         """
         run_id = self._run.run_id
         session_id = data.get("session_id")
@@ -381,6 +388,12 @@ class StreamDispatcher:
         model_usage = data.get("model_usage")
         if model_usage:
             self._settle_round_tokens(model_usage)
+        else:
+            log.warning(
+                "[%s] result carried no model_usage; round tokens stay "
+                "orchestrator-only (subagent usage uncounted)",
+                self._rid,
+            )
         round_cost = data.get("total_cost_usd")
         if round_cost is not None and self._round_gateway_cost is None:
             settled = (self._cost_baseline or 0.0) + round_cost
