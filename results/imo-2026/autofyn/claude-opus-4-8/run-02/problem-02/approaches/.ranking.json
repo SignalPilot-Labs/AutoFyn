@@ -1,0 +1,38 @@
+{
+  "equal-power-secants": {
+    "copied_from": null,
+    "elo": 1500.7023986633528,
+    "expanded": 1,
+    "last_note": "L1 power reformulation (OM=ON \u21d4 AO\u00b7BC=(AC\u00b2\u2212AB\u00b2)/4) proved and certified; but the distinctive secant-through-K/L engine is refuted (no control of 2nd intersection), collapses to shared reduction. Engine dead \u2192 RETHINK; L1 promoted.",
+    "last_outcome": "dead-end",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "equal-power-secants",
+    "stale": true,
+    "summary": "Power-of-a-point: recast OM=ON as pow_M(\u2299AKL)=pow_N(\u2299AKL), control secant second-intersections via inscribed-angle translation of conditions 2,3, prove equal products."
+  },
+  "spiral-involution": {
+    "copied_from": null,
+    "elo": 1468.0339081301693,
+    "expanded": 1,
+    "last_note": "L1 (\u03c3-invariance) and L2 (\u2220LBA+\u2220NLC=\u03c0, \u03c3-image \u2220KCA+\u2220MKB=\u03c0) proved and certified (L2 numerically confirmed 180\u00b0). Spiral-similarity engine refuted: \u25b3KLC\u2241\u25b3KBM (angle multisets differ), no forced similarity among 7 points. Engine dead \u2192 RETHINK; L1,L2 promoted.",
+    "last_outcome": "dead-end",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "spiral-involution",
+    "stale": true,
+    "summary": "Synthetic: formal involution \u03c3(B\u2194C,M\u2194N,K\u2194L) + two spiral similarities from conditions 2,3 force O onto \u03c3-fixed perp-bisector(MN). Crux GAP-1: upgrade single base-angle to genuine spiral sim."
+  },
+  "trig-metric-identity": {
+    "copied_from": null,
+    "elo": 1531.263693206478,
+    "expanded": 2,
+    "last_note": "0\u00b7\u221e gap closed: polynomial identity f\u00b7T=QG\u00b7G+QH\u00b7H (polynomial cofactors, exact zero) plus f=(1+s\u00b2)\u00b7AB\u00b7AC\u00b7sin(\u2220A+\u03b8)>0 from \u03b8=\u2220KBA<\u2220ABC, \u2220A+\u2220ABC<\u03c0. Full proof of OM=ON complete. SOLVED.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "trig-metric-identity",
+    "stale": true,
+    "summary": "Parametrize family by \u03b8, solve angle system via law of sines, verify OB\u00b2\u2212OC\u00b2=(AB\u00b2\u2212AC\u00b2)/2 as identity in \u03b8 (symbolic sympy fallback certifies whole family)."
+  }
+}

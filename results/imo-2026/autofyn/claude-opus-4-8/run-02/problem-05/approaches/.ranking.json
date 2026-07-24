@@ -1,0 +1,38 @@
+{
+  "bound-pinch": {
+    "copied_from": null,
+    "elo": 1500.0339081301693,
+    "expanded": 1,
+    "last_note": "Honest partial: construction, f>=id, master (A')(B'), UENV, propagation lemmas all proved (sympy-verified); constancy crux g<=c reduces to bounded-distance comparison, left open.",
+    "last_outcome": "partial",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "bound-pinch",
+    "stale": true,
+    "summary": "Two-sided pointwise bound on f(x) with free y from (A)/(B); pinch f(x)=x+c by optimizing over y at the preimage. Independent analytic hedge; main gap is attainment/surjectivity, to be done via minimizing sequences."
+  },
+  "monotone-gap": {
+    "copied_from": null,
+    "elo": 1468.7023986633528,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "monotone-gap",
+    "stale": false,
+    "summary": "FE + prove f non-decreasing, lift to g non-decreasing via iterate order-preservation, then exclude strict increase. Order-theoretic diversity; step-5 monotonicity unproven and step-7 borrows orbit-distance's closure."
+  },
+  "orbit-distance": {
+    "copied_from": null,
+    "elo": 1531.263693206478,
+    "expanded": 1,
+    "last_note": "SOLVED: full rigorous proof f=x+c (c>=0); FE, AP-orbit, single-gap crux residual, and fixed-point covering all reviewer-verified with sympy. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "orbit-distance",
+    "stale": true,
+    "summary": "FE f(f(y))=2f(y)-y; orbits are APs; force all gaps equal via bounded-distance two-orbit comparison in (B) (exact perfect-square remainder); fixed-point covering gives f=id. Appears complete."
+  }
+}

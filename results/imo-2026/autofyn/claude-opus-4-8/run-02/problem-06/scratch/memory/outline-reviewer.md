@@ -1,0 +1,7 @@
+# outline-reviewer role memory
+
+ALWAYS: for imo-2026-06 (greedy pairwise-gcd periodicity), the whole field shares ONE unavoidable crux — "only finitely many primes are ever the sole connector (essential S)". No route avoids it; even direct translation-by-L induction needs L=∏S. So judge "diversity" as diverse ATTACKS on finiteness (density counting vs constraint-coverage) + diverse exactness mechanisms, not as avoiding the gap (because there is no way around it, round 1).
+ALWAYS: exactness-from-n=1 needs the FULL essential set incl near-start primes; the tail's minimal period can be strictly smaller (a_1=143: tail L=22 but exact-from-1 L=858=2·3·11·13). Reject any "eventual→exact via tail's minimal prime set" upgrade as wrong (verified numerically, round 1).
+NEVER: approve a reversibility/finite-state exactness mechanism as primary when a static-periodic-set framing gets exactness for free — the reversibility machinery attacks the easy part while carrying the same crux plus extra gaps (finite-state-reversible ranked lowest, round 1).
+
+ALWAYS numerically test the spine claim before approving a finiteness route (round 2): the descent route's (SP)="any two terms share a prime ≤ a₁" checked 0 violations across 11 values of a₁; also confirmed the weaker "prime | a₁" FAILS, so the ≤a₁ (not |a₁) threshold is load-bearing — a cheap sim caught the right formulation. Step C witness and (★) bridge also ran clean (0 failures).

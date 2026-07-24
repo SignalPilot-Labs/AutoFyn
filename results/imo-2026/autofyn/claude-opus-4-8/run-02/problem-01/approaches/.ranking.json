@@ -1,0 +1,38 @@
+{
+  "confluence-newman": {
+    "copied_from": null,
+    "elo": 1468.0339081301693,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "confluence-newman",
+    "stale": false,
+    "summary": "ARS + Newman's Lemma: SN via (Omega,C) + local confluence (3-cell joinability) => unique normal form => M unique, without computing closed form. Must prove Newman + import gcd invariant for crux."
+  },
+  "descent-induction": {
+    "copied_from": null,
+    "elo": 1500.7023986633528,
+    "expanded": 1,
+    "last_note": "Complete rigorous proof; 3-cell critical pair closed by explicit common reduct {s,1,1} via g_p invariant (non-circular), well-founded descent sound. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "descent-induction",
+    "stale": true,
+    "summary": "Minimal-counterexample descent on (Omega,C): two plays to different M => minimal board, contradict via first moves (identical/disjoint-commute/3-cell-joinable). Uniqueness without closed form, leaner than Newman."
+  },
+  "perprime-valuation": {
+    "copied_from": null,
+    "elo": 1531.263693206478,
+    "expanded": 1,
+    "last_note": "Complete rigorous proof of (a) and (b); per-prime move law, lex monovariant termination, g_p=gcd(v_p) invariant, M=prod p^{g_p} all verified. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "perprime-valuation",
+    "stale": true,
+    "summary": "Per-prime valuation: move = subtractive-Euclid (a,b)->(min,|a-b|); g_p=gcd of valuations invariant (b), lex (Omega_total,C) monovariant (a); M=prod p^{g_p}. Self-contained, both parts."
+  }
+}

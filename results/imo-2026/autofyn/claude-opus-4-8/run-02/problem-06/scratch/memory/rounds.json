@@ -1,0 +1,15 @@
+{
+  "pr_title": "IMO 2026 P6: complete rigorous proof of eventual periodic-linearity",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "Reduce P6 to single finiteness nucleus; 2 approaches partial",
+      "ended_at": "2026-07-24T14:19:12Z"
+    },
+    {
+      "n": 2,
+      "summary": "SOLVED P6: finiteness closed via extremal descent",
+      "ended_at": "2026-07-24T14:47:42Z"
+    }
+  ]
+}

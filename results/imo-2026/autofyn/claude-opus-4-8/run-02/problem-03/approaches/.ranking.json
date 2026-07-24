@@ -1,0 +1,110 @@
+{
+  "alternating-sum-threshold-potential": {
+    "copied_from": null,
+    "elo": 1602.9003976764238,
+    "expanded": 3,
+    "last_note": "GAP-U (upper bound c(n)\u22642^n/D_n) fully closed and reviewer-verified via delete-subtract-reachability + subset-sum-pigeonhole + b\u2265m bisect-all; middle regime dissolved; one d=0 edge patched. Whole problem still partial (imports GAP-L).",
+    "last_outcome": "verified-milestone",
+    "last_round": 3,
+    "selected": 6,
+    "slug": "alternating-sum-threshold-potential",
+    "stale": false,
+    "summary": "Reformulate LB payoff as (1+M)/2, M=measure{t: odd # pieces > t}; layer-cake identity verified exactly; UB via making c(t) even (with stopping). Most distinct framing, firmest foundations."
+  },
+  "block-recursion-tievertex": {
+    "copied_from": null,
+    "elo": 1426.9978664263058,
+    "expanded": 1,
+    "last_note": "Honestly partial: reduces tied residual to Lemma UPM (0/1 unimodularity); proved forests + 2-regular cores, residual UPM-5 chorded even cycles open (verified n<=5). Lemma BD identity correct.",
+    "last_outcome": "partial",
+    "last_round": 4,
+    "selected": 3,
+    "slug": "block-recursion-tievertex",
+    "stale": false,
+    "summary": "Second framing on the sole GAP-L cross-tie residual: strong induction on sub-piece count via the block-decomposition identity (Lemma BD, verified exact); closes cross-ties by integer bottom-out + Theorem F rather than self-similar's monotone slide/monovariant. De-risking hedge at the crux."
+  },
+  "concentration-exclusion-rigidity": {
+    "copied_from": null,
+    "elo": 1491.4224168157832,
+    "expanded": 1,
+    "last_note": "Concentration Exclusion Thm + Reduction Lemma certified: odd concentration (fatal 5/3 case) dies by M3, invisible 2e_k peels (det=\u00b12 detU'). Negative finding: minor-gcd can be 2, so benign-U=det/gcd\u00b11 literally false. Residual = benign visible subsystem + Positivity.",
+    "last_outcome": "advanced",
+    "last_round": 7,
+    "selected": 1,
+    "slug": "concentration-exclusion-rigidity",
+    "stale": false,
+    "summary": "Third framing on the shared wall (minimality\u21d2benign-U): via Cramer f=\u03a3s_j det(U_j)/det(U), exclude a concentrated value-class column m\u00b7e_k (m\u22652) at the \u03a6-max minimizer by a variational exchange, then peel to det=\u00b11. Distinct object from primal cycles and dual \u03bb-lattice; but step-2 exchange mechanism flawed (cross-piece moves infeasible in \u220f\u0394_k / tie-preserving needs ker U\u22600) and unshared case = Gap B."
+  },
+  "cut-budget-jacobsthal-recursion": {
+    "copied_from": null,
+    "elo": 1463.6717734990116,
+    "expanded": 1,
+    "last_note": "Non-integrality framing; two-band identity + uncut-survivor certified, Jacobsthal scaffold/tightness sound. But its headline induction driver (single-cut drop \u2264 Jacobsthal decrement) is FALSE \u2014 reviewer verified refuting instance from W_4 (drop 12.27 vs D_4=0). Gap reduces to classical Case B/(LBL-B), not dissolved. Diversity value, no decisive advance.",
+    "last_outcome": "partial",
+    "last_round": 5,
+    "selected": 3,
+    "slug": "cut-budget-jacobsthal-recursion",
+    "stale": false,
+    "summary": "Genuinely different framing: induction on Xiang Yu's cut BUDGET (never invokes sub-piece integrality), mirroring the certified GAP-U delete-subtract template + certified Lemma I two-band derivative. Target floor identity min_{<=k cuts} f(W_n)=f(W_{n-k}) (Jacobsthal) numerically confirmed EXACTLY for n=3,4; crux gap = per-cut domination (no single cut beats top-bisection)."
+  },
+  "dual-integer-certificate": {
+    "copied_from": null,
+    "elo": 1572.9362604265095,
+    "expanded": 3,
+    "last_note": "Proved+certified BUDGET-A (self-contained-top reduction, base n=0), BUDGET-COUNT (T\u22652(n+1)\u2212R receiver bound), BUDGET-KER (Budget-minimal \u21d2 ker U=0). Budget Lemma case (b) \u2261 (D\u2032)|det U\u2605|=1 \u2261 Gap A\u2032 still open \u2014 the shared wall.",
+    "last_outcome": "advanced",
+    "last_round": 8,
+    "selected": 2,
+    "slug": "dual-integer-certificate",
+    "stale": true,
+    "summary": "Genuinely different framing far from the primal forest wall: prove f(P*)\u2208\u2124 via an INTEGER DUAL certificate (\u03bb\u2208\u2124^{n+1} with U^T\u03bb=s \u21d2 f=\u03bb^Tb=\u03a3\u03bb_k2^k\u2208\u2124) WITHOUT proving any block value w_j\u2208\u2124. Bypasses Gap A (forest) and Gap B (\u03bc=3 leaf) numerically; sole gap D = integer solvability of U^T\u03bb=s (a gcd-of-minors lattice condition strictly weaker than det=\u00b11). Secondary: must also secure f\u22600."
+  },
+  "game-value-recursion": {
+    "copied_from": null,
+    "elo": 1403.6244918405932,
+    "expanded": 1,
+    "last_note": "New game-space framing; Case A re-derived (redundant with certified Case 1), BNF crux (=GAP-L Case 2) still open, UB not attempted. Diversity seed but no gap closed.",
+    "last_outcome": "partial",
+    "last_round": 2,
+    "selected": 3,
+    "slug": "game-value-recursion",
+    "stale": false,
+    "summary": "Genuinely different framing: prove a recursion c(n)=phi(c(n-1)) directly in the game value via strategy-stealing + turn-by-turn dyadic-domination invariant (never reduces to scalar minimax / layer-cake). Isolates the budget-non-fungibility lemma (the flagged true obstruction). Highest risk, most diverse."
+  },
+  "majorization-smoothing": {
+    "copied_from": null,
+    "elo": 1289.0993664847354,
+    "expanded": 1,
+    "last_note": "Certified shared toolkit (Lemma 0, layer-cake, P1-P4 parity toolkit) + n=1 both bounds. Both general bounds GAP-U/GAP-L open; majorization is provably non-monotone so one-shot certificate fails.",
+    "last_outcome": "partial",
+    "last_round": 1,
+    "selected": 3,
+    "slug": "majorization-smoothing",
+    "stale": false,
+    "summary": "One-shot majorization of sorted vector vs reference R_n + single-cut smoothing lemma; no induction on n. Self-flags the false Odd-majorization-monotonicity trap; most delicate route."
+  },
+  "self-similar-recursion": {
+    "copied_from": null,
+    "elo": 1725.3053107891674,
+    "expanded": 8,
+    "last_note": "Proved+certified Lemma CUT3 (\u03bc=3 shared even-leaf \u22653 cuts \u21d2 Gap B vacuous for N\u22642, whole n=2 case) + cycle cut-cost floor; still stuck on Gap A\u2032 (deg\u22653 cycle-piece) and Gap B for n\u22653. Complement-induction proven insufficient for Gap B (honest negative).",
+    "last_outcome": "advanced",
+    "last_round": 8,
+    "selected": 6,
+    "slug": "self-similar-recursion",
+    "stale": true,
+    "summary": "Strong induction on n: largest dyadic piece is a scaled (n-1)-problem; two-sided induction for both bounds. Clean route; UB bookkeeping and a restricted (not blanket) exchange lemma are the cruxes."
+  },
+  "unified-residual-budget-induction": {
+    "copied_from": null,
+    "elo": 1524.04211604147,
+    "expanded": 1,
+    "last_note": "Central mechanism (complement peel) PROVEN insufficient: an f-preserving isomorphism-of-difficulty (min_C f = min_refinements f), circular, not a reduction. Salvaged one clean certified lemma UBI-1 (measure-form BF-invisibility). Framing must be re-planned.",
+    "last_outcome": "dead-end",
+    "last_round": 8,
+    "selected": 0,
+    "slug": "unified-residual-budget-induction",
+    "stale": true,
+    "summary": "New framing (plateau-breaker): strong induction on cut count N via BF-invisible even-block removal (f preserved by odd-block-formula), then Claim(N-k) on the complement \u2014 one engine targeting Gap A' (deg>=3 cycle-piece), Gap B (mu=3 even leaf), and the dual Budget Lemma at once. Load-bearing gap G2: the complement must be a legitimate <=(N-k)-cut refinement AND keep f invariant \u2014 the two requirements are in tension (verified: mass-conserving reattach breaks BF; BF-preserving complement is not a W_m refinement)."
+  }
+}

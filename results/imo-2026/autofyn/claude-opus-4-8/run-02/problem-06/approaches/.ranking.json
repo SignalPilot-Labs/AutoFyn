@@ -1,0 +1,50 @@
+{
+  "admissible-set-periodicity": {
+    "copied_from": null,
+    "elo": 1571.6323936797546,
+    "expanded": 2,
+    "last_note": "Closed (HS) via SP: every pair of terms shares a prime <= a1, proved by minimal-counterexample descent using bridge (star)/G3, Step B, compression witness C. Full solve, no gaps.",
+    "last_outcome": "verified-milestone",
+    "last_round": 2,
+    "selected": 1,
+    "slug": "admissible-set-periodicity",
+    "stale": true,
+    "summary": "Static reformulation: sequence enumerates A={x:gcd(x,a_i)>1 \u2200i}; finite essential prime set S makes A exactly \u220fS-periodic down to a_1 (exactness free)."
+  },
+  "essential-prime-counting": {
+    "copied_from": null,
+    "elo": 1484.8462431224043,
+    "expanded": 1,
+    "last_note": "Same reduction (Lemmas A\u2013D) sound; interval-occupancy \u03a31/p\u00b2 gives rigorous bad-pair density bound but cannot exclude sparse disjoint essential families \u2014 MCL finiteness still open, needs greedy minimality.",
+    "last_outcome": "partial",
+    "last_round": 1,
+    "selected": 1,
+    "slug": "essential-prime-counting",
+    "stale": false,
+    "summary": "Headline the finiteness crux via explicit sieve/interval-occupancy counting (aimo-0447): large primes are sole connectors only finitely often \u21d2 finite S \u21d2 CRT periodicity down to a_1."
+  },
+  "finite-state-reversible": {
+    "copied_from": null,
+    "elo": 1428.0992180006315,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 1,
+    "slug": "finite-state-reversible",
+    "stale": false,
+    "summary": "Dynamical: orbit of deterministic map on finite state (a_n mod L + bounded S-pattern window); pigeonhole \u21d2 eventual periodicity, reversibility (aimo-0514) \u21d2 exact from n=1."
+  },
+  "profile-class-recruitment": {
+    "copied_from": null,
+    "elo": 1515.4221451972096,
+    "expanded": 1,
+    "last_note": "Steps B,2,3,4a rigorous: (HS) reduced to (REC) for both-infinite disjoint-profile types; (REC) recruitment-termination honestly left as explicit open gap. Superseded by admissible-set-periodicity solve.",
+    "last_outcome": "partial",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "profile-class-recruitment",
+    "stale": true,
+    "summary": "Finite S\u2080-profile alphabet + connector size bound (gap|difference) + recruitment monovariant over disjoint-profile obligation class-pairs; different framing of (HS), open termination nucleus."
+  }
+}

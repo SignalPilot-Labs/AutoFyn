@@ -1,0 +1,3 @@
+ALWAYS: in geometry power-of-a-point outlines, check whether a vertex named in an "inscribed angle" is actually ON the circle — imo-2026-02 equal-power-secants called ∠LCK inscribed but C∉⊙AKL, making that mechanism wrong (external angle ≠ inscribed) (round 1).
+NEVER: approve a spiral-similarity step that has only ONE equal-angle pair — a genuine spiral sim needs two angles or a ratio; a single base-angle equality is not enough (imo-2026-02 spiral-involution GAP-1, round 1).
+ALWAYS: for continuous-family geometry, accept a symbolic-sympy identity fallback as rigorous ONLY if it is an exact zero (rational in tan(θ/2), symbolic coords) — a numeric sweep is not a proof (round 1).

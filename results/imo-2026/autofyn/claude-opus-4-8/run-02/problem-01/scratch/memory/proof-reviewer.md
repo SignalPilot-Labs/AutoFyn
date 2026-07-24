@@ -1,0 +1,1 @@
+ALWAYS: for confluence/descent proofs on this blackboard problem, check whether "board equality" means value-multiset or position-labeled; the move does not fix which cell gets gcd vs lcm/gcd, so labeled T(B) is NOT a singleton — only value-multiset equality makes the descent sound (descent-induction handled this correctly, round 1).

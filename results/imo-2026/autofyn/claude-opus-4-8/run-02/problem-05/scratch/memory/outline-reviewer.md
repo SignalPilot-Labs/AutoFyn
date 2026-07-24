@@ -1,0 +1,2 @@
+ALWAYS: symbolically verify (sympy) the exact residual of a claimed "O(1) remainder" crux — for imo-2026-05 orbit-distance the (B)-residual was exactly 4x(alpha-beta)+(alpha-d)^2, an explicit perfect square, which turned a hand-wavy-looking step into a rigorous one (round 1).
+NEVER: treat a framing as an independent diversity hedge if its finishing step explicitly imports another approach's closure on the shared gap — monotone-gap borrowed orbit-distance's cross-orbit step 7, so it collapses to the same wall (round 1).

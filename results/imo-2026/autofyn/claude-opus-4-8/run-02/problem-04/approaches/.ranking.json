@@ -1,0 +1,38 @@
+{
+  "geometric-forcing-extremal": {
+    "copied_from": null,
+    "elo": 1500.0339081301693,
+    "expanded": 1,
+    "last_note": "Independent complete correct proof; Lemma D fixed-sum covering + non-obtuse invariant + Lemma E/F extremal alignment+peel all verified. APPROVE/solved.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "geometric-forcing-extremal",
+    "stale": true,
+    "summary": "Raw-degree: proven non-obtuse invariant kills theta>90; fixed-sum covering (Lemma D) kills theta<=90 non-divisors; explicit geometric sufficiency."
+  },
+  "q-linear-independence": {
+    "copied_from": null,
+    "elo": 1468.7023986633528,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "q-linear-independence",
+    "stale": false,
+    "summary": "Q-genericity necessity via linear-algebra obstruction (Lemma G/H); highest-risk, mechanism redundant with residue route."
+  },
+  "residue-invariant": {
+    "copied_from": null,
+    "elo": 1531.263693206478,
+    "expanded": 1,
+    "last_note": "Complete correct proof both directions; Lemma A residue invariant + Lemma B/C alignment+peel all re-derived and numerically confirmed. APPROVE/solved.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "residue-invariant",
+    "stale": true,
+    "summary": "Residues mod theta in R/thetaZ: necessity via 4-coincidence exclusion (Lemma A), sufficiency via alignment+peel. Cleanest route."
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "pr_title": "IMO 2026 P3: c(n)=2^n/(2^{n+1}-1) — upper bound proven, lower bound one gap from solved",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "Pin answer c=2^n/(2^{n+1}-1); 2 lemmas certified, partial",
+      "ended_at": "2026-07-24T13:59:44Z"
+    },
+    {
+      "n": 2,
+      "summary": "GAP-L done for integer cuts; GAP-U to middle regime",
+      "ended_at": "2026-07-24T14:32:06Z"
+    },
+    {
+      "n": 3,
+      "summary": "Upper bound FULLY proven+certified; GAP-L one gap left",
+      "ended_at": "2026-07-24T15:28:16Z"
+    },
+    {
+      "n": 4,
+      "summary": "Claimed solve refuted; residual sharpened, 2 live routes",
+      "ended_at": "2026-07-24T16:31:45Z"
+    },
+    {
+      "n": 5,
+      "summary": "Residual→Gap A+B; 6 lemmas certified (16); routes share wall",
+      "ended_at": "2026-07-24T17:14:36Z"
+    },
+    {
+      "n": 6,
+      "summary": "Gap A→non-isolated cycles; NEW dual route; 3 lemmas (19)",
+      "ended_at": "2026-07-24T17:52:48Z"
+    },
+    {
+      "n": 7,
+      "summary": "Positivity→Budget Lemma; Cramer unifies routes; 5 lemmas (23)",
+      "ended_at": "2026-07-24T18:35:12Z"
+    },
+    {
+      "n": 8,
+      "summary": "Case(a) Budget+CUT3 closed; complement-induction DEAD; 6 lemmas (30)",
+      "ended_at": "2026-07-24T19:14:20Z"
+    }
+  ]
+}
