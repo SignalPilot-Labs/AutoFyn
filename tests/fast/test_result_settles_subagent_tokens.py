@@ -156,6 +156,78 @@ class TestResultSettlesSubagentTokens:
         assert run.total_cost > orchestrator_only_cost
 
     @pytest.mark.asyncio
+    async def test_gateway_cost_survives_token_settle(self) -> None:
+        """OpenRouter rounds: tokens settle full, the gateway's cost must win."""
+        dispatcher, _ = _make_dispatcher()
+        gateway_delta = {
+            "type": "message_delta",
+            "usage": {
+                "input_tokens": 28,
+                "output_tokens": 811,
+                "cache_creation_input_tokens": 29890,
+                "cache_read_input_tokens": 56773,
+                "cost": 0.05,
+            },
+        }
+
+        await _dispatch(
+            dispatcher, {"event": "stream_event", "data": {"event": gateway_delta}}
+        )
+        await _dispatch(dispatcher, _result_event(MODEL_USAGE, 0.0))
+
+        run = dispatcher._run
+        assert run.total_output_tokens == 952
+        assert run.total_cost == pytest.approx(0.05)
+
+    @pytest.mark.asyncio
+    async def test_late_delta_after_estimate_settle_stays_incremental(self) -> None:
+        """A delta after an estimate settle must extend totals, not corrupt cost.
+
+        The estimate is linear in tokens, so cost after a late delta must equal
+        the estimate over (settled + late) tokens — this is why the estimate
+        branch needs no baseline rebase.
+        """
+        dispatcher, _ = _make_dispatcher()
+        late_delta = {
+            "type": "message_delta",
+            "usage": {
+                "input_tokens": 1,
+                "output_tokens": 5,
+                "cache_creation_input_tokens": 0,
+                "cache_read_input_tokens": 0,
+            },
+        }
+
+        await _dispatch(dispatcher, _result_event(MODEL_USAGE, None))
+        settled_cost = dispatcher._run.total_cost
+        await _dispatch(
+            dispatcher, {"event": "stream_event", "data": {"event": late_delta}}
+        )
+
+        run = dispatcher._run
+        assert run.total_output_tokens == 952 + 5
+        assert settled_cost is not None
+        assert run.total_cost is not None
+        assert run.total_cost > settled_cost
+
+    @pytest.mark.asyncio
+    async def test_result_cost_after_estimate_settle_is_not_double_counted(
+        self,
+    ) -> None:
+        """An authoritative result cost must replace the estimate, not stack on it.
+
+        Guards the deliberate absence of a _cost_baseline rebase in the
+        estimate branch: the round's real cost already covers everything the
+        estimate covered.
+        """
+        dispatcher, _ = _make_dispatcher()
+
+        await _dispatch(dispatcher, _result_event(MODEL_USAGE, None))
+        await _dispatch(dispatcher, _result_event(MODEL_USAGE, 0.08878855))
+
+        assert dispatcher._run.total_cost == pytest.approx(0.08878855)
+
+    @pytest.mark.asyncio
     async def test_settle_rebases_against_prior_round_baseline(self) -> None:
         """Prior-round totals must be preserved, not overwritten by this round."""
         dispatcher, _ = _make_dispatcher()
