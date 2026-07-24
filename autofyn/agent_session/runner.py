@@ -182,7 +182,7 @@ class RoundRunner:
                     state, dispatcher, control, session_id, round_number
                 )
                 if terminal is not None:
-                    return terminal
+                    return await dispatcher.finalize_round(terminal)
         finally:
             await self._teardown_stream(state)
 
