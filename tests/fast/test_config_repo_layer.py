@@ -38,7 +38,7 @@ class TestConfigDefaults:
         assert agent["tool_call_timeout_sec"] == 3600
         assert agent["session_idle_timeout_sec"] == 120
         assert agent["subagent_idle_kill_sec"] == 900
-        assert agent["max_concurrent_runs"] == 5
+        assert agent["max_concurrent_runs"] == 12
         assert agent["port"] == 8500
 
 
