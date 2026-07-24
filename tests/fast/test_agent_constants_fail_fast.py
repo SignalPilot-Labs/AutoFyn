@@ -14,7 +14,7 @@ _FULL_AGENT_CFG: dict = {
     "tool_call_timeout_sec": 3600,
     "session_idle_timeout_sec": 120,
     "subagent_idle_kill_sec": 600,
-    "max_concurrent_runs": 5,
+    "max_concurrent_runs": 12,
     "cost_per_input_token": 0.000015,
     "cost_per_output_token": 0.000075,
     "cost_per_cache_read_token": 0.0000015,

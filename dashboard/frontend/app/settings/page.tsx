@@ -42,9 +42,9 @@ const FIELDS: CredentialFieldConfig[] = [
   {
     key: "max_concurrent_runs",
     label: "Max Concurrent Runs",
-    placeholder: "5",
+    placeholder: "12",
     secret: false,
-    helpText: "Max simultaneous agent runs (1–20). Default 5",
+    helpText: "Max simultaneous agent runs (1–20). Default 12",
   },
   {
     key: "runs_page_size",
