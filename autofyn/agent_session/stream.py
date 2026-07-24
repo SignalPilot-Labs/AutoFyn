@@ -25,7 +25,7 @@ from utils.constants import (
     cost_per_input,
     cost_per_output,
 )
-from utils.models import RunContext, StreamSignal
+from utils.models import RoundResult, RoundStatus, RunContext, StreamSignal
 
 log = logging.getLogger("session.stream")
 
@@ -67,9 +67,10 @@ class StreamDispatcher:
         self._latest_context_tokens: int = 0
         self._tools_in_flight: int = 0
         self._sandbox_session_id: str | None = None
-        # Terminal signal stashed by end_round/end_session; the round ends
-        # at the result event, after it settles subagent usage.
+        # Terminal signal stashed by end_round/end_session; finalize_round
+        # reconciles it with whatever terminal the runner reaches.
         self._pending_end: StreamSignal | None = None
+        self._settled: bool = False
         self._dispatch_table: dict[str, EventHandler] = {
             "assistant_message": self._on_assistant_message,
             "stream_event": self._on_stream_event,
@@ -100,6 +101,37 @@ class StreamDispatcher:
     def has_active_subagents(self) -> bool:
         """True if any subagents are currently tracked as active."""
         return self._tracker.active_count() > 0
+
+    async def finalize_round(self, result: RoundResult) -> RoundResult:
+        """Reconcile a terminal RoundResult with the gate's stashed outcome.
+
+        Fills summaries, upgrades the status, audits an unsettled round.
+        """
+        pending = self._pending_end
+        if pending is None:
+            return result
+        if not self._settled:
+            log.warning(
+                "[%s] round ended without settled usage; tokens stay "
+                "orchestrator-only",
+                self._rid,
+            )
+            await log_audit(
+                self._run.run_id,
+                "usage_settle_missed",
+                {"round_number": self._round_number, "exit_status": result.status},
+            )
+            await self._persist_cost()
+        status: RoundStatus = result.status
+        if status in ("complete", "session_error"):
+            status = "ended" if pending.kind == "run_ended" else "complete"
+        return RoundResult(
+            status=status,
+            session_id=result.session_id,
+            error=result.error,
+            round_summary=result.round_summary or pending.round_summary,
+            session_summary=result.session_summary or pending.session_summary,
+        )
 
     async def dispatch(self, event: dict) -> StreamSignal:
         """Handle one SSE event. Mutates RoundState, returns a signal."""
@@ -142,8 +174,6 @@ class StreamDispatcher:
 
     async def _on_result(self, data: dict) -> StreamSignal:
         await self._handle_result(data)
-        if self._pending_end is not None:
-            return self._pending_end
         return StreamSignal(kind="round_complete")
 
     # ── Dispatch handlers (complex: build signal from data) ──
@@ -169,10 +199,13 @@ class StreamDispatcher:
         return StreamSignal(kind="continue")
 
     async def _on_end_round(self, data: dict) -> StreamSignal:
-        """Stash the terminal signal; the result event ends the round."""
+        """Stash the terminal signal; the round ends at the result event."""
         round_summary = data.get("round_summary") or ""
         session_summary = data.get("session_summary") or ""
         log.info("[%s] end_round: %s", self._rid, round_summary[:80])
+        if self._pending_end is not None and self._pending_end.kind == "run_ended":
+            log.warning("[%s] end_round after accepted end_session ignored", self._rid)
+            return StreamSignal(kind="continue")
         self._pending_end = StreamSignal(
             kind="round_complete",
             round_summary=round_summary,
@@ -181,7 +214,7 @@ class StreamDispatcher:
         return StreamSignal(kind="continue")
 
     async def _on_end_session(self, data: dict) -> StreamSignal:
-        """Stash the terminal signal; the result event ends the run."""
+        """Stash the terminal signal; the round ends at the result event."""
         log.info("[%s] end_session received", self._rid)
         self._pending_end = StreamSignal(
             kind="run_ended",
@@ -199,19 +232,6 @@ class StreamDispatcher:
         return StreamSignal(kind="continue")
 
     async def _on_session_end(self, data: dict) -> StreamSignal:
-        """Fallback terminator when the stream closes without a result event."""
-        if self._pending_end is not None:
-            log.warning(
-                "[%s] session ended without a result event; round tokens "
-                "stay orchestrator-only",
-                self._rid,
-            )
-            await log_audit(
-                self._run.run_id,
-                "usage_settle_missed",
-                {"round_number": self._round_number},
-            )
-            return self._pending_end
         return StreamSignal(kind="round_complete")
 
     async def _on_session_event_log_overflow(self, data: dict) -> StreamSignal:
@@ -235,16 +255,10 @@ class StreamDispatcher:
     # ── Core handlers (called by _on_* dispatch wrappers above) ────────
 
     async def _handle_assistant_message(self, data: dict) -> None:
-        """Log text/thinking blocks and accumulate token usage.
+        """Log orchestrator text/thinking blocks; suppress subagent prose.
 
-        Assistant messages from a subagent carry a non-null
-        parent_tool_use_id (the parent Agent/SendMessage tool call they run
-        inside). Their prose is intermediate narration that never belongs in
-        the main feed — the subagent's result is captured separately by the
-        SubagentStop hook (subagent_complete.final_text) and rendered as the
-        Agent Summary. So we suppress llm_text/llm_thinking for subagent
-        messages and only accumulate their token usage; orchestrator messages
-        (parent_tool_use_id is None) are logged as before.
+        Subagent messages (non-null parent_tool_use_id) are intermediate
+        narration — their result surfaces via subagent_complete.final_text.
         """
         run_id = self._run.run_id
         # serialize_message always sets this key; subscript (not .get) so a
@@ -393,6 +407,7 @@ class StreamDispatcher:
         model_usage = data.get("model_usage")
         if model_usage:
             self._settle_round_tokens(model_usage)
+            self._settled = True
         else:
             log.warning(
                 "[%s] result carried no model_usage; round tokens stay "

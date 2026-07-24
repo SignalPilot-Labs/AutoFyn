@@ -62,7 +62,7 @@ class TestSessionForwardsResultAfterGate:
 
         async def _messages() -> AsyncIterator[object]:
             yield object()  # tool traffic before the gate call
-            session._ended = True  # gate tool fires mid-turn
+            session._mark_ended()  # gate tool fires mid-turn
             yield object()  # remainder of the turn
             yield _result_message()  # turn completes
             consumed_past_result.append(True)
@@ -77,22 +77,20 @@ class TestSessionForwardsResultAfterGate:
         assert not consumed_past_result
 
     @pytest.mark.asyncio
-    async def test_drain_times_out_when_no_result_arrives(self) -> None:
+    async def test_drain_times_out_when_no_result_arrives(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """A turn that never completes must not hold the session open."""
         events: list[dict] = []
         session = _make_session(events)
-        session._ended = True
+        monkeypatch.setattr(session_module, "RESULT_DRAIN_TIMEOUT_SEC", 0.01)
+        session._mark_ended()
 
         async def _messages() -> AsyncIterator[object]:
             await asyncio.sleep(9999)
             yield object()
 
-        original = session_module.RESULT_DRAIN_TIMEOUT_SEC
-        session_module.RESULT_DRAIN_TIMEOUT_SEC = 0.01
-        try:
-            await session._forward_messages(_make_client(_messages()))
-        finally:
-            session_module.RESULT_DRAIN_TIMEOUT_SEC = original
+        await session._forward_messages(_make_client(_messages()))
 
         assert events == []
 

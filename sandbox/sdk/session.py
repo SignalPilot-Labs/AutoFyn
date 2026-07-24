@@ -50,6 +50,7 @@ class Session:
         self.client: ClaudeSDKClient | None = None
         self.task: asyncio.Task | None = None
         self._ended = False
+        self._drain_deadline: float | None = None
         self.unlocked = False
         self.finished = False
         self._hooks = SessionHooks(self._run_id, self._emit)
@@ -86,21 +87,15 @@ class Session:
     async def _forward_messages(self, client: ClaudeSDKClient) -> None:
         """Forward each SDK message to the event log until the session ends.
 
-        After the gate sets `_ended`, keep reading until the ResultMessage —
-        the only carrier of subagent token usage — bounded by a deadline.
+        After the gate fires, read on until the ResultMessage (deadline-bounded).
         """
         messages = aiter(client.receive_messages())
-        deadline: float | None = None
         while True:
-            if self._ended and deadline is None:
-                deadline = (
-                    asyncio.get_running_loop().time() + RESULT_DRAIN_TIMEOUT_SEC
-                )
             try:
-                if deadline is None:
+                if self._drain_deadline is None:
                     message = await anext(messages)
                 else:
-                    remaining = deadline - asyncio.get_running_loop().time()
+                    remaining = self._drain_deadline - asyncio.get_running_loop().time()
                     message = await asyncio.wait_for(anext(messages), remaining)
             except StopAsyncIteration:
                 return
@@ -119,8 +114,15 @@ class Session:
                 return
 
     def _mark_ended(self) -> None:
-        """Called by SessionGate when end_round/end_session fires."""
+        """Called by SessionGate when end_round/end_session fires.
+
+        Anchors the drain deadline at gate time, not first-message time.
+        """
         self._ended = True
+        if self._drain_deadline is None:
+            self._drain_deadline = (
+                asyncio.get_running_loop().time() + RESULT_DRAIN_TIMEOUT_SEC
+            )
 
     def _emit(self, event: dict) -> None:
         """Append event to the sequenced event log.
@@ -139,7 +141,7 @@ class Session:
                 "Session %s event log overflow — marking session ended",
                 self.session_id,
             )
-            self._ended = True
+            self._mark_ended()
 
     # ── Options building ──────────────────────────────────────────────
 
