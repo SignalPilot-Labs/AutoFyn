@@ -1,0 +1,62 @@
+{
+  "complex-number-argument-bash": {
+    "copied_from": null,
+    "elo": 1583.0346541400888,
+    "expanded": 3,
+    "last_note": "Final gate passed: independently re-derived every symbolic claim (eq1/eq2/eq3, l2-elimination, cubic locus X, eq2_num, closing identity (\u2021), D!=0/D2!=0 proofs) from scratch in fresh sympy, and confirmed the new Master-Fact orientation argument is non-circular and load-bearing (not vacuous) across all q>0. Complete rigorous proof; APPROVE, Status: solved.",
+    "last_outcome": "verified-milestone",
+    "last_round": 2,
+    "selected": 1,
+    "slug": "complex-number-argument-bash",
+    "stale": true,
+    "summary": "Reduce to (O-N9)\u22a5BC via Lemma 0; encode all angle equalities as positive-real complex ratios, solve the 1-parameter family in closed form, verify the target identity symbolically via sympy."
+  },
+  "homothety-doubling-target": {
+    "copied_from": null,
+    "elo": 1436.152624452606,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 1,
+    "slug": "homothety-doubling-target",
+    "stale": false,
+    "summary": "Reformulate OM=ON as O'B=O'C for O'=2O-A (homothety ratio 2 at A); same algebraic content as Lemma 0's target, relocated to a B,C-relative frame via K'=2K-A, L'=2L-A. Bet that this frame makes the angle-condition algebra shorter; admittedly may be redundant with other computational approaches."
+  },
+  "nine-point-locus-two-position": {
+    "copied_from": null,
+    "elo": 1493.0086689543136,
+    "expanded": 1,
+    "last_note": "Load-bearing Lemma B (O affine in a reparametrization, by analogy to IMO SL 2023 G5) is numerically refuted across ~15 reparametrizations plus a general M\u00f6bius model on two triangles; no substitute two-position mechanism found, so this architecture cannot complete as designed. Salvaged a general, certified O-free circumcenter lemma as byproduct.",
+    "last_outcome": "dead-end",
+    "last_round": 1,
+    "selected": 1,
+    "slug": "nine-point-locus-two-position",
+    "stale": false,
+    "summary": "Reduce to (O-N9)\u22a5BC via Lemma 0; parametrize (K,L) by \u03b8, claim O(\u03b8) affine under a reparametrization (SL2023G5-style), pin down by two special positions. Load-bearing Lemma B (affineness) unproven."
+  },
+  "spiral-similarity-radical-axis": {
+    "copied_from": null,
+    "elo": 1478.6797466404237,
+    "expanded": 1,
+    "last_note": "Exhaustive scan of all 70 four-point subsets of {A,B,C,M,N,K,L,O} finds none concyclic along the family; independently re-confirmed by reviewer on a third triangle (MNKL concyclicity det ~0.03-0.05, decisively nonzero, while OM-ON ~2e-10). Concyclicity-among-named-points premise is false; approach cannot work as stated.",
+    "last_outcome": "dead-end",
+    "last_round": 1,
+    "selected": 1,
+    "slug": "spiral-similarity-radical-axis",
+    "stale": false,
+    "summary": "Reduce to (O-N9)\u22a5BC via Lemma 0; look for concyclic quadruples among {B,C,M,N,K,L} forced by conditions (ii),(iii), then finish via radical axis of two equal circles. Existence of the concyclicity is an unverified numerical existence-check gating the whole approach."
+  },
+  "symmetric-vector-decomposition-sigma": {
+    "copied_from": null,
+    "elo": 1509.1243058125679,
+    "expanded": 1,
+    "last_note": "Proved (and reviewer independently re-verified in sympy with free variables) that the naive sigma-antisymmetry mechanism is a content-free tautology holding for all points with zero use of hypotheses (i)-(iii); cannot force T=0. Core mechanism refuted; sigma-invariance and vacuity lemmas certified as reusable byproducts only.",
+    "last_outcome": "dead-end",
+    "last_round": 2,
+    "selected": 1,
+    "slug": "symmetric-vector-decomposition-sigma",
+    "stale": true,
+    "summary": "Reduce to (O-N9)\u22a5BC via Lemma 0; exploit the B\u2194C,K\u2194L,M\u2194N involution \u03c3 that preserves the defining system, aiming to show the BC-component of O-N9 is an antisymmetric expression that telescopes to zero. Mechanism for the cancellation not yet exhibited."
+  }
+}

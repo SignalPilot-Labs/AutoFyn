@@ -1,0 +1,165 @@
+{
+  "pr_title": "Solve IMO 2026 P3 (combinatorial cutting-stick game, imo-2026-03)",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "imo-2026-03: conjecture set, n=1,2 partial proofs, general-n open",
+      "ended_at": "2026-07-23T18:00:13Z"
+    },
+    {
+      "n": 2,
+      "summary": "imo-03: c(2)=4/7 fully closed, gen-n gap localized",
+      "ended_at": "2026-07-23T18:25:43Z"
+    },
+    {
+      "n": 3,
+      "summary": "imo-03: proved Vertex-Minimum Theorem, gap now finite enumeration",
+      "ended_at": "2026-07-23T18:53:58Z"
+    },
+    {
+      "n": 4,
+      "summary": "imo-03: cascade thm closed-form, gap narrowed to (*)",
+      "ended_at": "2026-07-23T19:33:32Z"
+    },
+    {
+      "n": 5,
+      "summary": "imo-03: 4 approaches converge on same wall, plateau declared",
+      "ended_at": "2026-07-23T20:18:33Z"
+    },
+    {
+      "n": 6,
+      "summary": "imo-03: (★★) closed for c_1=1, Case II closed all n",
+      "ended_at": "2026-07-23T20:44:12Z"
+    },
+    {
+      "n": 7,
+      "summary": "imo-03: 3 mechanisms converge on gap (†)",
+      "ended_at": "2026-07-23T21:20:55Z"
+    },
+    {
+      "n": 8,
+      "summary": "imo-03: Claim (A) fully closed, (†) resolved",
+      "ended_at": "2026-07-23T22:14:43Z"
+    },
+    {
+      "n": 9,
+      "summary": "imo-03: both fronts advanced, no RETHINK, still partial",
+      "ended_at": "2026-07-23T22:47:56Z"
+    },
+    {
+      "n": 10,
+      "summary": "imo-03: Prop 25 closed unconditionally, upper-bound vertex lemma gap found",
+      "ended_at": "2026-07-23T23:17:15Z"
+    },
+    {
+      "n": 11,
+      "summary": "imo-03: Claim B P(3) closed, upper-bound vertex thm now marking-agnostic",
+      "ended_at": "2026-07-23T23:41:58Z"
+    },
+    {
+      "n": 12,
+      "summary": "imo-03: Prop 26 closes l(F)=2 P=empty case; 2 new lp-duality lemmas",
+      "ended_at": "2026-07-24T00:12:12Z"
+    },
+    {
+      "n": 13,
+      "summary": "imo-03: 3 new general lemmas, both fronts narrowed (p2-Pinned-Dominance, Open Gap 1 trichotomy)",
+      "ended_at": "2026-07-24T00:35:03Z"
+    },
+    {
+      "n": 14,
+      "summary": "imo-03: p2-Pinned-Dominance fully closed; lp-duality case (b2) narrowed",
+      "ended_at": "2026-07-24T01:15:12Z"
+    },
+    {
+      "n": 15,
+      "summary": "imo-03: Claim B fronts unified into 1 gap; case-(b2) witnesses closed, 2 bugs caught",
+      "ended_at": "2026-07-24T01:58:42Z"
+    },
+    {
+      "n": 16,
+      "summary": "imo-03: Thm31 closes ℓ(F)=1 branch; case-b2 recursive-escape ruled dead",
+      "ended_at": "2026-07-24T02:25:07Z"
+    },
+    {
+      "n": 17,
+      "summary": "imo-03: Thm32 majority-closes ℓ(F)=2(b); dual-combo mechanism proven dead",
+      "ended_at": "2026-07-24T03:05:29Z"
+    },
+    {
+      "n": 18,
+      "summary": "imo-03: Thm33/34 narrow Claim B band; 4th case-(b2) mechanism killed",
+      "ended_at": "2026-07-24T03:35:23Z"
+    },
+    {
+      "n": 19,
+      "summary": "imo-03: Thm34 cap bug fixed (n-3); Δ(n,v) p3-untouched branch closed; 6th (b2) mechanism killed",
+      "ended_at": "2026-07-24T04:13:12Z"
+    },
+    {
+      "n": 20,
+      "summary": "imo-03: p3-cut branch closed n3/n4 (Thm36); ε-bridge gap found; case-b2 7th mechanism killed",
+      "ended_at": "2026-07-24T04:44:45Z"
+    },
+    {
+      "n": 21,
+      "summary": "imo-03: eps-bridge closed (rank-pigeonhole APPROVE); chamber-vertex 8th mechanism sound",
+      "ended_at": "2026-07-24T05:14:02Z"
+    },
+    {
+      "n": 22,
+      "summary": "imo-03: ε-bridge fixed, Case(b) n>=5 partial, chamber-vertex 9th mechanism live",
+      "ended_at": "2026-07-24T06:03:16Z"
+    },
+    {
+      "n": 23,
+      "summary": "imo-03: Thm37 closes Case(b) v>=a symmetric split n<=6; sibling routes converge",
+      "ended_at": "2026-07-24T06:37:37Z"
+    },
+    {
+      "n": 24,
+      "summary": "imo-03: T'-cuts-p4 pinned to (7.9.1); n=3 covering family 0-residual, not yet proof",
+      "ended_at": "2026-07-24T07:18:44Z"
+    },
+    {
+      "n": 25,
+      "summary": "imo-03: h(2) closed, case(b2) n=3 covering proved, (7.9.1) partial",
+      "ended_at": "2026-07-24T08:01:52Z"
+    },
+    {
+      "n": 26,
+      "summary": "imo-03: MaxCeil closed thru n=7; fixed 2 overclaim bugs",
+      "ended_at": "2026-07-24T08:48:02Z"
+    },
+    {
+      "n": 27,
+      "summary": "imo-03: n=3 upper bound c(3)<=8/15 fully solved; Thm41 closes even-tie gap n>=5",
+      "ended_at": "2026-07-24T09:30:29Z"
+    },
+    {
+      "n": 28,
+      "summary": "imo-03: 3 clean partial gains, no overclaims",
+      "ended_at": "2026-07-24T10:12:23Z"
+    },
+    {
+      "n": 29,
+      "summary": "imo-03: 3 fronts advance, 3 new lemmas, no overclaims",
+      "ended_at": "2026-07-24T10:42:58Z"
+    },
+    {
+      "n": 30,
+      "summary": "imo-03: 3 fronts advance; caught false 60-chamber coverage claim",
+      "ended_at": "2026-07-24T11:24:25Z"
+    },
+    {
+      "n": 31,
+      "summary": "imo-03: MinFloor(4) fully closed; 2 fronts narrow gaps further",
+      "ended_at": "2026-07-24T12:32:03Z"
+    },
+    {
+      "n": 32,
+      "summary": "imo-03: h(3) fully closed, 2 fronts advance (Master Thm, Leave-2-Untouched)",
+      "ended_at": "2026-07-24T13:03:51Z"
+    }
+  ]
+}

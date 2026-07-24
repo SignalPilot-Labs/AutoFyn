@@ -1,0 +1,216 @@
+=== extremal-principle 166
+- aimo-0012 | For a smallest-k / minimal-count answer, exhibit an extremal instance of equal values tuned so no two can share a part, forcing the matching lower bound
+- aimo-0013 | Build the lower-bound instance by placing the two colors in strictly alternating cyclic order on a circle so every arc between adjacent points is bichromatic and must be cut, then 
+- aimo-0013 | Cut off a single convex-hull vertex from all remaining points with one line, since all other points lie strictly on one side of a supporting line at that vertex.
+- aimo-0015 | Convert a minimum-number-of-parts optimality hypothesis into a ban on two equal-sum sub-collections of different sizes, so exhibiting one such pair swaps to a strictly shorter repr
+- aimo-0017 | Take a minimum-size cover of the target set and read off a private element for each cover member from minimality
+- aimo-0017 | Bound a covered total by (number of parts)x(share per part) and maximize that product over the free part-count to force a numeric contradiction
+- aimo-0041 | Match an upper bound with a minimum-degree lower bound on the same quantity to force the equality case (pincer)
+- aimo-0046 | Lower-bound the total shorter-arc length of a closed cyclic route through a set of distinct points on a circle by observing it is minimized when the points sit in one contiguous bl
+- aimo-0048 | Index the domain by a q*base+r rectangle and, in each cell, bound the inf-convolution value by an explicit spread-out composition that dumps mass onto a coordinate where the functi
+- aimo-0050 | To prove a hidden global configuration can never be pinned down by finitely many queries, exhibit a family of valid configurations with a free parameter in every one of infinitely 
+- aimo-0057 | Reduce a 2D 'one-point axis-parallel rectangle of area \ge\mu_0' to a 1D isolation problem by fixing the horizontal side to a column's two-neighbor span w=x_{i+1}-x_{i-1} and deman
+- aimo-0077 | Assume nontermination forces a repeating state-cycle, then take the minimal-index object acted on within that cycle and show restoring it would require a forbidden smaller-index ac
+- aimo-0114 | To force a lower bound on a min-max quantity, hand the adversary one specific extremal configuration and read a parity obstruction straight off it.
+- aimo-0114 | For a min-max (adversary chooses structure, you color) problem, get each lower bound on V by exhibiting ONE specific worst-case structure that forces an unavoidable parity/count ob
+- aimo-0119 | Pick the configuration minimizing the maximum part load, tie-broken by fewest parts attaining that maximum, so that any single-item transfer from the heaviest to the lightest part 
+- aimo-0121 | For a step-count lower bound on a token-shuffling process, partition the move sequence at the first and last 'big' (max-jumping) step and charge three disjoint costs on the three i
+- aimo-0122 | Apply the reciprocal-sum equation at a maximum-degree vertex so a per-term lower bound forces every term to equality, pinning all neighbors to the same extreme value.
+- aimo-0126 | Sum a per-element integer quantity globally to express it as (count)×(a fixed modulus)×(a small parameter), then use the per-element range to bound that parameter to a short interv
+- aimo-0136 | Take a maximal disjoint family of the objects that carry a color-boundary, so that maximality forces the leftover to contain no such object.
+- aimo-0137 | To force the existence of a cut vertex whose removal leaves only small components, run a descent that repeatedly steps the candidate vertex into the current heavy component, using 
+- aimo-0141 | When every tile of a covering has all-even side lengths, halve every dimension to reduce to the identical problem on a half-size board, and invoke a minimal counterexample to reach
+- aimo-0146 | Maximize a fixed weighted sum of a sorted nonnegative integer sequence under a sum constraint by exchange-smoothing weight toward the higher-coefficient positions until the free co
+- aimo-0146 | To replace an extremal graph by one carrying a universal vertex without lowering a degree-weighted edge functional, delete a globally minimum-degree vertex and redirect each of its
+- aimo-0146 | When a relaxed optimum exceeds the target by a fixed gap and is attained only at one profile, close the gap by re-imposing on that exact profile a structural constraint the relaxat
+- aimo-0146 | To show a graph functional monotone under a local edge-rerouting move, verify the move never decreases any vertex's degree; since an edge-min-degree functional is monotone in degre
+- aimo-0147 | To force a would-be-excluded point's single-coordinate neighbors into the set, identify (collapse) that one coordinate to project onto the lower-dimensional cube and apply the theo
+- aimo-0147 | Recover a point as the coordinatewise majority of its single-bit neighbors by taking an odd multiset of those neighbors with multiplicities as equal as possible, so at each coordin
+- aimo-0149 | Characterize the unknown configuration as the unique N-point set maximizing a sum of per-point weights, choosing the weight to be a downward parabola in the defining invariant so t
+- aimo-0178 | Sum a full symmetric cycle of pairwise lower bounds and halve to bound the total.
+- aimo-0178 | Eliminate the degenerate case where one family is empty by slicing along the missing direction into independent unit slabs, each an isolated lower-dimensional touching problem whos
+- aimo-0180 | Bound the incidences of the extremal element (the point farthest from the origin) by locating its partners on the two lattice lines parallel to it at unit determinant distance and 
+- aimo-0185 | Lower-bound the number of moves a moving object needs to touch two prescribed boundary crossings and compare it against its fixed move budget to rule out double crossing.
+- aimo-0185 | Take the first occurrence of each of two competing events and derive a contradiction by showing one participant gets permanently confined to an arc the other must later cross.
+- aimo-0196 | When a resource is only slightly below the uniform average, measure the deficit from that average as an additive potential; a global deficit of at least d, spread over a bounded cy
+- aimo-0199 | Lower-bound the independence number of a graph by the sum over vertices of 1/(degree+1) (Caro-Wei), proved by repeatedly extracting a minimum-degree vertex and deleting its closed 
+- aimo-0229 | Reduce an adversarial initial configuration to its worst case by enlarging it to a maximal symmetric shape you can analyze cleanly
+- aimo-0235 | When slide/toggle moves on a rooted tree each just reverse one edge's orientation toward the root, count reachable states by identifying them bijectively with the choice of root ve
+- aimo-0259 | Lower-bound a sum over a set of pairwise-distinct nonnegative integers by the triangular number 0+1+...+(N-1), then aggregate that bound across all coordinates against the fixed co
+- aimo-0261 | In a perimeter-minimizing partition, apply a merge-or-shift local exchange to the piece covering the extreme corner to force its opposite corner onto the symmetry line, producing a
+- aimo-0291 | From an equality of two binomial coefficients in the same row, use strict unimodality of that row to pin the index to one of exactly two reflected values
+- aimo-0292 | Prove a per-element gap bound by contradiction: order the quantities and assume the bound fails at one index, forcing every later (larger) quantity to also violate it, then contrad
+- aimo-0295 | To manufacture a vertex with two non-adjacent neighbours in a connected non-complete graph, take a maximal clique K and use a vertex outside K adjacent to K: by maximality it misse
+- aimo-0295 | To break every cycle while keeping a graph connected, locate a cycle together with an off-cycle vertex adjacent to one endpoint of a cycle-edge but not the other, and redirect that
+- aimo-0295 | Rule out the extremal sub-object that would leave no 'outside' vertex to act on, by showing that object forces a global structure contradicting a preserved parity feature of the gr
+- aimo-0298 | Exploit that two gaps each at least the minimal scale sum to at least the next scale up, to show only consecutive elements in sorted order can realize the minimal scale.
+- aimo-0339 | Turn the forbidden induced pattern into a per-subset inequality between two double-counts, then sum over all subsets to get a global inequality.
+- aimo-0341 | To force an uncovered point when a product grid is covered by axis-fixing subgrids, run a maximum-deficiency (defect Hall) argument: peel off the largest subgrid-set whose neighbor
+- aimo-0357 | Find an element to induct on by locating a maximal boundary object whose associated count has the required parity
+- aimo-0361 | Bound the vertices adjacent to a fixed clique by pinning each such vertex to finitely many rigid geometric loci, then intersect those loci against the mobility constraint of the cl
+- aimo-0361 | Set up an extremal-count recurrence by peeling a fixed-size substructure and iterate it to a closed-form bound compared against the conjectured optimum
+- aimo-0361 | To build the extremal graph under a rigid-motion mobility constraint, place vertices on a few parallel affine flats and join two iff they lie on different flats, so an entire flat 
+- aimo-0361 | To upper-bound edges under a rigid geometric constraint, fix a densest forbidden core, bound how many outside vertices can attach to enough of it to be pinned, delete the core, and
+- aimo-0369 | Convert a guaranteed free choice between two complementary sets into an optimality bound by picking whichever set has the larger total
+- aimo-0388 | Bound a middle order statistic by noting the coins at or above it are numerous enough that their known total caps its size
+- aimo-0392 | Pick an extreme (convex-hull) vertex as pivot so that a chord from it partitions the remaining points into two angular sides whose segments can never cross each other, decoupling t
+- aimo-0403 | Bound where an event can occur by intersecting the reachable-region constraints obtained from several independently-chosen relabelings of the same dynamics
+- aimo-0403 | Attain an extremal-time bound with a corner-launched two-particle configuration whose single head-on collision maximizes the survivor's remaining straight run to the far edge
+- aimo-0403 | Bound where/when interactions can occur by intersecting the forbidden-region constraints from two independent relabelings, then charge each object's residual travel against that bo
+- aimo-0403 | For a matching escape-time lower bound, build the maximizer from a single head-on collision that redirects one survivor into a full-length straight run to the far edge.
+- aimo-0403 | Having the freedom to reassign each collision's turn direction, choose it so every particle becomes monotone (each moves within a fixed 90-degree quadrant of directions); a monoton
+- aimo-0404 | Take the maximal-length object whose occurrence-count exceeds a fixed threshold, so that every one-step extension necessarily has count at or below that threshold.
+- aimo-0405 | To show an extremal covering bound is tight, build a nested/triangular arrangement of tiles offset by the leftover margin so that overlaps concentrate on a thin band of exceptional
+- aimo-0420 | Assuming the target fails, pick the index maximizing a fixed-width sliding-window sum; maximality upgrades the two neighboring weak inequalities to strict ones, so the shifted-diff
+- aimo-0420 | Bound the length of a maximal constant run by noting a run strictly longer than the target window width contains two identical adjacent windows, an immediate equality; hence in a n
+- aimo-0420 | To generate a starting equality between two adjacent sliding windows when a direct one is assumed absent, pick the index maximizing the fixed-width window sum; its two neighbors th
+- aimo-0420 | Subtract two adjacent, oppositely-directed strict window-difference inequalities from each other to force the extreme boundary entries to specific values and collapse the residual 
+- aimo-0423 | Bound a polygon's area by triangulating it as a fan from a fixed reference point and bounding each fan-triangle by AM-GM on its two radii to that point.
+- aimo-0423 | Maximize a sum of squared pairing-differences over all pairings of a fixed point set by rewriting each difference via the polarization identity and bounding the resulting sum-of-co
+- aimo-0425 | Among all ways to split into equal groups, pick the one minimizing the max-min spread of a weight, then bound that spread by swapping the heaviest item of the top group with the li
+- aimo-0438 | To guarantee a minimal/extremal configuration contains a desired canonical sub-structure, among all optimal configurations select one maximizing a secondary alignment statistic, th
+- aimo-0439 | Enumerate the finitely many triangles that can rest on a fixed boundary edge by imposing the equal-length (isosceles) constraint on that edge
+- aimo-0439 | When a symmetric region's forced edges can only be paired off two at a time but their count is odd, a parity mismatch forces at least one edge into the single non-pairing piece; lo
+- aimo-0463 | Force a set of distinct positive integers to be exactly {1,...,n} by bounding their total sum below the maximum allowed value.
+- aimo-0488 | Bound disjoint consecutive pairs in a cyclic family where all nonadjacent members intersect by casing on the extremal leftmost-right-endpoint vs rightmost-left-endpoint (Helly-styl
+- aimo-0493 | To bound how many elements of a set can avoid a scale-indexed 'good' property, show each new element more than doubles its distance from the minimum by rewriting the failure of dou
+- aimo-0493 | To turn a forbidden ordered-pair pattern across two nested sets into a charging bound, define a scale-parametrized 'witness' property inside a single set, then use the forbidden pa
+- aimo-0493 | To cap how many elements of a set can dodge a scale-witness property, compare each candidate to the set's minimum inside the dyadic band matching its gap: if consecutive gaps-from-
+- aimo-0493 | To bound how many sets a single element can witness at a fixed scale, assume it witnesses two of them and use the forbidden cross-set configuration to force the near-witness of one
+- aimo-0493 | To cap the elements that escape a witnessing structure, show consecutive gap-sums from a fixed base grow super-geometrically: if a doubling inequality failed, the right dyadic scal
+- aimo-0514 | For a 'largest possible value' extremal problem, after proving the upper bound, exhibit an explicit small object attaining it.
+- aimo-0526 | Show a target count of 2 is unreachable by proving any two distinct embeddings force a third: take the union interval spanned by the two embeddings on a block where they differ, co
+- aimo-0542 | To find the covering radius of a small linear code coset (max over cosets of the min Hamming weight of a representative), encode each representative by counts of chosen coordinates
+- aimo-0558 | To cap the achievable excess of a bounded-gap selection (the matching upper bound), design an extremal sequence of alternating same-sign blocks whose block lengths force any select
+- aimo-0558 | For the matching upper bound of a bounded-gap max-excess selection, build the worst-case sequence as alternating same-sign blocks and bound any admissible selection by counting per
+- aimo-0558 | For the achievability (lower-bound) half of a bounded-gap max-excess selection, greedily take every majority-sign term and skip a minority term whenever the gap budget still allows
+- aimo-0559 | When a monovariant can only stall in one specific way, force that way to recur and sum the per-step threshold inequality over all objects to reach a contradiction
+- aimo-0562 | Turn a non-tie among aggregate sums into a strict inequality by comparing whole-set weight against overlap weight of the added increment.
+- aimo-0566 | When an order-preserving shift hypothesis forces every translate to compare consistently, define a real threshold as the infimum of the direction-ratios whose translation stays ori
+- aimo-0589 | Lower-bound a structural population by injecting each marked object into it, using a genericity hypothesis to make the assigned targets distinct.
+- aimo-0591 | Anchor a strip at an extremal row so a subsequent deletion removes a guaranteed occupant, leaving a deficit below the count needed to fill every cell of a partition
+- aimo-0593 | Take a maximal (inclusion-maximal) valid substructure so every element outside it is certified to violate the property, turning the existence target into a lower bound on the maxim
+- aimo-0594 | To locate the single coordinate on which a rank-only, domination-monotone, transitive order keys, sweep a one-parameter family of paired configurations whose two extreme members ha
+- aimo-0615 | Combine two opposing constraints by taking a signed linear combination that cancels the shared middle terms and pairs the survivors positionally.
+- aimo-0615 | Bound each positional gap in an increasing integer sequence below by its index gap.
+- aimo-0615 | Convert a bound on the smallest element into a bound on a sum of larger elements by writing each as the smallest plus its distinctness offset.
+- aimo-0620 | Greedy on the least-used resource, deleting simultaneously the picked resource's owners AND the chosen owner's resources; the two deletions certify mutual non-conflict while the re
+- aimo-0623 | Sharpen a subset-counting bound by choosing the copied object as large as possible, so the adversarially-revealed complement you must record is forced into the small half — halving
+- aimo-0633 | Recast the existence claim as a strict count inequality: bound the number of 'bad' objects and show it stays below the total number of objects, so a good one must exist.
+- aimo-0633 | Aggregate per-line bounds into a per-object bound using the geometric spread across rows and columns as a subtracted slack term.
+- aimo-0639 | To force a chosen local-extremum object to be 'nice for two sides' at once, minimize the extremal quantity over triangles constrained to bridge a partition, so both cross-part side
+- aimo-0660 | To bound the count of extremal objects, take the globally largest element in the interval spanned by two candidates; it wins every one-on-one confrontation, so it forces one of the
+- aimo-0660 | To prove at most one object has the closure property, suppose two candidates exist, take the extremal (largest) obstacle strictly between them, and show its owner can act on one ca
+- aimo-0662 | Use the sandwich inequality forced by the defining equation to prove the split must be an initial segment in sorted order
+- aimo-0662 | From two adjacent objects both satisfying the defining relation, deduce a rigid equality that forbids a third adjacent object of the same type
+- aimo-0662 | Cap the count of a marked type via a no-three-consecutive density argument to turn the target count into a lower bound on n
+- aimo-0664 | Bound the spread between two same-size subsets of {1,...,K} by placing one at the bottom and the other at the top, then close with AM-GM on the two complementary factors.
+- aimo-0665 | Pick the index minimizing a bounded leftover term so the growth relation forces a multiplicative doubling gap, producing an empty interval containing no set element between a value
+- aimo-0666 | Take the extremal coloring under a lexicographic tie-break on the class-size vector, so any recoloring that shrinks an earlier class is forbidden and yields a local structural cons
+- aimo-0688 | In a monotone incremental filling of a grid in label order, halt at the first moment a global coverage threshold is met and read off the count of filled/unfilled adjacent pairs for
+- aimo-0688 | To force a global extremal quantity with no obvious extremal configuration, run a monotone filling/coloring process in label order and freeze it at the FIRST label that crosses a s
+- aimo-0690 | Set up a per-region monovariant that strictly decreases under a local re-packing move, so an arbitrary configuration can be pushed to a canonical 'all-good' normal form without los
+- aimo-0702 | Prove the matching lower bound by a mass-conserving redistribution move that pushes count from a set to its immediate subsets, applied top-down to reduce every level (including the
+- aimo-0706 | Lower-bound a vector's norm by testing Cauchy-Schwarz against a well-chosen probe vector, then optimize the probe's free parameters to make the resulting bound sharp.
+- aimo-0706 | Certify a Cauchy-Schwarz bound is tight by exhibiting an extremal configuration whose summed vector is a scalar multiple of the probe vector.
+- aimo-0717 | To realize a claimed extremal value, exhibit one explicit instance whose piece-count equals the bound and verify it produces the required arrangement.
+- aimo-0717 | To beat the trivial connectivity bound on a multigraph's edge count, delete one edge from each of a family of edge-disjoint cycles; connectivity survives every such deletion, so th
+- aimo-0720 | Turn per-object local-majority thresholds into a global exponential lower bound by ordering the minimal thresholds and summing rounded-up half-contributions, so each threshold domi
+- aimo-0763 | Force a far target from an arbitrary start by placing it at least half the diameter away via the triangle inequality
+- aimo-0766 | Bound the pursuer's best guaranteed outcome from below by exploiting the mirror symmetry of the two hidden targets: any response is at least as far from one target as the symmetric
+- aimo-0768 | To prove two commuting equal-size sets coincide, take the largest element lying in exactly one of them and show the two enumerators must agree at that index, producing an element t
+- aimo-0769 | To force a long collinear run inside a stable/no-lonely set, take the supporting line parallel to a chosen direction, then apply the local survival threshold to a point on it using
+- aimo-0769 | To turn a family of per-direction length bounds into a single coordinatewise dominance, exploit that a slope-ordered monotone boundary curve has ONE pivot vertex splitting any dire
+- aimo-0769 | To pin down the terminal state of a monotone shrinking process, recognize it as the largest-by-inclusion stable set, then guess that extremal set explicitly and verify by two-sided
+- aimo-0769 | To force a lower bound on a boundary edge of a stable region in a prescribed direction, take the supporting line in that direction and use that it cuts the local neighborhood into 
+- aimo-0769 | To verify a guessed extremal boundary is stable, show each boundary lattice point is exactly balanced by writing its neighborhood's occupied side as translated copies of the set th
+- aimo-0769 | To show a guessed extremal region is over-occupied at every interior point, cover its neighborhood above the local support line by translating the left and right parts of a boundar
+- aimo-0769 | Bound a stable/extremal up-right-closed configuration by comparing it, direction by direction, to a candidate boundary: for each candidate boundary vector take the supporting line 
+- aimo-0794 | In a minimal counterexample, merge two pieces that share a full common edge into their union, checking the merge destroys neither forbidden feature so it contradicts minimality.
+- aimo-0794 | Locate a rectangle blocked from three of the square's four sides by its neighbors; being forced to touch the remaining side, one of its edges runs uninterrupted across the square a
+- aimo-0794 | From a point on a non-splitting line, march along the line to the nearest rectangle whose interior it crosses; the entry point is a shared corner of two rectangles boxed on their i
+- aimo-0797 | Assume the negation of the trivial monochromatic configuration to force a rigid functional constraint on the coloring that later constructions exploit.
+- aimo-0798 | Show every vertex on the target side is adjacent to all of a common witness set, so any clique there merges with that witness set into one big clique whose size the global maximum 
+- aimo-0798 | In the residual gap-1 case, split on whether a distinguished extremal vertex can be avoided by some optimal object: if some optimal object dodges it, relocate that vertex for an im
+- aimo-0798 | Drain an over-large extremal object down to the target size by repeatedly extracting a member forced to lie outside a distinguished core, then cap the receiving side using that eve
+- aimo-0799 | Tune an integer growth parameter to a target density by matching an exponential limit and a fixed-point identity
+- aimo-0800 | Force a would-be extreme point into the interior of the convex hull of other named points by summing directed angles around it to a full turn, contradicting that all points are pol
+- aimo-0800 | To lower-bound how many times an object is charged in a double count, argue by contradiction from convex position: assume it is NOT charged at a chosen site, use the objects that f
+- aimo-0817 | Reduce to even parameter and induct by stripping the two outermost symmetric shells; when few enough shell-elements survive, the remainder lands inside the smaller instance and the
+- aimo-0826 | Rule out a small forbidden clique by showing every 2-coloring of its complete edge set is forced to contain one of the forbidden monochromatic subgraphs, then feed the clique-free 
+- aimo-0836 | Prove a size-reduction step by contradiction on a minimal-sum counterexample: assume an irreducible configuration exists, pick one of minimum sum, then reach a strictly-smaller-sum
+- aimo-0843 | When a comparison is defined only on pairs whose projections overlap, upgrade it to yield an extreme element by proving the relation has no directed cycle (its transitive closure i
+- aimo-0843 | To contradict 'every object is used on both sides', anchor at the extreme element and route the trajectory into two arcs whose four endpoints interleave along the boundary of the u
+- aimo-0845 | When two constraint objects coincide, substitute the neighboring 'one-coordinate-off' patterns as the forbidden set to keep the lower bound intact
+- aimo-0854 | Locate a contradiction by taking an extremal vertex of the offending cycle under a lexicographic order
+- aimo-0857 | Bound a local jump by straddling the target with a same-color pair whose difference lands inside a known monochromatic window, then apply additivity plus monotonicity
+- aimo-0866 | Case-split on whether two candidate colors coincide, using that a single edge-color cannot equal two distinct values to force a bichromatic triangle
+- aimo-0868 | Negate the existence target to turn it into a uniform local constraint holding at every step, collapsing each step into a same-side dichotomy.
+- aimo-0870 | To refute 'no index has a nonnegative forward window', greedily chain marked indices by a gap>k successor rule so each block sums nonpositively, then use pigeonhole mod the period 
+- aimo-0871 | Since three linear functionals of position are pairwise linearly dependent, argue that an unbounded walk keeps at least two of them unbounded, guaranteeing enough absolute readouts
+- aimo-0888 | On a longest shortest path, bound how many path vertices a single off-path vertex can neighbor: too many, and splicing through it shortcuts the path, contradicting minimality.
+- aimo-0910 | When a chain of inequalities is squeezed between equal endpoints, force every link to equality, then multiply the individual slot-value equalities into one product identity and con
+- aimo-0914 | Pivot on the extremal (largest) value in an index-block, then apply the available amplifying inequality once against the top index so the top index collapses the denominator and th
+- aimo-0934 | Use the minimal-difference-set characterization: a set whose difference set has the smallest possible size is an arithmetic progression
+- aimo-0942 | Realize the abstract structure by a concrete evaluation model (assign reals, take the max with a fixed left/right tiebreak) to separate non-equivalent inputs
+- aimo-0950 | Among all count-fixed feasible selections (each color class individually acyclic), minimize the number of connected components of the union, then break any surviving cycle by a sam
+- aimo-0950 | When a color-swap exchange is blocked, minimize the number of connected components over all valid monochromatic acyclic edge-sets and use the extremal choice to force any remaining
+- aimo-0965 | Choose the extremal (longest) member of the counted family as the pivot of the induction step, so its maximality forbids any other member from straddling across it
+- aimo-0965 | To bound a count on a nested region by induction, peel off the object built on the LONGEST relevant diagonal: extremality forces its triangle to have that diagonal as base (all oth
+- aimo-0969 | Prove a closure property for extremal (equality) sets by combining the modularity identity size(A)+size(B)=size(A meet B)+size(A join B) with the constraint's inequalities on the m
+- aimo-0999 | After a family is forced into a fixed small set of parallel classes, isolate the extremal (longest) member of each class to shave its endpoints, then bound the total by a per-verte
+- aimo-0999 | When a perpendicular crossing pair partitions the circumcircle into four arcs each smaller than a semicircle, classify every other admissible chord by which arc its endpoints occup
+- aimo-0999 | Given a family split into two direction classes, note the longest member of each class has endpoints that cannot be reused (a second chord there crosses a longer parallel member at
+- aimo-1000 | Grow the tracked structure by feeding a SELF-CHOSEN partition (structure-so-far vs everything outside) to a hypothesis that some cross-edge must eventually be cut, then use that cu
+- aimo-1024 | For a lower bound on how many monotone summands a decomposition needs, tag each index with its support set (which summands are nonzero there), force a repeated support by pigeonhol
+- aimo-1024 | To lower-bound how many essentially-increasing summands a decomposition needs, test it against a strictly DECREASING target sequence and track, for each index, its nonempty support
+- aimo-1024 | To realize the extremal case of a support-counting bound, index the objects by the distinct nonempty support patterns themselves and enforce the required monotonicity by scaling ea
+=== processes-and-algorithms 48
+- aimo-0012 | Bound a partition count by a greedy fill that forces each closed part past a fixed capacity threshold, then charge the total against that per-part surplus
+- aimo-0014 | Exhaustively apply the given degree-reducing operation until the graph is stuck in a uniform-parity state, using that it must terminate.
+- aimo-0015 | Lower-bound the number of distinct subset sums of a fixed size by walking through equal-size subsets one element-shift-to-the-right at a time, each shift strictly increasing the su
+- aimo-0050 | Turn all-zero rectangle constraints into a deterministic recovery algorithm: from a coprime pair of window lengths, recover every term of a 1D sequence given all its length-m and l
+- aimo-0121 | To cap how much a single distribute-evenly move can boost the running maximum, note the recipient's post-move total is bounded by (global total minus source), so a source large eno
+- aimo-0121 | To lower-bound a process's move count past an assumed budget, split the moves into two disjoint charges: bound how many moves must PRECEDE the first high-yield move by a threshold 
+- aimo-0297 | To locate a vertex with no known outgoing edge, run a king-of-the-hill sweep: hold one current candidate, query it against each not-yet-tested vertex, and pass the candidacy to the
+- aimo-0319 | Once every unit is identical across all coordinates, assemble them into equal-size targets by greedy largest-first packing, collapsing the multi-coordinate balancing to a single co
+- aimo-0338 | Build a reusable growth gadget by alternating a coin-multiplying move with a position-resetting move so a linear count becomes exponential inside a fixed window of stacks.
+- aimo-0338 | Hit an exact large target reachable only by monotone growth: overshoot it enormously, then use an available decrementing move to walk the count back down to the precise required va
+- aimo-0340 | In a length-ordered greedy process, split the inductive step on whether the SHORTER paired string is cut, using the order rule that any string at least as long as a cut string is a
+- aimo-0340 | Track paired extremal quantities of two symmetric sub-populations under a length-halving process and prove by induction that an initial strict dominance between them is preserved b
+- aimo-0340 | When a per-step cut budget of k caps how many strings can shrink, lower-bound the surviving count of one class, pigeonhole an unshrunk member, and force it to a terminal value via 
+- aimo-0387 | Reduce an eternal fair-scheduling requirement to finitely emptying a bounding region, then re-enclose and repeat.
+- aimo-0387 | Reduce an infinite 'move every token infinitely often' goal to the finite one-shot lemma 'from any admissible configuration, drive every token out of a given bounded region', then 
+- aimo-0387 | When tokens confined to a single line must all leave it and a 'no two tokens face toward each other' hypothesis holds, use it to split the line into an outward-facing prefix and an
+- aimo-0387 | Once a line (a single strip/row) has been cleared of all cross-axis traffic, evacuate the tokens confined to that line by exploiting a 'no two tokens point toward each other' hypot
+- aimo-0434 | Count the objects by greedily building block-by-block and multiplying the number of free choices remaining at each step.
+- aimo-0465 | Model a process that consumes matched pairs by counting, for each output slot, how many times each value has ever appeared, and read off an exact recurrence: because pairing is wha
+- aimo-0465 | To force a value's count to stay large, write the target index in the numerical-semigroup form sa+tb and prove by induction on s+t that each unit generator step at worst halves the
+- aimo-0465 | Once a block of consecutive indices as wide as the largest step of a shift-recurrence is saturated above a threshold, run the recurrence forward to propagate that threshold to all 
+- aimo-0514 | Show a deterministic process is reversible so its state graph is a union of cycles, forcing the orbit to be purely periodic rather than eventually periodic.
+- aimo-0558 | To lower-bound the achievable majority-minority excess under a bounded-gap selection, run a greedy that always takes majority elements and takes a minority element only when forced
+- aimo-0618 | To turn a valid path to a target into a strictly shorter valid path, delete steps from the tail largest-first by length, so that every step still present is legal after its start p
+- aimo-0620 | Reach the target structure by repeatedly deleting any element made redundant by the others, then argue the terminal irreducible state already IS that structure
+- aimo-0626 | From a minimal-length nonnegative-sum certificate at one index, deduce every index it spans is also certified, so a left-to-right greedy sweep tiles the certified set into disjoint
+- aimo-0639 | Grow one part of a partition by repeatedly absorbing the vertices of the current cross-part extremal object, counting a new distinct extremal object each step until the other part 
+- aimo-0666 | In a leximinimal (lexicographically-smallest class-size) proper coloring with classes in a fixed cyclic order, run a directed reachability process that from each already-reached ve
+- aimo-0688 | Fill cells in increasing-label order and stop at the least label where a whole orientation of lines first becomes saturated
+- aimo-0690 | Repair an uncovered target cell without losing count by casework on the covering status of its cells, using a forbidden-2x2 hypothesis to force any conflicting cover to be perpendi
+- aimo-0715 | Greedily choose each sign to pull the running partial sum back toward zero, then induct to confine every prefix sum to a fixed bounded window
+- aimo-0734 | Reduce a coordinate at integer times to a single scalar whose one-step map is either identity or the reflection x->1-x, then use that a half-period reversal composed with itself cl
+- aimo-0746 | To prove a game with a re-randomizing adversary is unwinnable, maintain an adversary invariant of total ignorance and answer every move by choosing a hidden configuration that avoi
+- aimo-0746 | To show a game with a hidden-permutation adversary is unwinnable, maintain a symmetry invariant under which the adversary retains full freedom over an unrevealed ordering, so that 
+- aimo-0746 | When each query returns only the value-set of a fixed-width window that slides one position at a time, recover a genuine card value by set-differencing the value-sets of two consec
+- aimo-0746 | When a sliding-window scan's forced perturbation touches only positions currently inside the window, note that a position permanently exits after its last window, freezing its valu
+- aimo-0798 | Since each unit move changes a monitored integer quantity by at most one, invoke discrete intermediate-value to force two competing quantities to land within one of each other.
+- aimo-0818 | Propagate the tasteful constraint deterministically along a diagonal staircase of cells, forcing consecutive domino orientations to alternate
+- aimo-0836 | Apply the operation twice in a row to its own outputs to turn {a,b} into {2a,2b}, giving a reusable primitive that scales a chosen pair up by 2 while leaving all other numbers unto
+- aimo-0911 | Convert a monochromatic run into a skew object by walking to the nearest opposite-colored vertex and taking its immediate predecessors, yielding a consecutive-vertex object
+- aimo-0916 | Stabilize a descending chain of images of a self-map on a finite set, then take the power that restricts to the identity on the stable core.
+- aimo-0964 | Force a periodic (never-terminating) orbit by choosing the size one larger than a self-terminating one so a reflecting boundary bounces the first non-trivial state back, making the
+- aimo-1000 | When a symmetric 'toggle-if-adjacent-to-exactly-one' rewrite fires because an edge between two chosen vertices is removed, exploit that any third vertex already joined to one endpo
+- aimo-1000 | When a closing/toggling operation breaks an invariant across a bipartition, re-split around the endpoints of the just-closed edge and show the same toggle that broke it re-establis
+- aimo-1000 | To grow an invariant complete-bipartite core to the whole vertex set, invoke the eventual-cross-cut hypothesis on core-vs-outside, then read the per-vertex toggle to see the outsid
+- aimo-1000 | To force some distinguished vertex to become universal, freeze two symmetric vertices as one side of a two-element split over all vertices; the eventual-cross-cut hypothesis must c
+- aimo-1020 | To interpolate between two transversals/permutation-diagonals of a grid, connect them by single moves each of which reassigns two rows' columns by swapping two chosen cells for the
+- aimo-1025 | To lower-bound the initial size of a graph closure process, run a canonical greedy version of the operation (tracking a clique cover plus an edge-to-clique label map) until it gets

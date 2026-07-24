@@ -1,0 +1,155 @@
+{
+  "pr_title": "IMO 2026 P6: 11 subfamily theorems certified; Master Conditional Theorem reduces general case to H1(FAH)/H2, both open after 25 plateau rounds",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "4 approaches opened, partial progress, crux gap (†) isolated",
+      "ended_at": "2026-07-23T16:35:21Z"
+    },
+    {
+      "n": 2,
+      "summary": "Falsified glue-prime conjecture, sharpened gap (†), 4 new lemmas",
+      "ended_at": "2026-07-23T17:15:59Z"
+    },
+    {
+      "n": 3,
+      "summary": "Localized gap (†) to residual set V, found falsifying seed",
+      "ended_at": "2026-07-23T17:57:07Z"
+    },
+    {
+      "n": 4,
+      "summary": "Retracted round-3 falsification (witness-selection bug), reopened sharper V=∅ target",
+      "ended_at": "2026-07-23T18:43:06Z"
+    },
+    {
+      "n": 5,
+      "summary": "Reversal caught: V=∅ falsified again, crux narrowed to 2 sub-claims",
+      "ended_at": "2026-07-23T19:19:30Z"
+    },
+    {
+      "n": 6,
+      "summary": "Singleton Hyp falsified; Collateral-Safety closed; crux now FAH",
+      "ended_at": "2026-07-23T19:54:03Z"
+    },
+    {
+      "n": 7,
+      "summary": "FAH: 2 mechanisms retired, 5 lemmas certified, n=1 gap advanced",
+      "ended_at": "2026-07-23T20:26:11Z"
+    },
+    {
+      "n": 8,
+      "summary": "FAH narrowed to |F'|>=2 case; new framing falsified",
+      "ended_at": "2026-07-23T20:59:53Z"
+    },
+    {
+      "n": 9,
+      "summary": "9th FAH mechanism killed; cofinite-sufficiency proven; crux fully isolated",
+      "ended_at": "2026-07-23T21:51:23Z"
+    },
+    {
+      "n": 10,
+      "summary": "3 more FAH mechanisms killed (10-12); 4 lemmas certified",
+      "ended_at": "2026-07-23T22:22:53Z"
+    },
+    {
+      "n": 11,
+      "summary": "2 more FAH mechanisms killed (13-14); CRT-glue family fully closed",
+      "ended_at": "2026-07-23T23:05:01Z"
+    },
+    {
+      "n": 12,
+      "summary": "New Morse-Hedlund corridor opened, 4 lemmas certified, plateau broken",
+      "ended_at": "2026-07-23T23:36:52Z"
+    },
+    {
+      "n": 13,
+      "summary": "15th FAH mechanism killed pre-build; No-Restart Lemma certified; n=1 gap narrowed",
+      "ended_at": "2026-07-24T00:12:07Z"
+    },
+    {
+      "n": 14,
+      "summary": "n=1 gap closed conditional on FAH; 16th FAH mechanism killed",
+      "ended_at": "2026-07-24T00:41:32Z"
+    },
+    {
+      "n": 15,
+      "summary": "n=1 sub-gap fully closed; fake mechanism caught pre-build; FAH crux still stuck (10th round)",
+      "ended_at": "2026-07-24T01:08:37Z"
+    },
+    {
+      "n": 16,
+      "summary": "First APPROVE: 2|a_1 subfamily solved; FAH still stuck (11th round)",
+      "ended_at": "2026-07-24T01:27:41Z"
+    },
+    {
+      "n": 17,
+      "summary": "H2 progress: Vacuous Self-Absorption Lemma; FAH 12th plateau",
+      "ended_at": "2026-07-24T02:16:35Z"
+    },
+    {
+      "n": 18,
+      "summary": "2nd APPROVE: a_1=p^k solved; new FAH progress (Two-Sided Singleton Witness)",
+      "ended_at": "2026-07-24T03:11:36Z"
+    },
+    {
+      "n": 19,
+      "summary": "FAH plateau r14: p*q refuted, 5 lemmas certified, circularity caught",
+      "ended_at": "2026-07-24T03:44:16Z"
+    },
+    {
+      "n": 20,
+      "summary": "5 lemmas certified; a1-3q one gap from 3rd APPROVE; FAH 15th plateau",
+      "ended_at": "2026-07-24T04:22:33Z"
+    },
+    {
+      "n": 21,
+      "summary": "a1-3q gap diagnosed non-elementary; FAH counterexample hunt clean negative",
+      "ended_at": "2026-07-24T05:31:06Z"
+    },
+    {
+      "n": 22,
+      "summary": "3rd APPROVE: a1-3q solved via new sieve lemmas; H1 17th plateau",
+      "ended_at": "2026-07-24T06:33:58Z"
+    },
+    {
+      "n": 23,
+      "summary": "3qk subfamily near-closeable; H2 citation error fixed",
+      "ended_at": "2026-07-24T07:12:10Z"
+    },
+    {
+      "n": 24,
+      "summary": "4th APPROVE: a1-3aq (a=1-5) solved; a1-3qk m=2 closed",
+      "ended_at": "2026-07-24T07:49:45Z"
+    },
+    {
+      "n": 25,
+      "summary": "m=3 closed (5th thm); a1-pq uniform machinery certified; H2 asymmetry retracted",
+      "ended_at": "2026-07-24T08:51:38Z"
+    },
+    {
+      "n": 26,
+      "summary": "6th APPROVE: a1-5q solved; a1-pq/covering advanced",
+      "ended_at": "2026-07-24T09:37:09Z"
+    },
+    {
+      "n": 27,
+      "summary": "7th APPROVE: a1-7q solved; a1-pq/covering-system advanced",
+      "ended_at": "2026-07-24T10:05:06Z"
+    },
+    {
+      "n": 28,
+      "summary": "8th APPROVE: a1-11q subfamily solved",
+      "ended_at": "2026-07-24T10:39:20Z"
+    },
+    {
+      "n": 29,
+      "summary": "9th & 10th APPROVE: a1-13q, a1-17q subfamilies solved",
+      "ended_at": "2026-07-24T11:07:57Z"
+    },
+    {
+      "n": 30,
+      "summary": "11th APPROVE: a1-19q subfamily solved",
+      "ended_at": "2026-07-24T12:24:37Z"
+    }
+  ]
+}

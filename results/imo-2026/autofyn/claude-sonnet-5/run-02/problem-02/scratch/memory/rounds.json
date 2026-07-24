@@ -1,0 +1,15 @@
+{
+  "pr_title": "Solve IMO-2026-02: OM=ON via nine-point reduction + coordinate bash (solved)",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "Field of 5 approaches; killed 2, leader has 1 gap left",
+      "ended_at": "2026-07-24T06:50:04Z"
+    },
+    {
+      "n": 2,
+      "summary": "Closed final gap, IMO-2026-02 solved (APPROVE)",
+      "ended_at": "2026-07-24T07:39:24Z"
+    }
+  ]
+}
