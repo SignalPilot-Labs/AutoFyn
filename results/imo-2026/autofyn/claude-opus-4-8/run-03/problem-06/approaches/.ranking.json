@@ -1,0 +1,98 @@
+{
+  "anomaly-count-terminates": {
+    "copied_from": null,
+    "elo": 1332.04248276045,
+    "expanded": 1,
+    "last_note": "Self-refuted: confinement p|L=>p<=M is FALSE (a_1=375: 19|L=3990, M=15, verified). M-threshold framing dead; only free lemmas + conditional reduction survive.",
+    "last_outcome": "dead-end",
+    "last_round": 1,
+    "selected": 4,
+    "slug": "anomaly-count-terminates",
+    "stale": false,
+    "summary": "Threshold witnesses at M=\u220fprimes(a1); \"anomaly\"=prime>M is sole witness lowering successor. Reduce whole problem to: anomalies are finite. After last anomaly the \u2264M-support family auto-stabilizes (finite power set) so successor is a function of a_n mod K=\u220f_{p\u2264M}p \u21d2 eventual periodicity \u21d2 from-n=1 by injectivity. Crux open: anomaly finiteness (monovariant)."
+  },
+  "joint-recruitment-budget": {
+    "copied_from": null,
+    "elo": 1513.1460507774755,
+    "expanded": 1,
+    "last_note": "Positive route provably forks: \u03a6_N=O(N) budget bounds recruit RATE not COUNT (rate-not-count tautology verified), horns fork to JSC/Collapse/bounded-window; vocabulary variant circular (=E5\u2033). Certified salvage RBT+RBD (rejection-budget-dichotomy.md). RETHINK.",
+    "last_outcome": "dead-end",
+    "last_round": 6,
+    "selected": 1,
+    "slug": "joint-recruitment-budget",
+    "stale": false,
+    "summary": "Global accounting of the greedy REJECTION stream with per-recruit disjoint cost attribution, aiming for c_q->inf to contradict the O(N) budget. VETTING FINDING: forks by the Rejection-Budget Dichotomy \u2014 the rejection stream up to N is exactly Phi_N=O(N) disjoint events, so any disjoint per-recruit cost auto-satisfies Sum|C_q|<=Phi_N (tautology); a LOCAL cost is bounded by M-1 (can't ->inf, fails step 4), a GLOBAL cost ->inf spans Omega(q) of the line and forcing a contradiction requires bounding per-recruit window length t_k-t'_k = the JSC spread (dead); the shared-vocabulary variant reproduces the R4 Collapse common-core. Buildable deliverable = certify the Dichotomy as a permanent negative guardrail closing opening-5/the last joint-accounting thread."
+  },
+  "key-term-first-appearance": {
+    "copied_from": null,
+    "elo": 1561.8139867166292,
+    "expanded": 1,
+    "last_note": "SOLVED \u2014 self-contained fresh-prime Rescale-Witness closes Finite-Alphabet crux; FA/DOM/RW/finiteness/endgame all re-derived and re-verified from scratch, load-bearing y-in-A step airtight, no forbidden lever. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 7,
+    "selected": 0,
+    "slug": "key-term-first-appearance",
+    "stale": true,
+    "summary": "Self-contained key-term first-occurrence finiteness: fresh-prime rescale-witness (y=r\u00b7q^t in [a1,C), realized via meet-below forward-admissibility) bounds key-term primes to the finite pool below C=q0\u00b7a1; bypasses E4/E5/E5''; feeds certified no-transient endgame."
+  },
+  "monovariant-witness-descent": {
+    "copied_from": null,
+    "elo": 1428.2031240577837,
+    "expanded": 1,
+    "last_note": "Built two certified non-degenerate A_n monovariants (density, max-gap) + rigorous concrete obstruction showing A_n-only statistics can't certify \u03a0 finite. Crux still open (G-dyn); route must read greedy choices a_n, not A_n.",
+    "last_outcome": "partial",
+    "last_round": 2,
+    "selected": 4,
+    "slug": "monovariant-witness-descent",
+    "stale": false,
+    "summary": "Far-framing gamble (no order theory/density): transplant aimo-0678 extremal descent \u2014 build an integer state-statistic non-increasing along the recursion + bounded below, stabilize by well-ordering to pin a finite modulus. Three unconstructed gaps (freezing invariant, non-degenerate witness, recruitment descent); naive first-failure witness verified degenerate (const 1)."
+  },
+  "realizer-index-joint-double-count": {
+    "copied_from": null,
+    "elo": 1523.7368875100678,
+    "expanded": 1,
+    "last_note": "Joint-spread lever (Lemma J) proven illusory by own JSC: t-t'=q(A-B), A!=B, so spread bound IS magnitude bound. Framing collapses to shared crux -> RETHINK. TAS+JSC salvage certified.",
+    "last_outcome": "dead-end",
+    "last_round": 5,
+    "selected": 2,
+    "slug": "realizer-index-joint-double-count",
+    "stale": false,
+    "summary": "Joint-system attack on magnitude bound q<=C(a1): two-anchor witness scaffold (steps 1-4, rigorous from certified E3/Anchor/R1/L3, genuinely new content) reduces to Lemma J, an a1-only upper bound on the first-realizer spread |t-t'|. VETTING FINDING: since t-t'=q(A-B) with |A-B|>=1, Lemma J is equivalent to the magnitude bound itself (no relational leverage); concrete routes fork to the forbidden sub-support lever. Buildable deliverable = certify the scaffold + record the fork finding."
+  },
+  "redundant-constraint-antichain": {
+    "copied_from": null,
+    "elo": 1714.8005791252501,
+    "expanded": 7,
+    "last_note": "SOLVED \u2014 \u00a715 fresh-prime Rescale-Witness closes the Crux directly; 15.1\u201315.5 independently verified, key-def equivalence (15.2a) handled, fresh-not-p_max and local-not-transversal guardrails respected; feeds certified \u00a74-\u00a75 endgame. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 7,
+    "selected": 6,
+    "slug": "redundant-constraint-antichain",
+    "stale": true,
+    "summary": "Admissibility \u27fa meet every \u2286-minimal prime-support (F_i\u2287F_j makes i redundant). Reduce to: the minimal-support antichain eventually uses a fixed finite prime set (large-prime supports get dominated by later small-only supports) \u21d2 fixed admissible residue-union U mod L \u21d2 pigeonhole periodicity \u21d2 from-n=1 by injectivity. Cruxes open: finite alphabet + antichain stabilization."
+  },
+  "residual-anchor-peeling": {
+    "copied_from": null,
+    "elo": 1488.798104648766,
+    "expanded": 1,
+    "last_note": "Proven-collapse: Partition Lemma A + collapse Proposition rigorous; anchor pole provably reduces verbatim to E5 chain-descent, no independent bypass. Certified salvage (Lemma A + sub-support non-transversality guardrail). RETHINK as independent pole.",
+    "last_outcome": "dead-end",
+    "last_round": 4,
+    "selected": 3,
+    "slug": "residual-anchor-peeling",
+    "stale": false,
+    "summary": "Partition \ud835\udcd0_\u221e over the finite anchor set P=primes(a\u2081) by \u03b1(G)=min(G\u2229P); \u03a0 finite \u27fa each anchor fiber Q_p finite. Per-anchor: fix p*, common small part S\u2080 (2^\u03c0(M) many), infinite fiber \u27f9 distinct large q_k\u2192\u221e each with E3 private witness; contradiction via E2\u21d0 realizability forcing a common {p*}\u222aS\u2080-support term (window-preemption). Gap = step 5 (per-anchor persistence). Non-circular: finite partition, not infinite-fiber peeling."
+  },
+  "value-stream-double-freeze": {
+    "copied_from": null,
+    "elo": 1437.4587844035775,
+    "expanded": 1,
+    "last_note": "Automaton framing provably collapses onto the crux (K-equiv: automaton-finite \u27fa \u03a0-finite; \u21d2 direction hand-wavy). No new leverage on \u03a0-finite; K1\u2032 is the already-certified endgame. Single-gap trap \u2014 send to outliner for a genuinely different pole.",
+    "last_outcome": "dead-end",
+    "last_round": 3,
+    "selected": 4,
+    "slug": "value-stream-double-freeze",
+    "stale": false,
+    "summary": "Transplant aimo-0678 two-stage well-ordering onto the chosen VALUES a_n: Stage-1 freeze (certified max-gap Gamma*), Stage-2 window-state W_n=(a_n mod M; active supports binding in (a_n,a_n+Gamma*]) ranges over a finite set => finite-automaton orbit => gap-word d_n eventually periodic => a_{n+T}=a_n+L directly (Pi finite as by-product). Load-bearing gap K3 (bounded active supports per window) is numerically plausible; honest hard gap = automaton determinism (large primes outside window can be load-bearing for admissibility, e.g. 380=2^2*5*19 on a1=375)."
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "alternating-sum-potential": {
+    "copied_from": null,
+    "elo": 1575.9956615132,
+    "expanded": 4,
+    "last_note": "Closed the entire c_n=1 two-part-top-cut slice rigorously (certified L14, S(B)>=S(R)); residual Gb narrowed to c_n>=2, e<1 via coupled overlap (Wb) still open; UB (G2) untouched.",
+    "last_outcome": "advanced",
+    "last_round": 5,
+    "selected": 5,
+    "slug": "alternating-sum-potential",
+    "stale": false,
+    "summary": "Reframe via potential S=\u03a3(-1)^{i+1}p_(i), LB=(1+S)/2; target S=1/(2^{n+1}-1); monovariant/reserve control of S under cuts, no induction on n."
+  },
+  "averaging-upper-bound": {
+    "copied_from": null,
+    "elo": 1447.790787801118,
+    "expanded": 1,
+    "last_note": "Top-part convex-averaging mechanism REFUTED: min of the two top-part branches (2,2,1),k=2 gives 1 > 5/7 target while true U2=0 via non-top bisect. Do not retry top-part-restricted UB.",
+    "last_outcome": "dead-end",
+    "last_round": 4,
+    "selected": 1,
+    "slug": "averaging-upper-bound",
+    "stale": false,
+    "summary": "Upper bound via convex-combination of MATCH/BISECT: min(U(MATCH),U(BISECT)) <= p(r)-weighted average <= sum/D_k, avoiding the exhausted 'which branch wins' case-split (aimo-0198 min<=avg lever)."
+  },
+  "explicit-certificate": {
+    "copied_from": null,
+    "elo": 1370.0600327119555,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 5,
+    "slug": "explicit-certificate",
+    "stale": false,
+    "summary": "Explicit two-sided certificate: Hall/marriage injection of small parts to even ranks (lower); explicit XY split + majorization cap (upper). Upper-side 'concentrate don't spread' mechanism is provably false, needs replacement."
+  },
+  "global-max-peel": {
+    "copied_from": null,
+    "elo": 1484.5176660765671,
+    "expanded": 1,
+    "last_note": "Certified peel-max L5 and unconditional high-band Lemma H L7 (h\u22651\u27f9S\u22651, merges Case 1 + high-band Case 2 induction-free). Residual GAP-LB (c_n\u22651, h<1 low-band overlap) = shared crux; upper bound not attempted.",
+    "last_outcome": "advanced",
+    "last_round": 3,
+    "selected": 3,
+    "slug": "global-max-peel",
+    "stale": false,
+    "summary": "Unified lower bound: strong induction on part count peeling the CURRENT global max via verified peel-max identity S(B)=b_(1)-S(B\\b_(1)); generalized IH over refinements of arbitrary superincreasing multisets merges Case 1/Case 2. Target G(n): S>=1 numerically confirmed."
+  },
+  "induction-peel": {
+    "copied_from": null,
+    "elo": 1688.5062275732516,
+    "expanded": 5,
+    "last_note": "Shard-count/boundary-invariance axis for (CB) FALSIFIED (slack non-constant); UB branch-inequality line retired dead (F1 n=5 counterexample). No gap closed; superseded by segment-subset-pigeonhole which solved the whole problem.",
+    "last_outcome": "dead-end",
+    "last_round": 6,
+    "selected": 5,
+    "slug": "induction-peel",
+    "stale": true,
+    "summary": "Strong induction on n, peeling LB's largest dyadic piece; self-similar scaled sub-game; match-vs-bisect recursion for both bounds."
+  },
+  "interlacing-bijection": {
+    "copied_from": null,
+    "elo": 1498.7441416511633,
+    "expanded": 1,
+    "last_note": "New discrete merge-word/\u00b11-walk framing; proved Lemma IB-1 (= R4, certified L12) recasting (PM) as odd-down>=even-up crossing balance; the excess->deficit injection is only sketched (height-<=2 flagged indicated-only), heights>=3 + budget-totality remain the GAP.",
+    "last_outcome": "partial",
+    "last_round": 5,
+    "selected": 1,
+    "slug": "interlacing-bijection",
+    "stale": false,
+    "summary": "LB {D>=2} residual reframed combinatorially: injection from excess rank-crossings (D>=2) to deficit crossings (D<=0) on the interleaving word of Q_low vs C shards, using origin-group-sum + part-count budget; UB imported from induction-peel branch inequalities. Genuinely different (discrete/bijective) framing from analytic charging and beta-Hall."
+  },
+  "segment-subset-pigeonhole": {
+    "copied_from": null,
+    "elo": 1556.8024301740206,
+    "expanded": 1,
+    "last_note": "SOLVED both bounds: UB1 merge-alignment + subset-sum pigeonhole (UB), tree-extraction signed-sum LB1 + dyadic Delta (LB); all steps independently reproduced, 0 numeric violations. c(n)=2^n/(2^{n+1}-1) verified.",
+    "last_outcome": "verified-milestone",
+    "last_round": 6,
+    "selected": 0,
+    "slug": "segment-subset-pigeonhole",
+    "stale": true,
+    "summary": "Unified both-bounds on Liu's n+1 original segments: UB via mirrored-cut lemma (any disjoint S,T -> G<=|Sum(S)-Sum(T)|, <=n cuts) + pigeonhole over 2^(n+1) subset sums vs D_n bins; LB via spanning-tree/bipartite extraction G>=Delta(A), Delta(dyadic)=1/D_n. Numerics confirm both bounds + cut budget n=1..6."
+  },
+  "smoothing-extremal": {
+    "copied_from": null,
+    "elo": 1377.5830524987236,
+    "expanded": 1,
+    "last_note": "Crux mechanism Lemma G (consecutive-pair smoothing monovariant) refuted: sum-preserving moves cannot connect generic A to G_n and often decrease S*; surviving weaker claim re-imports XY optimal-response structure. RETHINK. Durable: maximizer-existence reformulation.",
+    "last_outcome": "dead-end",
+    "last_round": 2,
+    "selected": 2,
+    "slug": "smoothing-extremal",
+    "stale": false,
+    "summary": "Max-side extremal/smoothing: F(A)=min_XY odd-rank sum; prove max_A F(A) attained at dyadic G_n via a consecutive-pair smoothing monovariant (Lemma G), never builds an explicit XY strategy. Extremal target numerically sound; Lemma G unverified."
+  }
+}

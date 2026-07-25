@@ -1,0 +1,15 @@
+{
+  "pr_title": "IMO 2026 P2: complete rigorous proof that OM=ON (coordinate-identity approach, orientation lemma from interiority)",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "Field opened; coordinate-identity 1 step from solve",
+      "ended_at": "2026-07-24T23:18:34Z"
+    },
+    {
+      "n": 2,
+      "summary": "Orientation gap closed; IMO 2026 P2 SOLVED (APPROVE)",
+      "ended_at": "2026-07-25T00:14:44Z"
+    }
+  ]
+}

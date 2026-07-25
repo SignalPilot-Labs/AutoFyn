@@ -1,0 +1,38 @@
+{
+  "angle-sum-anchor": {
+    "copied_from": null,
+    "elo": 1482.5949374039376,
+    "expanded": 1,
+    "last_note": "APPROVE/solved: independent self-contained presentation of same characterization; Covering + Double-plant lemmas correct, measure-zero base case rigorous, answer tabulated and both wrong conjectures refuted.",
+    "last_outcome": "verified-milestone",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "angle-sum-anchor",
+    "stale": true,
+    "summary": "Same answer theta|180 re-derived from the angle-sum 180 as sole residue anchor; owns explicit answer-set tabulation and refutation of both theta<=90 and theta|90."
+  },
+  "lattice-invariant-180": {
+    "copied_from": null,
+    "elo": 1531.263693206478,
+    "expanded": 1,
+    "last_note": "APPROVE/solved: both directions rigorous; 4-case covering + double-plant/descent verified independently and by brute force (0 failures). All edge cases (theta=90 altitude, theta=60, x-range, non-degeneracy) closed.",
+    "last_outcome": "verified-milestone",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "lattice-invariant-180",
+    "stale": true,
+    "summary": "Mulan wins iff theta|180; necessity = Shan-Yu keeps a child with no angle in thetaZ via 4-case mod-theta covering; sufficiency = double theta-plant then forced descent to theta."
+  },
+  "reduce-to-2theta": {
+    "copied_from": null,
+    "elo": 1486.1413693895845,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "reduce-to-2theta",
+    "stale": false,
+    "summary": "Same answer via reducing the game to forcing angle 2theta then bisecting, tracked by a boolean potential Phi plus monovariant m giving an explicit finite move bound."
+  }
+}

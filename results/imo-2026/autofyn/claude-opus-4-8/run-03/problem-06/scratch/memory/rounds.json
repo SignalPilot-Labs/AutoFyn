@@ -1,0 +1,40 @@
+{
+  "pr_title": "IMO 2026 P6 solved: greedy gcd-sequence is eventually linear-periodic (two independent proofs)",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "Reduce IMO2026-P6 to single Finite Alphabet crux",
+      "ended_at": "2026-07-24T23:31:14Z"
+    },
+    {
+      "n": 2,
+      "summary": "Sharpen Finite Alphabet crux to q≤a_1; 2 lemma files",
+      "ended_at": "2026-07-25T00:14:31Z"
+    },
+    {
+      "n": 3,
+      "summary": "Certify E4: crux ⟺ bounded support cardinality |G|",
+      "ended_at": "2026-07-25T00:50:50Z"
+    },
+    {
+      "n": 4,
+      "summary": "Sharpen E5 to E5″; close ∏G<a₁ subclass; prune sub-support lever",
+      "ended_at": "2026-07-25T01:31:19Z"
+    },
+    {
+      "n": 5,
+      "summary": "R5: joint-spread lever proven illusory; TAS certified; plateau",
+      "ended_at": "2026-07-25T01:58:18Z"
+    },
+    {
+      "n": 6,
+      "summary": "R6: Rejection-Budget Dichotomy certified; §14 chain airtight",
+      "ended_at": "2026-07-25T02:23:38Z"
+    },
+    {
+      "n": 7,
+      "summary": "R7: SOLVED — fresh-prime rescale-witness closes Π-finite",
+      "ended_at": "2026-07-25T03:02:05Z"
+    }
+  ]
+}

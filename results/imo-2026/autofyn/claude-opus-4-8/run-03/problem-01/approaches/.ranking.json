@@ -1,0 +1,38 @@
+{
+  "confluence-normal-form": {
+    "copied_from": null,
+    "elo": 1468.7023986633528,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "confluence-normal-form",
+    "stale": false,
+    "summary": "Prime-free (product,active-count) monovariant for (a); Newman's Lemma (terminating+locally confluent) for (b) as normal-form uniqueness, no closed form. Load-bearing gap: local-confluence overlap case."
+  },
+  "per-prime-gcd-invariant": {
+    "copied_from": null,
+    "elo": 1531.263693206478,
+    "expanded": 1,
+    "last_note": "Complete rigorous proof of both parts; closed form M=\u220fp^{g_p} brute-force verified; APPROVE, solved.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "per-prime-gcd-invariant",
+    "stale": true,
+    "summary": "p-adic decoupling; g_p=gcd of each prime's exponent multiset is exact invariant; (\u03a9,K) lex monovariant + lcm>1 non-collapse give (a); M=\u220fp^{g_p} gives (b)."
+  },
+  "strong-induction-descent": {
+    "copied_from": null,
+    "elo": 1500.0339081301693,
+    "expanded": 1,
+    "last_note": "Complete rigorous proof of both parts via strong induction carrying \u03bc(B) in IH; APPROVE, solved.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "strong-induction-descent",
+    "stale": true,
+    "summary": "Strong induction on (\u03a9,K); IH carries value \u03bc(B)=\u220fp^{g_p}; every first move preserves \u03bc and drops potential, so (b) order-independence falls out of the IH."
+  }
+}

@@ -1,0 +1,2 @@
+ALWAYS: for gcd/lcm-move invariant proofs, state gcd(0,x)=x, gcd(0,0)=0 conventions explicitly and verify boundary subcases (a=b, a=0) of the subtractive-Euclid step gcd(min,max-min)=gcd(a,b); reviewers flag these as gaps otherwise (imo-2026-01, round 1).
+ALWAYS: for order-independence via strong induction, keep the conserved value INSIDE the IH statement (P(B): terminates at one survivor = μ(B)); dropping it loses part (b) (imo-2026-01, round 1).

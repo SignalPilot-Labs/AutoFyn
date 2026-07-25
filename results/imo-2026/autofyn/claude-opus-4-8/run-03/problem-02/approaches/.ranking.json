@@ -1,0 +1,50 @@
+{
+  "coordinate-identity": {
+    "copied_from": null,
+    "elo": 1558.4023255472569,
+    "expanded": 2,
+    "last_note": "SOLVED: orientation gap closed by coordinate-free Orientation Lemma (Lemma I + Lemma B + Fact 0, no numerics); reviewer independently reverified decoupling, leading coeffs, and T\u22610 mod\u27e8FK,FL\u27e9; 11739 admissible configs give OM=ON. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "coordinate-identity",
+    "stale": true,
+    "summary": "Coordinate/complex bash: BC on x-axis, prove O_x = midpoint(MN)_x as an algebraic identity in beta."
+  },
+  "midpoint-doubling-phantom": {
+    "copied_from": null,
+    "elo": 1415.9079884044097,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "midpoint-doubling-phantom",
+    "stale": false,
+    "summary": "Phantom points K'=2M-K, L'=2N-L + median-length law; balancing target (not OK'=OL', which is false)."
+  },
+  "pow-reduction-trig": {
+    "copied_from": null,
+    "elo": 1553.340812161889,
+    "expanded": 2,
+    "last_note": "Advanced GAP-2 to GAP-2': balance identity reduced to exact bilinear-form membership (Lemmas 4,5 symbolic); explicit cofactors f,g not yet extracted (consistency numeric-at-generic-point). Honest partial. CHANGES REQUESTED.",
+    "last_outcome": "advanced",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "pow-reduction-trig",
+    "stale": true,
+    "summary": "Power-of-a-point reduces OM=ON to MX/NY=b/c (verified exact); close via law-of-sines trig identity in beta."
+  },
+  "synthetic-sigma-spiral": {
+    "copied_from": null,
+    "elo": 1472.3488738864444,
+    "expanded": 1,
+    "last_note": "Reduction (Step1) + spiral similarity (Step2) rigorous and certified. Concyclicities A,C,K,K\u2032 / A,B,L,L\u2032 true (verified numerically) but proofs lean on numerically-justified directed-angle signs (same orientation gap); crux c\u00b7MX=b\u00b7NY open.",
+    "last_outcome": "partial",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "synthetic-sigma-spiral",
+    "stale": false,
+    "summary": "Synthetic: construct an auxiliary point to force a concyclicity giving MB*MX=NC*NY; sigma-transport. Crux point undetermined."
+  }
+}

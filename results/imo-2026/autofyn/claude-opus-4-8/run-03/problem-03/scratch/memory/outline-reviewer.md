@@ -1,0 +1,17 @@
+# outline-reviewer role memory
+
+ALWAYS: numerically test min-max game claims before ranking — brute minimax confirmed the L0 greedy/odd-rank reduction for imo-2026-03, and a grid search REFUTED a stated XY "concentrate don't spread" mechanism (spreading/slivering strictly helps XY). Cheap checks catch broken lemma mechanisms the outliner only flagged as "unproven" (round 1).
+
+ALWAYS: for imo-2026-03, remember LB total (odd-rank sum) = (1+S)/2 where S=Σ(-1)^{i+1}p_(i), so min-S target is 1/D_n (0.1429 at n=2, 0.0667 at n=3), NOT c(n)=2^n/D_n. A random-search MIN estimator only UPPER-bounds true min-S, so interior "F decreased" wobbles are search noise, not refutations — don't refute a smoothing/extremal lemma on noisy min estimates (round 2).
+ALWAYS: verified exact (0/3000) the min-pairing identity S=min over pairings Σ|diffs|+leftover, attained by consecutive pairing — a solid shared foundation; but watch when two slugs both adopt it as their upper-bound witness construction, they converge onto ONE gap (single-gap trap) — flag and don't build both (round 2).
+
+ALWAYS: for imo-2026-03, L4 consecutive-pairing cost = S EXACTLY (0/5000) but it is a FIXED pairing of the final sorted multiset — a RECURSIVE merge objective (combine two smallest, charge |diff|, replace by sum) does NOT equal S (4170/5000 mismatch). Any Huffman/merge-tree upper-bound framing that assumes the Σ|diff| cost decomposes over a merge order is refuted at the root — RETHINK it, don't register (round 3).
+ALWAYS: gate speculative far-bet approaches by numerically testing their one make-or-break translation lemma before registering; the outliner's honest "UNVERIFIED" flag on huffman was the tell, and a 30s check confirmed the mechanism false (round 3).
+
+ALWAYS: for imo-2026-03 LB, the residual has an exact β-matching form: S(B_low)=sum−2β (L4), sum=D_n−e, so S(B_low)≥1−e ⟺ β(B_low)≤2^n−1 (e cancels). Verified tight: at n=3 extremal cascade {4,4,2,2,1,1,1}, β=7=2^n−1 exactly. A clean, e-free target — approve β-cap reformulations (round 4).
+NEVER: gate out a min≤average (aimo-0198) UB framing as "too weak" just because averaging is weaker than min — the min≤avg step is valid; the real risk is whether an r-only weight p(r) exists. Approve to build but tell builder to fast-fail-probe p(r) on exact MATCH/BISECT formulas at n=2,3 first (round 4).
+
+ALWAYS: for imo-2026-03 UB, kill any "randomize which strategy XY picks" approach — the UB is a pure MINIMIZATION (no adversary responds to the coin), so E[S] >= min_strategy S, and min already EQUALS the tight target (dyadic cascade S=1/D_n). Randomization buys zero slack; it collapses to the deterministic branch inequalities. Same family as the refuted averaging-upper-bound. Do not register (round 5).
+NEVER: register a "gated probe" slug whose expected-fail fallback is just another live slug's open gap — it duplicates that gap, not an independent approach (randomized-xy-cut fell back to induction-peel step 4 branch inequalities, round 5).
+
+ALWAYS: for imo-2026-03, the segment-subset-pigeonhole framing (Liu's n+1 ORIGINAL segments, official-solution structure) is numerically SOUND both bounds n<=5: UB mirrored-cut+pigeonhole achieves G<=|Sum(S)-Sum(T)|<=1/D_n with cut budget <=n (0 fails/1500); LB Delta(dyadic)=1/D_n exactly, G>=Delta(A) always (0 fails). The GAP1 bookkeeping trap dissolves by computing S on the OUTPUT multiset via L4 general min-pairing (equal pairs cost 0, overhang pieces alt-sum <= their total) -- do NOT require the overhang be a single piece (round 6).

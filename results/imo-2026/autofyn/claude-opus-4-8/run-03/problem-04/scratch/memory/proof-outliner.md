@@ -1,0 +1,2 @@
+ALWAYS: for imo-2026-04, run an exact-fraction AND-OR game search (forced moves + bisection AND-nodes) before trusting a conjectured answer (because round-1's "θ≤90" was FALSE; the real answer is θ|180, and the search cleanly separates divisors from non-divisors, round 2).
+NEVER: assume the "natural" characterization for a game problem without a covering/invariant proof of the loss direction — the θ|180 lattice invariant (no angle in θℤ, preserved iff θ∤180 via a 4-case mod-θ covering; 180 is the only anchor) refuted the θ≤90 guess (round 2).

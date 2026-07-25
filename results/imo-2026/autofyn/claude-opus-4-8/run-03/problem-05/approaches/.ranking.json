@@ -1,0 +1,50 @@
+{
+  "monotonicity-orbits": {
+    "copied_from": null,
+    "elo": 1498.5933835814217,
+    "expanded": 1,
+    "last_note": "Complete rigorous solution; cleanest endgame via |p-q|>=b separation making F,G both open. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "monotonicity-orbits",
+    "stale": true,
+    "summary": "f nondecreasing => d nondecreasing => threshold, killed by near-threshold R-violation."
+  },
+  "orbit-crossing": {
+    "copied_from": null,
+    "elo": 1545.8278203282016,
+    "expanded": 1,
+    "last_note": "Complete rigorous solution; all identities re-derived, endgame (F open + boundary limit) airtight. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "orbit-crossing",
+    "stale": true,
+    "summary": "Cross-orbit marching kills two positive d-values; boundary/openness of fixed-point set closes {0,b}."
+  },
+  "shift-family-sos": {
+    "copied_from": null,
+    "elo": 1501.5018521500222,
+    "expanded": 1,
+    "last_note": "Complete rigorous solution; residual {0,b} killed by two failure-band quadratics forcing F,G open. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "shift-family-sos",
+    "stale": true,
+    "summary": "Direct quadratic-form squeeze on reduced R',L' to force a=b (d constant)."
+  },
+  "variational-min": {
+    "copied_from": null,
+    "elo": 1454.0769439403546,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "variational-min",
+    "stale": false,
+    "summary": "Envelope identity f(y)=min_x (f(x)+y)^2/(4x); tangency forces d constant."
+  }
+}

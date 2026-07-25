@@ -1,0 +1,35 @@
+{
+  "pr_title": "imo-2026-03 solved: c(n)=2^n/(2^{n+1}−1) via segment-subset pigeonhole (UB) + tree-extraction (LB)",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": " ended without summary -- autocommit",
+      "ended_at": "2026-07-24T23:15:08Z"
+    },
+    {
+      "n": 2,
+      "summary": "First builds: L0-L4 lemmas certified, peel leads, both bounds open",
+      "ended_at": "2026-07-24T23:48:36Z"
+    },
+    {
+      "n": 3,
+      "summary": "LB closed for e≥1 regime; +4 lemmas; crux narrowed",
+      "ended_at": "2026-07-25T00:21:38Z"
+    },
+    {
+      "n": 4,
+      "summary": "LB reforged to β-cap/(PM); L9-L11 certified; averaging UB refuted",
+      "ended_at": "2026-07-25T00:50:44Z"
+    },
+    {
+      "n": 5,
+      "summary": "LB residual narrowed to c_n≥2; L12-L14 certified; UB randomized route killed",
+      "ended_at": "2026-07-25T01:24:44Z"
+    },
+    {
+      "n": 6,
+      "summary": "SOLVED: c(n)=2^n/(2^{n+1}-1), both bounds proven",
+      "ended_at": "2026-07-25T01:59:37Z"
+    }
+  ]
+}
