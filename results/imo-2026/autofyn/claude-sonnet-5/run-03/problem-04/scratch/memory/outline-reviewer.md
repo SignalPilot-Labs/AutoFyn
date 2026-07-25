@@ -1,0 +1,7 @@
+ALWAYS: before trusting a game-theory outline's conjectured answer, run a cheap bounded-depth exact-Fraction minimax (backward induction with a θ-aware t-grid) on a few divisor/non-divisor θ values to catch a wrong target characterization before dispatching multiple builders on it (round 1, imo-2026-04 — caught nothing wrong, but the check was cheap and would have been decisive if the target were false).
+
+ALWAYS: when an outline states a "forced move" lemma (e.g. one child instantly loses so the opponent must discard it), re-derive the algebra by hand — it's cheap and confirms the mechanism isn't hand-waved (round 1, imo-2026-04 Shave lemma checked out).
+
+NEVER: treat "all approaches share the same open sub-lemma" as automatic grounds to cut approaches when the shared piece is genuinely the hardest part of the problem and each approach attacks it via a different mechanism (algorithm obstruction vs. invariant vs. discrete combinatorics vs. fixed-point closure) — flag it as a plateau risk to watch next round instead, don't RETHINK sound approaches just for sharing a hard core (round 1, imo-2026-04).
+
+NEVER: treat reuse of already-fully-proved shared lemmas (cited and re-derivable, not open gaps) across multiple approaches as the "single-gap trap" — that trap is about splitting one unresolved proof across slugs, not about legitimately importing settled infrastructure (round 1, imo-2026-04: all four approaches correctly shared 4 proven anchor lemmas).

@@ -1,0 +1,50 @@
+{
+  "induction-on-active-count": {
+    "copied_from": null,
+    "elo": 1454.0769439403546,
+    "expanded": 1,
+    "last_note": "Full proof verified correct and complete: nested strong induction (on active count k, then quadratic potential Sigma) closes the interleaving gap for arbitrary move order in part (a); G_p gcd-invariant correctly proves part (b). No gaps found; APPROVE, Status solved.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "induction-on-active-count",
+    "stale": true,
+    "summary": "Strong induction on count of active (>1) entries using a two-entry Euclidean sub-lemma; genuinely different strategy from the global-potential approaches. Had an interleaving gap; fix is to induct on the first move of an arbitrary sequence rather than an isolated-pair strategy."
+  },
+  "lex-potential-gcd-invariant": {
+    "copied_from": null,
+    "elo": 1545.8278203282016,
+    "expanded": 1,
+    "last_note": "Found a false intermediate identity in the Setup (\"g*q = gcd(m,n)*lcm(m,n) = mn\", derived from a wrong valuation sum min(a,b)+max(a,b)=a+b; actually g*q=lcm(m,n), verified false numerically for m=4,n=6). Conclusions drawn from it happen to remain true via the correct identity, but as written it is an unproven/false claim presented as fact; downgraded from claimed solved to partial. Otherwise structurally sound (lex potential (N,Sigma) and G_p invariant both correct).",
+    "last_outcome": "partial",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "lex-potential-gcd-invariant",
+    "stale": true,
+    "summary": "Per-prime subtractive-Euclidean reduction; lex potential (N,sum of squares of exponents) for termination; gcd-of-exponents invariant G_p for the survivor M=prod p^G_p. Complete, no structural gap."
+  },
+  "omega-linear-monovariant": {
+    "copied_from": null,
+    "elo": 1498.5933835814217,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "omega-linear-monovariant",
+    "stale": false,
+    "summary": "Same mechanism as lex-potential but swaps the quadratic termination potential for a linear total-prime-factor-count T; part (b) identical. Near-twin write-up variant, not independently diversifying."
+  },
+  "token-multiset-crt-reconstruction": {
+    "copied_from": null,
+    "elo": 1501.5018521500222,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "token-multiset-crt-reconstruction",
+    "stale": false,
+    "summary": "Same mechanism reorganized into per-prime \"lane\" decomposition (Lemma A single-lane invariant + Lemma B cross-lane termination). Expository reshuffling of lex-potential; needs \"CRT\" mislabel fixed to unique factorization."
+  }
+}

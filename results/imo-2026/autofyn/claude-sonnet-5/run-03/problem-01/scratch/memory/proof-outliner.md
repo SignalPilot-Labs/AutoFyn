@@ -1,0 +1,2 @@
+ALWAYS: when explorers converge strongly on one correct mechanism, diversify approaches by write-up organization/strategy (different potential functions, per-lane decoupled lemmas, induction vs global potential) rather than forcing an inferior alternative framing (round 1, imo-2026-01).
+NEVER: present an induction-based termination argument that only shows one strategy (e.g. "finish one pair before starting another") terminates — must cover arbitrary interleaving, or flag it explicitly as an open gap (round 1, imo-2026-01, induction-on-active-count approach).

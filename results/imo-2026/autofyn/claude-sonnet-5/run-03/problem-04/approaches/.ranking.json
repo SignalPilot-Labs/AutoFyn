@@ -1,0 +1,50 @@
+{
+  "maximal-safe-set-fixedpoint": {
+    "copied_from": null,
+    "elo": 1453.4726135870442,
+    "expanded": 1,
+    "last_note": "Correct formal safety-game (Wk/S) reduction, theta>90 defense and n=2 base case reproved inside it, independent obstruction proof (Down-shave/Up-shave alone insufficient) matching mod-theta-invariant; general \"if\" and \"only if\" left open in its own framework, now subsumed by ngon-arc-reduction.",
+    "last_outcome": "partial",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "maximal-safe-set-fixedpoint",
+    "stale": true,
+    "summary": "Formal game-theoretic framing: characterize Shan-Yu's maximal safe set S (greatest fixed point) and show S=\u2205 iff \u03b8=180/n; \u03b8=180/n via Shave-forced descent-to-contradiction on S, \u03b8\u226490 non-divisor via closure verification of a candidate S_\u03b8 (open, shared gap)."
+  },
+  "mod-theta-invariant": {
+    "copied_from": null,
+    "elo": 1512.4615315734222,
+    "expanded": 1,
+    "last_note": "Unified \"only if\" direction fully correct (property P, 4-case algebra) and a genuine obstruction proof that pure shave/up-shave moves can't finish \"if\"; \"if\" direction itself still open here, but the obstruction correctly predicts and is resolved by ngon-arc-reduction's non-forced residue-alignment move.",
+    "last_outcome": "partial",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "mod-theta-invariant",
+    "stale": true,
+    "summary": "Classical invariant/monovariant framing: residue-sum invariant + monovariant \u03a6=#angles that are exact multiples of \u03b8 for the \"if\" direction; distance-to-nearest-multiple invariant conjectured for Shan-Yu's defense when \u03b8\u226490 non-divisor (open, central gap)."
+  },
+  "ngon-arc-reduction": {
+    "copied_from": null,
+    "elo": 1502.8021616330557,
+    "expanded": 1,
+    "last_note": "Complete correct proof of both directions: Residue-Alignment move closes \"if\" for n>=3, disjoint-bad-residue-sets invariant closes \"only if\" for all non-divisors; reviewer independently verified all algebra and ran end-to-end game-tree simulation with zero failures. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "ngon-arc-reduction",
+    "stale": true,
+    "summary": "Discrete combinatorial reduction: encode \u03b8=180/n triangles as compositions of n into 3 parts (divider game on n arcs), methodologically inspired by crux aimo-0225 but reproved from scratch; \"no closing necklace\" argument for the only-if direction (open)."
+  },
+  "shave-and-halve-forcing": {
+    "copied_from": null,
+    "elo": 1531.263693206478,
+    "expanded": 1,
+    "last_note": "theta>90 defense and even-n \"if\" direction fully correct and reusable, but odd n>=3 \"if\" and general \"only if\" left open; problem now fully closed by sibling ngon-arc-reduction, so remaining gap is moot but this file's own claims stand as partial progress.",
+    "last_outcome": "partial",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "shave-and-halve-forcing",
+    "stale": true,
+    "summary": "Explicit forced-move algorithm: Shave lemma (force \u03b8 into one child, deterministic residue transfer) + Bisection lemma, strong induction on n; \u03b8>90 imported. Open: finish the induction and find a universal Shan-Yu defense for \u03b8\u226490 non-divisor."
+  }
+}

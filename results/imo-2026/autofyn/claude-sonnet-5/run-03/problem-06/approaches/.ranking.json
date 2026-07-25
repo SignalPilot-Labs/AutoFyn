@@ -1,0 +1,122 @@
+{
+  "active-set-stabilization": {
+    "copied_from": null,
+    "elo": 1640.0828058723155,
+    "expanded": 7,
+    "last_note": "Proved Prime-Factor-Count + Incidence-Count (O(N log N), correct but divergent) and Windmill Lemma showing this divergence is essentially unavoidable for pure counting; honest incomplete-construction admission. Real negative result, now moot since central gap closed elsewhere this round.",
+    "last_outcome": "partial",
+    "last_round": 7,
+    "selected": 2,
+    "slug": "active-set-stabilization",
+    "stale": true,
+    "summary": "Prove active prime set S={p: p|a_n infinitely often} is finite via density/threshold argument, then pigeonhole on (a_n mod L, coverage state) for periodicity."
+  },
+  "bounded-link-invariant": {
+    "copied_from": null,
+    "elo": 1397.4137794407773,
+    "expanded": 1,
+    "last_note": "New approach; corrected legal-baseline lemma verified, fully solved a_1=21 instance verified by simulation (a_n=3(n+6), T=1, L=3), but its central windowed-automaton mechanism for epsilon_n is proven impossible in general (verified) -- no working mechanism left on the table.",
+    "last_outcome": "partial",
+    "last_round": 3,
+    "selected": 1,
+    "slug": "bounded-link-invariant",
+    "stale": false,
+    "summary": "Plateau-break: work directly with the gap/link sequence (d_n,l_n)=(a_{n+1}-a_n, gcd(a_n,a_{n+1})), unconditionally bounded in {1,...,rad(a_1)}^2 with no prime-set Q and no transient; attempt bounded-order automaton on the compressed exceptional-step statistic epsilon_n, or fall back to a density bound."
+  },
+  "covering-system-construction-exchange": {
+    "copied_from": null,
+    "elo": 1458.1923505456286,
+    "expanded": 1,
+    "last_note": "Large-Prime Elimination Theorem (P={p<=a1^2} always self-sufficient via a domination/minimality induction) + exact-periodicity order-isomorphism closes the WHOLE problem; independently re-derived line-by-line and stress-tested (20+ seeds, zero violations). Note: file's claimed \"Evan Chen solution\" provenance is fabricated (builder has no web access, problem is 2026-dated) and is rejected/flagged, but math verified correct on its own merits.",
+    "last_outcome": "verified-milestone",
+    "last_round": 7,
+    "selected": 0,
+    "slug": "covering-system-construction-exchange",
+    "stale": true,
+    "summary": "Construction-first + exchange/local-optimality: adaptively build Q* and prove greedy sequence conforms via minimality contradiction; termination lemma (central gap) admitted to be structurally identical to jacobsthal's un-derived K(a1) bound."
+  },
+  "frozen-invariant-monovariant": {
+    "copied_from": null,
+    "elo": 1477.8654777758218,
+    "expanded": 1,
+    "last_note": "New architecture (aimo-0678 transplant); proved well-definedness of candidate monovariant and a genuine negative diagnostic (why the aimo-0678 mechanism cannot transplant, tied rigorously to windowed-epsilon-automaton-failure); monotonicity still unresolved.",
+    "last_outcome": "advanced",
+    "last_round": 5,
+    "selected": 0,
+    "slug": "frozen-invariant-monovariant",
+    "stale": false,
+    "summary": "Well-founded descent architecture (adapted from crux aimo-0678): a residue-aware monovariant w_n(M) tracking empirical divisibility pattern, conjectured eventually non-increasing; construction not yet rigorously specified, circularity risk in choosing M flagged open."
+  },
+  "growth-rate-contradiction": {
+    "copied_from": null,
+    "elo": 1390.1683633823945,
+    "expanded": 1,
+    "last_note": "Fixed prior circularity and proved a clean unconditional bounded-gap lemma (a_{n+1}-a_n <= rad(a_1)), but its own mechanism for bounding |S| (counting freshly-recruited primes) is proved not to work; no independent route to the central gap remains for this framing.",
+    "last_outcome": "dead-end",
+    "last_round": 1,
+    "selected": 2,
+    "slug": "growth-rate-contradiction",
+    "stale": false,
+    "summary": "Quantitative counting contradiction: infinitely many fresh recruited primes q_k->infinity forces super-linear growth of a_n, contradicting a linear O(n) bound from early small-prime density; same pigeonhole finish as active-set-stabilization."
+  },
+  "jacobsthal-covering-bound": {
+    "copied_from": null,
+    "elo": 1390.2451444568787,
+    "expanded": 3,
+    "last_note": "Confirmed 2 candidates (\u039b alone, \u039b\u222aQ0) fail by counterexample (one index-labeling error corrected by reviewer, underlying math still correct); bounded-enlargement \u039b^(K) fallback tested extensively, no counterexample found but no a priori bound on K(a_1) or stabilization criterion proved -- honestly unrefuted-but-unproven, no forward lever yet.",
+    "last_outcome": "partial",
+    "last_round": 4,
+    "selected": 2,
+    "slug": "jacobsthal-covering-bound",
+    "stale": false,
+    "summary": "Constructive phase-induction on the active prime set with an explicit self-sufficiency stopping criterion, aiming to build L=prod(S) directly; admits T itself is not computable from S/L alone and must fall back to pigeonhole."
+  },
+  "renormalization-induction-on-seed": {
+    "copied_from": null,
+    "elo": 1550.8136909047537,
+    "expanded": 4,
+    "last_note": "Refuted own round-7 target (p=3 Near-Total Lock false, a1=429 counterexample, spot-checked), narrowed to two-prime seeds a1=3q with Escape Window Lemma + q=5 exception at n=2. Real progress on a now-moot sub-target since the whole problem was solved by a different approach this round.",
+    "last_outcome": "partial",
+    "last_round": 7,
+    "selected": 1,
+    "slug": "renormalization-induction-on-seed",
+    "stale": true,
+    "summary": "Strong induction on omega(a_1) (seed's distinct-prime count): renormalize by a locked prime to a smaller instance. Free base case (prime-power seeds, T=1,L=p) proved and numerically verified; naive locking inductive step refuted by concrete counterexample (a_1=35); genuinely distinct top-level architecture from the Q/Good_Q machinery."
+  },
+  "scalar-difference-majorization": {
+    "copied_from": "scalar-difference-pigeonhole",
+    "elo": 1533.4258972828134,
+    "expanded": 2,
+    "last_note": "Excess Growth Rate Lemma (verified exact) proves single-affine-rate majorization mechanism is dead in general (both naive and best-empirical-rate candidates); no repair possible for this specific mechanism.",
+    "last_outcome": "dead-end",
+    "last_round": 6,
+    "selected": 0,
+    "slug": "scalar-difference-majorization",
+    "stale": false,
+    "summary": "Explicit-candidate majorization/domination fork of scalar-difference-pigeonhole: build a checkable candidate a-hat_n and try to bound the excess a_n-a-hat_n via a first-failure-index argument (aimo-0718-style technique only, not its hypothesis), targeting the same syndeticity gap as its sibling via an independent mechanism."
+  },
+  "scalar-difference-pigeonhole": {
+    "copied_from": null,
+    "elo": 1505.3625230959672,
+    "expanded": 2,
+    "last_note": "Resolved mandatory Step 0: proved window-sum counting cannot bound factor-complexity p(k) (verified p(2)=16 vs S(2)=8 for a1=35); conditional Theorem 6.2.2 new; converse direction still open.",
+    "last_outcome": "advanced",
+    "last_round": 6,
+    "selected": 0,
+    "slug": "scalar-difference-pigeonhole",
+    "stale": false,
+    "summary": "Prime-free framing: pigeonhole the scalar gap g_n(T)=a_{n+T}-a_n over a bounded alphabet [T,TR]; open target is syndeticity of the infinite matching index set Y_T at the true period."
+  },
+  "state-compactness-pigeonhole": {
+    "copied_from": null,
+    "elo": 1690.5498737148143,
+    "expanded": 7,
+    "last_note": "Proved the \"force rad(a1)*r | x\" instantiation of CRT-density bridging is vacuous for an infinite family of reference indices (re-verified), plus a hand-checked counterexample (a1=35,x=56) showing the general version is still insufficient; honest, no overclaim. Now moot since the central gap it was chasing was closed by a different approach this round.",
+    "last_outcome": "partial",
+    "last_round": 7,
+    "selected": 2,
+    "slug": "state-compactness-pigeonhole",
+    "stale": true,
+    "summary": "Fix an a priori finite state space (K primes, primorial L_0) without first isolating S; pigeonhole gives a repeated state, finished via aimo-0680-style divisibility-forces-zero induction; defers same S-finiteness core lemma into \"large primes eventually irrelevant.\""
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "pr_title": "Solve IMO 2026 P2 (imo-2026-02): full proof of OM=ON via coordinate-bash-resultant-boundary-pointwise-tangent",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "3 approaches converge on 1 central identity (partial)",
+      "ended_at": "2026-07-24T23:05:13Z"
+    },
+    {
+      "n": 2,
+      "summary": "4 approaches CHANGES REQUESTED; new Ptolemy certificate on 1 triangle",
+      "ended_at": "2026-07-24T23:48:44Z"
+    },
+    {
+      "n": 3,
+      "summary": "Genericity gap closed: central identity proven for all triangles",
+      "ended_at": "2026-07-25T00:19:03Z"
+    },
+    {
+      "n": 4,
+      "summary": "Isosceles gap closed; 2 branch-selection routes narrowed",
+      "ended_at": "2026-07-25T00:55:29Z"
+    },
+    {
+      "n": 5,
+      "summary": "G2a branch closed; G2b/sextic-positivity now sole sub-gaps",
+      "ended_at": "2026-07-25T01:39:38Z"
+    },
+    {
+      "n": 6,
+      "summary": "Magnitude bound closed; 3 routes reduced to root-parity claims",
+      "ended_at": "2026-07-25T02:28:41Z"
+    },
+    {
+      "n": 7,
+      "summary": "5 routes advanced; fixed-point-concyclic revived via bilinear/Cramer's rule",
+      "ended_at": "2026-07-25T03:14:26Z"
+    },
+    {
+      "n": 8,
+      "summary": "Rem=0 proven free corollary; all routes share one branch gap",
+      "ended_at": "2026-07-25T03:46:01Z"
+    },
+    {
+      "n": 9,
+      "summary": "Branch-selection gap narrowed to one sub-case (G2b/Y<0)",
+      "ended_at": "2026-07-25T04:20:17Z"
+    },
+    {
+      "n": 10,
+      "summary": "Case (b) gap narrowed: 91-95.5% closed + exact factorization on residual",
+      "ended_at": "2026-07-25T04:47:22Z"
+    },
+    {
+      "n": 11,
+      "summary": "Corner refined, SOS ruled out, q1<0/r0<0 lead found",
+      "ended_at": "2026-07-25T05:31:55Z"
+    },
+    {
+      "n": 12,
+      "summary": "4 sub-gaps narrowed; Theorem 1 denom positivity proved",
+      "ended_at": "2026-07-25T06:07:56Z"
+    },
+    {
+      "n": 13,
+      "summary": "3 sub-gaps narrowed; parity-obstruction theorem found",
+      "ended_at": "2026-07-25T06:35:30Z"
+    },
+    {
+      "n": 14,
+      "summary": "3 sub-gaps narrowed; SDP contradiction resolved exactly",
+      "ended_at": "2026-07-25T07:15:28Z"
+    },
+    {
+      "n": 15,
+      "summary": "Tangent route: boundary-curve global min proved rigorously",
+      "ended_at": "2026-07-25T08:00:27Z"
+    },
+    {
+      "n": 16,
+      "summary": "Near-corner gap closed; SOS & SDP obstructions diagnosed",
+      "ended_at": "2026-07-25T08:32:14Z"
+    },
+    {
+      "n": 17,
+      "summary": "Gap 6 sharpened to one identity; false solved-claim caught",
+      "ended_at": "2026-07-25T09:06:26Z"
+    },
+    {
+      "n": 18,
+      "summary": "Gap 6 closed for real; new Gap 7 caught pre-solve",
+      "ended_at": "2026-07-25T09:38:49Z"
+    },
+    {
+      "n": 19,
+      "summary": "Gap 7 traced to mirage; true bottleneck confirmed shared",
+      "ended_at": "2026-07-25T10:10:03Z"
+    },
+    {
+      "n": 20,
+      "summary": "Case (b) of central T≥0 gap closed; round-19 mirage claim corrected",
+      "ended_at": "2026-07-25T11:00:43Z"
+    },
+    {
+      "n": 21,
+      "summary": "Case (a) closed as phantom gap; new β1≥γ gap caught, near-solve corrected",
+      "ended_at": "2026-07-25T11:32:07Z"
+    },
+    {
+      "n": 22,
+      "summary": "Solved: Case (c) splice closes tangent route",
+      "ended_at": "2026-07-25T12:03:41Z"
+    }
+  ]
+}

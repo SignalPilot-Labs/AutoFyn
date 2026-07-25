@@ -1,0 +1,10 @@
+{
+  "pr_title": "Solve IMO 2026 P5 — characterize f: R_{>0}→R_{>0} with QM≥AM≥GM sandwich; answer f(x)=x+c, c≥0",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "Solved IMO 2026 P5 (imo-2026-05): f(x)=x+c, c≥0",
+      "ended_at": "2026-07-24T23:16:37Z"
+    }
+  ]
+}

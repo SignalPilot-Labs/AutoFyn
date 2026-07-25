@@ -1,0 +1,122 @@
+{
+  "discharging-neighbor-transfer": {
+    "copied_from": null,
+    "elo": 1420.5339842662472,
+    "expanded": 2,
+    "last_note": "Round-15 AltSum/OddSum labeling bug fixed and independently re-verified (20,000 fresh trials, zero mismatches); OddSum Corollary correctly derived and certified. Connecting-step gap confirmed unchanged under the corrected labels (affine 1/2 rescaling changes nothing); approach correctly recommended for retirement, not a revival.",
+    "last_outcome": "advanced",
+    "last_round": 16,
+    "selected": 1,
+    "slug": "discharging-neighbor-transfer",
+    "stale": false,
+    "summary": "Charge-transfer discharging (FCT-style, not a single closed-form potential): mandatory cheap-kill on a neighbor-rank-shift transfer rule for a single cut, since 3 fixed-formula attempts (Cut-Reallocation, layer-cake, w(v,s)) all falsified this round/prior rounds."
+  },
+  "dyadic-potential-invariant": {
+    "copied_from": null,
+    "elo": 1327.1135208072978,
+    "expanded": 4,
+    "last_note": "Majorization/suffix-domination monotonicity for OddSum proved false in general (Schur-monotonicity criterion, N>=3), independently re-derived and confirmed by reviewer via exact counterexample; clean kill of a whole mechanism, no positive gap closed this round.",
+    "last_outcome": "dead-end",
+    "last_round": 6,
+    "selected": 8,
+    "slug": "dyadic-potential-invariant",
+    "stale": false,
+    "summary": "Single running potential/credit function tracked through the whole two-phase game, adapting aimo-0117's dominance trick dynamically instead of via a static multiset lemma; core local-monotonicity inequality entirely undefined/open."
+  },
+  "global-lp-vertex-sufficiency": {
+    "copied_from": null,
+    "elo": 1623.1753968801404,
+    "expanded": 15,
+    "last_note": "New exact identities for Q, BB, CB constructions; found and patched a genuine exact counterexample to the outline's 6-construction panel at p=(6,4,2,1)/13 with new Construction CB. Region II of n=3 Existence Theorem still not closed in full rigor -- only broad numeric evidence for the enlarged 7-panel, no case-complete proof.",
+    "last_outcome": "advanced",
+    "last_round": 22,
+    "selected": 5,
+    "slug": "global-lp-vertex-sufficiency",
+    "stale": true,
+    "summary": "UB direction, new top-level framing: prove via LP-vertex/compactness argument (uniform in n) that XY's true optimal response over ALL cut-patterns is <=c(n) on the balanced-region simplex, replacing the additive-explicit-construction family (universal-halving-adversary) with an existence-over-compact-region argument; steps 1-2 near-immediate from certified lemmas, steps 3-5 (finite extremal reduction + verification) the open core."
+  },
+  "greedy-reduction-geometric": {
+    "copied_from": null,
+    "elo": 1698.6254839142061,
+    "expanded": 12,
+    "last_note": "Window Reduction Theorem closes gap (b) in full (both sub-cases, including previously-open (b)(ii)), independently verified with zero gaps; headroom-fix subtlety genuinely resolved. Combined with sibling's GT(m), shared window fully closed at l=1..4. CHANGES REQUESTED.",
+    "last_outcome": "partial",
+    "last_round": 12,
+    "selected": 14,
+    "slug": "greedy-reduction-geometric",
+    "stale": false,
+    "summary": "Reduce to multiset minimax via greedy-optimality + position-irrelevance lemmas; geometric 1,2,4,...,2^n construction gives lower bound; upper bound (any-partition adversary) still open."
+  },
+  "layer-cake-parity-reframing": {
+    "copied_from": null,
+    "elo": 1386.7540771627905,
+    "expanded": 1,
+    "last_note": "New independent (non-peel-based) framing built from scratch this round: proved exact layer-cake reduction of T(n) to a threshold-parity-measure statement, plus a proved Coupling Obstruction (exact counterexample) ruling out independent per-cut bounds as a closing mechanism -- genuine diversification of the field with real, verified content, not yet closing T(n) for n>=3.",
+    "last_outcome": "advanced",
+    "last_round": 4,
+    "selected": 7,
+    "slug": "layer-cake-parity-reframing",
+    "stale": false,
+    "summary": "Threshold/layer-cake decomposition of OddSum-EvenSum into a per-piece-additive parity integral over value thresholds, avoiding peel-the-max entirely; step-1 identity numerically re-verified by reviewer, budget-to-measure bound is the open core."
+  },
+  "lp-duality-split-polytope": {
+    "copied_from": null,
+    "elo": 1507.5990079404544,
+    "expanded": 13,
+    "last_note": "Light/optional dispatch: checked crux aimo-0091/aimo-0178 double-counting mechanisms against the s>=n-1 necessity conjecture; both fail to transplant for identified structural reasons (no parity-upgrade analogue, no symmetry group on the active/untouched dichotomy). No new lemma, no gap closed, status unchanged partial.",
+    "last_outcome": "dead-end",
+    "last_round": 18,
+    "selected": 7,
+    "slug": "lp-duality-split-polytope",
+    "stale": false,
+    "summary": "LP/KKT duality on the split polytope; this round proves Multi-piece Necessity for the balanced-region upper bound via shadow-price contradiction, complementary to dyadic-potential-invariant's primal-vertex Tie-or-zero Lemma."
+  },
+  "reciprocal-potential-induction-on-n": {
+    "copied_from": null,
+    "elo": 1439.9643934400679,
+    "expanded": 1,
+    "last_note": "Pointwise reciprocal-recursion inequality (star) cleanly refuted on two independently-natural reduction maps at e_0, both exactly, plus a general structural reason (continuum of AP partitions sitting at the universal floor 1/2). Core mechanism is dead; framing should not be revisited as stated. Byproduct Generalized Twin-Anchor Floor Theorem certified as a reusable general lemma, independently verified.",
+    "last_outcome": "dead-end",
+    "last_round": 16,
+    "selected": 2,
+    "slug": "reciprocal-potential-induction-on-n",
+    "stale": false,
+    "summary": "Upper-bound Existence Theorem via reciprocal/renewal-equation induction on n itself (1/c(n)=1/c(n-1)+2^-n), bypassing per-n vertex/tie-topology classification entirely; mandatory cheap-kill of the pointwise inequality 1/V(p)>=1/V(p')+2^-n against catalogued hard points required before any proof investment."
+  },
+  "self-similar-induction-on-n": {
+    "copied_from": null,
+    "elo": 1628.3796878511862,
+    "expanded": 22,
+    "last_note": "Track 1 closes odd excess e>=3 unconditionally (full range, no cap); Track 2 proves a cap-free GCH strengthening via genuine line-by-line audit and fully closes Case-B(m,k). GT(m) still open: sub-case (i)'s own e=0 residual is a distinct, unclosed object (round 17's \"same object as Case-B\" claim retracted).",
+    "last_outcome": "advanced",
+    "last_round": 22,
+    "selected": 12,
+    "slug": "self-similar-induction-on-n",
+    "stale": true,
+    "summary": "Strong induction on n via strategy-stealing (LB reserves top piece, recurses on residual) generalized to a two-parameter recursion c(m,k) since XY may split its budget between reserved piece and residual; recursion itself not yet solved."
+  },
+  "structured-randomization-upper-bound": {
+    "copied_from": null,
+    "elo": 1484.9171351122063,
+    "expanded": 1,
+    "last_note": "First build. Expectation Obstruction Theorem (certified, correct) shows the approach's core mechanism (expectation over structured discrete randomization with n-independent mediocre mass) is structurally incapable of closing the upper bound for large n, except via a concentrating design that defeats the point. RETHINK.",
+    "last_outcome": "dead-end",
+    "last_round": 12,
+    "selected": 6,
+    "slug": "structured-randomization-upper-bound",
+    "stale": false,
+    "summary": "Plateau-break (round 12): probabilistic/expectation argument for the upper-bound direction, structurally distinct from the vertex/tie/affine-cell lineage. Naive i.i.d.-uniform cut-placement form pre-refuted numerically (E[OddSum]~0.6035 > c(2)~0.5714 at a test point) and recorded as dead; a concrete structured design is specified (randomize the discrete tie-target choice of an already-certified deterministic family, e.g. Theorem 12's construction) with a mandatory numeric sanity-check gate before any proof attempt. No positive content yet."
+  },
+  "universal-halving-adversary": {
+    "copied_from": null,
+    "elo": 1482.9373126254036,
+    "expanded": 8,
+    "last_note": "Honestly reports inconclusive/plateau finding (survivor rate of additive tools appears to grow with n, not shrink); new Theorem 12 (Generalized Subset-Tie, any index) is correct incremental content, verified independently (after catching a bug in my own first verification attempt). Existence Theorem correctly not claimed either way; scope redirected to global-lp-vertex-sufficiency.",
+    "last_outcome": "partial",
+    "last_round": 8,
+    "selected": 9,
+    "slug": "universal-halving-adversary",
+    "stale": false,
+    "summary": "Dedicated explicit-algorithm attack on the upper-bound half only (\"leveling\": split top piece against runner-up); imports lower bound from greedy-reduction-geometric."
+  }
+}

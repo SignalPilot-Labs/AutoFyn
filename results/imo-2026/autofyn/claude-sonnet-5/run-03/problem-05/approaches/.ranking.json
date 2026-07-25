@@ -1,0 +1,50 @@
+{
+  "cross-substitution-fixed-point": {
+    "copied_from": null,
+    "elo": 1531.4536513226117,
+    "expanded": 1,
+    "last_note": "Full proof verified correct and cleanest: finite telescoping/partition bound |g(a)-g(b)|<=(b-a)^2/(4aN) for every N forces g constant directly, no continuity/monotonicity/orbit machinery needed. Solved; used as the recorded proof in current.md.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "cross-substitution-fixed-point",
+    "stale": true,
+    "summary": "Finite (non-limiting) elimination: combine tool (A)/(B) at (x,y) and at (x,f(y)) (orbit-shifted) to try to force g(x)=g(y) algebraically; secondary fixed-point sub-route capped."
+  },
+  "extremal-sup-inf": {
+    "copied_from": null,
+    "elo": 1529.6715036566363,
+    "expanded": 1,
+    "last_note": "Full proof verified correct: continuity of g derived from unconditional Tool A/B via real perturbations (not orbits), then continuity+injectivity gives strict monotonicity, then crossing/zero-set argument forces g globally constant. Solved.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "extremal-sup-inf",
+    "stale": true,
+    "summary": "Take m=inf g(t), pass verified cross-inequality tool (A) to the limit along a minimizing sequence to force sup g <= inf g, hence g globally constant."
+  },
+  "monotonicity-order": {
+    "copied_from": null,
+    "elo": 1452.8008815868295,
+    "expanded": 1,
+    "last_note": "Full proof verified correct: escaping double-orbit argument (Lemma 1) plus infimum/supremum limiting argument on Tool C (Part 4) exhaustively rules out mixed zero/positive case for g. All algebra re-checked with sympy. Solved.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "monotonicity-order",
+    "stale": true,
+    "summary": "Prove f strictly increasing then use a discrete order/interleaving argument (monotone-Cauchy-equation analogue) to force g constant; foundational monotonicity step needs the RIGHT inequality or 3 points, not LEFT alone."
+  },
+  "orbit-telescoping-aimo0710": {
+    "copied_from": null,
+    "elo": 1486.0739634339225,
+    "expanded": 1,
+    "last_note": "Full proof verified correct: nearest-lattice-point orbit-pairing (Lemma A) shows two positive g-values coincide, downward-closed fixed-point set + sup/inf limiting argument (Lemma B, Section 4) rules out mixed case. All algebra re-checked with sympy. Solved, though more elaborate than necessary.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "orbit-telescoping-aimo0710",
+    "stale": true,
+    "summary": "Adapt aimo-0710's telescoping-sum-forces-vanishing mechanism with a non-diagonal orbit pairing (diagonal/matched-index version is a proven dead end, recorded)."
+  }
+}

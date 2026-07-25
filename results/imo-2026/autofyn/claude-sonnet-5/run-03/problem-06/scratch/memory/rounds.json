@@ -1,0 +1,40 @@
+{
+  "pr_title": "IMO 2026 P6 (imo-2026-06) solved: eventual periodicity via fixed self-sufficient prime set P={p≤a_1^2}",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "4 approaches for imo-2026-06; 3 built, all partial w/ shared lemmas",
+      "ended_at": "2026-07-24T23:11:12Z"
+    },
+    {
+      "n": 2,
+      "summary": "Reframed central gap: S is cofinite, not finite; new target is Q/L self-sufficiency",
+      "ended_at": "2026-07-24T23:49:29Z"
+    },
+    {
+      "n": 3,
+      "summary": "Reduction Lemma unifies central+prefix gaps; 3 more mechanisms killed",
+      "ended_at": "2026-07-25T00:21:51Z"
+    },
+    {
+      "n": 4,
+      "summary": "Nec-Necessity Lemma sharpens central gap to Q_min; 2 more mechanisms killed",
+      "ended_at": "2026-07-25T01:05:22Z"
+    },
+    {
+      "n": 5,
+      "summary": "Even-seed sub-case fully solved; 2 new approaches opened; 7th dead mechanism",
+      "ended_at": "2026-07-25T01:37:02Z"
+    },
+    {
+      "n": 6,
+      "summary": "3 mechanisms killed w/ proofs (odd-anchor, weak-fallback, affine-majorization); Nec reduction sharpened",
+      "ended_at": "2026-07-25T02:06:39Z"
+    },
+    {
+      "n": 7,
+      "summary": "SOLVED: fixed-prime-set P={p≤a1^2} closes central gap",
+      "ended_at": "2026-07-25T02:40:12Z"
+    }
+  ]
+}

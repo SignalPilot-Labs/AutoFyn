@@ -1,0 +1,115 @@
+{
+  "pr_title": "imo-2026-03: partial progress — GCH lemma extended, GT(m) narrowed to sub-case(i) e=0, n=3 Region II panel enlarged (7 constructions), not yet solved",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "imo-2026-03: found closed-form conjecture, 3 approaches partial",
+      "ended_at": "2026-07-24T23:21:41Z"
+    },
+    {
+      "n": 2,
+      "summary": "imo-2026-03: 3 slugs advance, 2 upper-bound regimes closed, 2 gaps sharply diagnosed",
+      "ended_at": "2026-07-24T23:56:10Z"
+    },
+    {
+      "n": 3,
+      "summary": "imo-2026-03: killed Lemma X', 4 lemmas certified, 2 more regimes closed",
+      "ended_at": "2026-07-25T00:38:03Z"
+    },
+    {
+      "n": 4,
+      "summary": "imo-2026-03: plateau broken, new layer-cake framing opened, both gaps narrowed",
+      "ended_at": "2026-07-25T01:09:56Z"
+    },
+    {
+      "n": 5,
+      "summary": "imo-2026-03: unified 2 approaches, new LP-duality approach, all 5 gaps narrowed",
+      "ended_at": "2026-07-25T01:53:45Z"
+    },
+    {
+      "n": 6,
+      "summary": "imo-2026-03: all 5 approaches advance, sliver/interleaved gaps shrunk further",
+      "ended_at": "2026-07-25T02:31:59Z"
+    },
+    {
+      "n": 7,
+      "summary": "2 self-caught bugs fixed; lp-duality reduced to 1 open case of n+1",
+      "ended_at": "2026-07-25T03:03:57Z"
+    },
+    {
+      "n": 8,
+      "summary": "Multi-Piece Necessity closed (all idx); Insertion-Robustness Subcase(a) closed",
+      "ended_at": "2026-07-25T03:46:51Z"
+    },
+    {
+      "n": 9,
+      "summary": "4 approaches advance; concavity dead-end closed, 3 lemmas certified",
+      "ended_at": "2026-07-25T04:22:09Z"
+    },
+    {
+      "n": 10,
+      "summary": "Q_region fully closed on global-lp-vertex-sufficiency; 4 approaches advance",
+      "ended_at": "2026-07-25T04:54:33Z"
+    },
+    {
+      "n": 11,
+      "summary": "4 approaches advance; 4 lemmas certified, LP-vertex correspondence found",
+      "ended_at": "2026-07-25T05:20:52Z"
+    },
+    {
+      "n": 12,
+      "summary": "Shared Branch-I.A window closed at l=1-4 via cross-approach synthesis",
+      "ended_at": "2026-07-25T06:06:43Z"
+    },
+    {
+      "n": 13,
+      "summary": "GT(m) scope gap closed unconditionally; adversary-exchange class ruled out",
+      "ended_at": "2026-07-25T06:52:58Z"
+    },
+    {
+      "n": 14,
+      "summary": "GT(m) slack claim corrected; e_0 floor found, unifies gaps",
+      "ended_at": "2026-07-25T07:28:38Z"
+    },
+    {
+      "n": 15,
+      "summary": "GT(m) sub-case(i) narrowed to width-1 window; 4th tie-topology dead; discharging opened",
+      "ended_at": "2026-07-25T07:57:44Z"
+    },
+    {
+      "n": 16,
+      "summary": "GT(m) closure attempt refuted; 3 new lemmas; 1 approach retired",
+      "ended_at": "2026-07-25T08:41:15Z"
+    },
+    {
+      "n": 17,
+      "summary": "GT(m) even-excess closed; odd-excess boundary gap found",
+      "ended_at": "2026-07-25T09:25:06Z"
+    },
+    {
+      "n": 18,
+      "summary": "GT(m) e=1 residual narrowed to width-1 window; k=2 lemma closed",
+      "ended_at": "2026-07-25T10:17:28Z"
+    },
+    {
+      "n": 19,
+      "summary": "n=2 Existence Thm closed; GT(m) k-achievability closed for all k",
+      "ended_at": "2026-07-25T10:53:11Z"
+    },
+    {
+      "n": 20,
+      "summary": "n=2 Existence Thm fully closed both dirs; GCH lower bound reduced to canonical form",
+      "ended_at": "2026-07-25T11:58:11Z"
+    },
+    {
+      "n": 21,
+      "summary": "GCH lemma closed for all k; n=3 Region I closed",
+      "ended_at": "2026-07-25T12:49:28Z"
+    },
+    {
+      "n": 22,
+      "summary": "GT(m) e=0 sliver + odd e>=3 closed; n=3 Region II panel extended",
+      "ended_at": "2026-07-25T13:21:35Z"
+    }
+  ]
+}
