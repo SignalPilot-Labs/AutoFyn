@@ -1,0 +1,20 @@
+{
+  "pr_title": "Solve IMO 2026 P2 (OM=ON): 3 independent proof certificates (2 analytic + 1 synthetic)",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "R1: 3 partial approaches, analytic cert false, α-crux isolated",
+      "ended_at": "2026-07-25T15:06:50Z"
+    },
+    {
+      "n": 2,
+      "summary": "R2: SOLVED — saturation id TRUE (Q=320/3 slip), 2 APPROVE certs",
+      "ended_at": "2026-07-25T16:36:20Z"
+    },
+    {
+      "n": 3,
+      "summary": "R3: antipode APPROVE (3rd indep cert), power gap characterized",
+      "ended_at": "2026-07-25T17:50:37Z"
+    }
+  ]
+}

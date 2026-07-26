@@ -1,0 +1,50 @@
+{
+  "algebraic-sos-elimination": {
+    "copied_from": null,
+    "elo": 1454.0430238262613,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "algebraic-sos-elimination",
+    "stale": false,
+    "summary": "Pure-algebra bet: SOS identity for (g(x)\u2212g(y))\u00b2 from the four bounds; long shot, identity may not exist."
+  },
+  "diagonal-diophantine-kill": {
+    "copied_from": null,
+    "elo": 1545.8278203282016,
+    "expanded": 1,
+    "last_note": "Solved: (\u2605) identities and master bound sympy-verified; irrational Kronecker + rational Frobenius kills both sound; d1=0 edge fix (maximal zero-interval + boundary perturbation, \u03b2<\u221e via orbit contradiction, g(\u03b2)=0 via limit, non-identically-zero on (\u03b2,\u03b2+\u03b5) via maximality) closes cleanly with no circularity (Lemma 5 is the O(h\u00b2) local case). Construction QM-AM-GM verified; c>=0 forced by codomain. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "diagonal-diophantine-kill",
+    "stale": true,
+    "summary": "(L+R,L\u2212R) sign-decomposition \u2192 master bound (\u2605) \u2192 two-orbit Dirichlet/Frobenius kill; edge case d1=0 open."
+  },
+  "lipschitz-connectedness": {
+    "copied_from": null,
+    "elo": 1515.362039086379,
+    "expanded": 1,
+    "last_note": "Solved: limit-at-infinity bound 9\u03b2\u00b2/(16a) re-derived (factor 4a from b_m>=a\u2212\u03b2/2; RHS <=9\u03b2\u00b2/4); value set reduced to {0,\u03b2} via orbit+limit; continuity-at-nonzero gap closed by open/open+connectedness (Z open via O(h\u00b2); P open via quadratic Q(h)=h\u00b2\u22124\u03b2h\u22124\u03b2b, Q(0)=\u22124\u03b2b<0, Q<0 on interval around 0 with lower endpoint >\u2212b confirmed). Construction verified. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "lipschitz-connectedness",
+    "stale": true,
+    "summary": "Master bound (\u2605) as H\u00f6lder estimate \u2192 continuity \u2192 limit-at-\u221e via AP approximation \u2192 connectedness."
+  },
+  "swap-cross-inequalities": {
+    "copied_from": null,
+    "elo": 1484.7671167591582,
+    "expanded": 1,
+    "last_note": "Partial (correctly self-assessed). Lemma 1 (cross-inequalities) proven non-circularly (universal QM>=AM on (y,f(x)) not swapped hypothesis) \u2014 certified reusable. Dead-end on forcing g-constant genuinely diagnosed: orbit amplification degree-2 part = (nd1\u2212md2)^2>=0 (AM-GM level, sympy-confirmed), local two-sided bound squeezes only at zeros (slack alpha\u00b2/(2a) positive constant at nonzero points). No amplifying linear factor, strictly weaker than (\u2605). Route subsumed by approaches 1/2. CHANGES REQUESTED \u2014 gap b is a real dead-end, not closeable in this framing.",
+    "last_outcome": "dead-end",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "swap-cross-inequalities",
+    "stale": true,
+    "summary": "Swap x\u2194y \u2192 off-diagonal cross-inequalities \u2192 squeeze g constant (no master bound (\u2605))."
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "pr_title": "IMO 2026 P5 solved: f(x)=x+c, c≥0 (two independent certified proofs)",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "IMO 2026 P5 solved: f(x)=x+c, c>=0 (orbit APPROVE)",
+      "ended_at": "2026-07-25T15:22:29Z"
+    },
+    {
+      "n": 2,
+      "summary": "Hardened: 2 cosmetic fixes on orbit proof + closed gm Part B → two APPROVED proofs",
+      "ended_at": "2026-07-25T15:28:47Z"
+    }
+  ]
+}

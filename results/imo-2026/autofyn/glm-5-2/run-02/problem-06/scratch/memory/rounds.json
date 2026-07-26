@@ -1,0 +1,15 @@
+{
+  "pr_title": "Solve IMO 2026 P6: greedy non-coprime sequence is eventually periodic up to translation",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": " ended without summary -- autocommit",
+      "ended_at": "2026-07-25T14:50:05Z"
+    },
+    {
+      "n": 2,
+      "summary": "P6 SOLVED: game-equivalence + descent closes the Lemma-4 crux",
+      "ended_at": "2026-07-25T15:38:55Z"
+    }
+  ]
+}

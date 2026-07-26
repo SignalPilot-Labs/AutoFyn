@@ -1,0 +1,13 @@
+# proof-builder rules
+
+ALWAYS: sanity-check your own helper geometry functions on a KNOWN case before trusting their output (round 1: a perp-bisector distance function used (d[1],-d[0]) as the normal, which is PERPENDICULAR to the segment — that is the DIRECTION of the perp-bisector, not its normal — so it silently measured distance to the line through the midpoint PARALLEL to the segment instead of the perpendicular bisector. The whole gate's "off the line" verdicts were against the wrong line; conclusions survived the fix, but a mirage "rotation on perp-bis(MN)" appeared and only the recheck caught it).
+
+ALWAYS: when a numeric gate is required by the reviewer, report per-sample numbers (center coords, dist-to-O, perp-bis distance) for several triangles and several parameter values, not just a boolean pass/fail — a single sample can be a coincidence (round 1: a reversed-pairing spiral center landed within 4e-3 of perp-bis(MN) on scalene1 but 0.09 off on a different scalene triangle with ratio 0.83, exposing it as coincidental proximity, not an identity).
+
+NEVER: build proof prose on top of an unverified conjecture the reviewer flagged as a gate — run the gate first and proceed only if it passes; if it fails, record the dead-end with the numeric evidence and set Status unsolved (round 1: CONJECTURE S for miquel-spiral was refuted numerically; faking a spiral-similarity proof would have been worse).
+
+ALWAYS: the spiral-similarity center sending (P,Q)->(p,q) satisfies |SP|/|Sp| = |SQ|/|Sq| = ratio and arg((p-S)/(P-S)) = arg((q-S)/(Q-S)); it lies on perp-bis of a segment PAIR only when ratio=1 (i.e. it is a rotation). A generic spiral center being "near" a perp-bisector means nothing without ratio=1.
+
+ALWAYS: when proving a "circumcentre on perpendicular-bisector" identity by coordinate+ideal-membership, check the degenerate case where the auxiliary point collapses — round 1: A* = reflection of A over perp-bis(MN) equals A exactly when B=C (isosceles at A), and then the 4-point concyclicity determinant is trivially 0 with the factor (P_B-P_C), so cyclicity does NOT imply OM=ON there. Fix: prove the uniform polynomial (numerator of O_x - mid_x) lies in the ideal, which works for all triangles including the degenerate one; present cyclicity as the geometric reading for B!=C.
+
+ALWAYS: cotangent parametrisation makes coordinate geometry RATIONAL. For angle θ with cot θ = t, sin θ = 1/csc θ, cos θ = t/csc θ where csc θ = sqrt(1+t^2); in ratios like sin γ/sin(α+γ) = csc α/(cot α + cot γ) the csc factors cancel against cos(B-α)/sin B = (cot B·cot α + 1)/csc α, yielding purely rational coordinates in the cotangents. This removes all square roots and lets a Groebner basis close the identity over Q.

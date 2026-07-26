@@ -1,0 +1,26 @@
+{
+  "invariant-first": {
+    "copied_from": null,
+    "elo": 1501.4695015289756,
+    "expanded": 1,
+    "last_note": "Complete rigorous proof of (a) and (b); \u0394W=-\u03a9(g) verified, three-case casework exhaustive incl. {4,8}/{9,27}/{2,4}, Euclidean preservation proved not asserted, gcd(0,k)=k convention stated, M=Q shown choice-independent. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "invariant-first",
+    "stale": true,
+    "summary": "Lead with per-prime exponent invariant g_p to pin M=\u220fp^{g_p} and M\u22652 before proving termination; attach (W,C) lex monovariant as second half to force a terminal state; bridge termination\u21d2\u22641 and Q\u22652 forbids 0 \u21d2 exactly one."
+  },
+  "monovariant-first": {
+    "copied_from": null,
+    "elo": 1498.5304984710244,
+    "expanded": 1,
+    "last_note": "Complete rigorous proof of (a) and (b); same invariant g_p/Q and (W,C) monovariant, \u0394W=-\u03a9(g) verified, three-case casework exhaustive, zero sub-case handled, M=Q derived for part (b). APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "monovariant-first",
+    "stale": true,
+    "summary": "Lead with (W,C) lex monovariant to prove termination and terminal \u22641 entry>1; bring g_p invariant in second to rule out all-1s (upgrade \u22641 to exactly one) and pin M=\u220fp^{g_p} for choice-independence."
+  }
+}

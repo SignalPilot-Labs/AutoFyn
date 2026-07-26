@@ -1,0 +1,40 @@
+{
+  "pr_title": "imo-2026-06 (IMO 2026 P6): conditional proof + LOCK + pure-from-start + endgame + 32 certified lemmas (8 structural fences) reducing the theorem to Gap A (finiteness of governing primes); round-7 pivot refuted the q≤rad(a1) sharp-bound conjecture (verified counterexample a1=375=3·5³, gov 19>15) and re-targeted to finiteness",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "Reduce IMO 2026 P6 to one wall (Gap A); endgame + LOCK solved",
+      "ended_at": "2026-07-25T15:08:05Z"
+    },
+    {
+      "n": 2,
+      "summary": "3/4 Gap-A mechanisms certified dead; stall trigger fires",
+      "ended_at": "2026-07-25T16:17:21Z"
+    },
+    {
+      "n": 3,
+      "summary": "3 framings built; Gap A sharpened 3 ways, stall holds",
+      "ended_at": "2026-07-25T17:07:23Z"
+    },
+    {
+      "n": 4,
+      "summary": "3 framings built; Schur/minimal-criminal dead structurally, 4 lemmas (25)",
+      "ended_at": "2026-07-25T17:50:06Z"
+    },
+    {
+      "n": 5,
+      "summary": "2 new routes (two-coincidence, deviation-index-descent) both RETHINK/dead; 3 lemmas certified (28 total); 4th structural fence (T-unbounded-in-M_1)",
+      "ended_at": "2026-07-25T18:26:45Z"
+    },
+    {
+      "n": 6,
+      "summary": "CONSOLIDATE: 6th fence certified; 2 negative lemmas (30 total); stall holds across 6 rounds",
+      "ended_at": "2026-07-25T19:16:03Z"
+    },
+    {
+      "n": 7,
+      "summary": "PIVOT: refuted q≤rad(a1) (a1=375 gov 19>15, verified); 3 finiteness attempts collapsed; +2 fences (8), +2 lemmas (32)",
+      "ended_at": "2026-07-25T20:17:13Z"
+    }
+  ]
+}

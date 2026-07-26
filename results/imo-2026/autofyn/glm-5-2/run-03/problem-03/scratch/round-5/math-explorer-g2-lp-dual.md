@@ -1,0 +1,85 @@
+## imo-2026-03 (G2 upper-bound, continuous / LP-dual / measure / topological lens)
+
+### Headline finding (probe this round, n=3 flat regime)
+
+The **per-region LP** is a genuine opening; the round-4 LP-duality explorer's "integrality gap kills the LP-dual angle" verdict is **too broad** — the gap belongs to the *Stackelberg-blind* LP only, NOT to the *per-region* LP. These are two different LPs and the round-4 report conflated them.
+
+**Probe (n=3, scipy Nelder-Mead, 3-cut continuous optimization, betas ∈ [0,½], 60–80 random flat configs `p_4 > 1/15`):**
+- **0/80 configs exceed 1/15** under continuous optimization. Worst continuous `D = 0.0555 < 1/15 = 0.0667`. Dyadic `(8,4,2,1)/15` gives exactly `1/15` (tight, as required).
+- On the round-4 "14-family worst" config `(0.4545, 0.2727, 0.1818, 0.0909)` (where every clean family member `≥ 0.0909 > 1/15`), the **continuous optimum is `D = 0.000`** — killed trivially by a 2-cut strategy: cut `p_1` at `β=0.4` (fragments `0.2727, 0.1818`) and equal-halve `p_4`. The resulting 6 pieces are **three cross-piece equal pairs** `(0.2727, 0.2727), (0.1818, 0.1818), (0.0455, 0.0455)` ⇒ `D = 0`.
+- The continuous optimum consistently sits at a **degenerate vertex** of the sort-region polytope (some pieces coincide) — exactly as the linear-per-region theory predicts (`D` linear within a region ⇒ min at a vertex ⇒ a degenerate configuration).
+
+**Structural reason the 14-member finite family fails (0.68% residual, worst 0.0876) while the continuous LP gives 0 on the same config:** the finite family is restricted to *within-piece* operations (equal-halve a piece, barely-split a piece, peel a piece to match another). It cannot realize **cross-piece equal-pair** strategies like "split `p_1` unequally so one fragment equals `p_2` and the other equals `p_3`" — which is the lever the continuous LP exploits. The certified `pairwise-diff-strategy` lemma gives `D = p_i − p_j` via *equal-halving* the complement; the continuous LP generalizes this to "split one piece unequally to create TWO cross-piece equal pairs simultaneously," driving `D` to 0.
+
+### Distinct openings (the outliner can build these into rival approaches)
+
+1. **Per-region LP-dual certificate (the headline opening).** For FIXED Liu config `p_1 ≥ … ≥ p_{n+1}`, Xiang's cuts `(β_1,…,β_n) ∈ [0,½]^n` define a multiset of `2n+1` pieces. Partition cut-space into **sort-regions** (open cells where the total descending order of the `2n+1` pieces is fixed). Within each region, every `a_i` is LINEAR in the `β`'s, so `D = Σ(±)a_i` is linear. The global min is `min_regions (min_region LP)`. The per-region LP is small (`n` variables, `O(n)` ordering constraints); its **dual** is a nonneg weighting of the region's defining inequalities certifying `D ≤ 1/D_n` in that region.
+   - **Hard step:** enumerate the (finitely many) sort-regions and produce a dual-feasible solution per region. The region count is bounded by `|total orders of 2n+1 pieces consistent with n within-pair orders| ≤ (2n+1)!/2^n` (n=3: ≤ 630, far fewer feasible). Bounded but combinatorially heavy.
+   - **Why this is NOT the 12-expression casework pairing-charging flagged:** pairing-charging's "12 expressions" are D-values of *fixed strategies* (one per peel × menu member) — a finite-family minimax. The per-region LP dual is a *certificate per cell of cut-space*, mechanizable as a small LP solved and dual-certified per region. The framing is genuinely different (per-cell LP dual vs. per-strategy value).
+   - **Integrality-gap status:** NONE for this route. The per-region LP is an exact minimization (no relaxation, no info asymmetry — Liu is fixed). Its dual certifies the per-region min exactly.
+
+2. **Farkas / separating-hyperplane certificate (a unifying dual framing).** The n=2 §3.2 contradiction IS a Farkas certificate in disguise: it proves the system "`{p_3, p_1−p_2, p_2−p_3, |2p_1−1|} > 1/7`" is infeasible by exhibiting (via casework) that the constraints sum to a contradiction. Equivalently: a nonneg weighting of the four linear forms exists whose weighted sum `≤ 1/7` identically. The round-4 dyadic-weight dual `λ_k = g_k = 2^k/D_n` is exactly such a Farkas certificate for the **spiky** regime (and complementary slackness `Σ 2^k = D_n` IS the recursion `1/c(n) = Σ 2^{−k}`).
+   - **Generalization to flat regime:** the certifying weights would be **config-dependent** (not the universal dyadic weights), since the flat regime's binding constraints differ. This is the genuine untried angle: a *hybrid* — dyadic-weight Farkas for spiky regime (already certified, re-derivable) + per-region Farkas weights for flat regime (the open half).
+   - **Hard step:** the flat-regime Farkas certificate is not a single static weighting; it varies with Liu's config. Whether a *finite* family of weight-schemes (one per "flat sub-regime") suffices is the open question. The probe suggests YES for n=3 (regions bounded), but unverified for n≥4.
+
+3. **Continuous potential / measure certificate (the dispatch's Q2 — partial opening, with a caveat).** A *non-linear-in-D* potential on cut-position space: e.g., a measure `μ` on `[0,1]` such that `D = ∫[j odd] dμ` (generalizing the certified `parity-integral` lemma which uses Lebesgue measure) and a choice of `μ` (depending on Liu's parity profile `f = [j_Liu odd]`) making `∫[f ⊕ h odd] dμ ≤ 1/D_n` for some toggle-set `h` realizable by ≤ n cuts.
+   - **Hard step:** characterizing which `μ` are "realizable" by a ≤ n-cut toggle set is exactly the per-region LP feasibility problem. So this framing REDUCES to opening 1 — the potential/measure framing is a re-lensing, not a bypass. (The dispatch already warned linear-in-D potentials are dead; this confirms the non-linear version also bottoms out at per-region LP.)
+   - **Caveat:** unlike the linear-`Φ` route (dead, factor-of-2 wall), the measure framing at least *identifies* the right per-region structure; but it offers no shortcut past the per-region enumeration.
+
+4. **Topological / connectedness argument (the dispatch's Q3 — collapses, NOT a real opening).** Cut-space is a product of simplices (connected, compact). `D` is continuous (piecewise-linear, continuous across sort-region boundaries — the descending-sort alternating sum is continuous in the multiset). So `D` attains its min on a connected compact set. But "the min over each region is `≤ 1/D_n` + adjacent regions connect" does **not** give the global min `≤ 1/D_n` without separately proving the per-region bound. The topological framing reduces to opening 1 (per-region LP) with no extra leverage. **Not a real opening; record as a trap to avoid.**
+
+5. **Von-Neumann minimax / duality-with-lower-bound (the dispatch's Q4 — TRAP, do not pursue).** A `max_Liu min_Xiang D = min_Xiang max_Liu D = 1/D_n` statement would need convex structure on both players' pure-strategy spaces. Xiang's cut-space IS convex (product of simplices), but `D` is **not** convex/concave in cuts globally (it's piecewise-linear = min of linear forms; min-of-linear is generally concave-ish, not convex). Liu's mark-space has no useful convexity (the dyadic worst config is a discrete point, not an interior of a convex set). The natural realization of "Liu-side convexity" was the **collapse-theorem / flattening route — DEAD** (flattening monotonicity numerically false for n=2, 25293/49995 violations; never revive). So a genuine von-Neumann minimax has no convex substrate to land on. **Trap; the value `1/D_n` is identified by separate construction of both strategies, not by a minimax theorem.**
+
+### Which opening looks most promising
+
+**Opening 1 (per-region LP-dual) is the genuine fresh attack.** It is the only framing that (a) is continuous from the start (not a finite family), (b) has NO integrality gap (Liu fixed, no info asymmetry), (c) is supported by the probe (continuous opt always `≤ 1/D_n`, tight only at dyadic), and (d) explains WHY the finite family fails (it misses cross-piece equal-pair vertices). Opening 2 (Farkas) is the dual-theoretic packaging of the same idea and gives the cleanest certificate language; recommend the outliner treat them as one approach with two lenses.
+
+**Honest caveat on the hard step.** The per-region dual certificate is bounded-but-heavy casework: for n=3 the region count is ≤ 630 (likely far fewer feasible), each region a small LP. A proof by this route would either (a) enumerate regions and solve each LP dual mechanically (rigorous but ugly — a "computer-assisted casework"), or (b) find a *unifying* per-region dual structure (a canonical weighting scheme that specializes to every region). The probe did NOT find such a unifying scheme; it only confirmed the per-region min is always small. The unifying-scheme hunt is the real research question; if it fails, the route degenerates to mechanical casework (still rigorous, but inelegant and possibly rejected as "hand-waving by computer").
+
+### Cheap-kill candidates (structural pruning before heavy LP)
+
+- **Cross-piece equal-pair realization (NEW, not in any certified lemma).** The probe shows the binding strategies create cross-piece equal pairs (a fragment of `p_i` equals `p_j`). A clean lemma: *"for n=3, if `p_1 = p_2 + p_3` (or perturbations), Xiang splits `p_1` into `p_2 + p_3` and equal-halves `p_4` ⇒ three equal pairs ⇒ `D = 0`."* This is a `≤ 2`-mark strategy giving `D = 0`, far below `1/15`. Generalizes the certified `pairwise-diff-strategy` (which only equal-halves within pieces). **Candidate cheap-kill for the very-flat residual.**
+- **Parity / `v_p` count:** the dyadic weights `λ_k = 2^k/D_n` and the identity `Σ 2^k = D_n` (= the recursion) is the cheap structural fact behind the spiky-regime Farkas certificate. Already exploited (round-4 LP explorer); no new parity kill found for the flat regime.
+- **Injection / pigeonhole:** not obviously applicable; the flat regime's obstruction is geometric (cross-piece equalities), not countable.
+
+### Knowledge-base entries to use
+
+- *Invariants & monovariants* — the certified `parity-integral` lemma (`D = ∫[j odd] dt`) is the bridge between LP variables (cut positions) and the combinatorial `D`.
+- *Double counting* / Fubini — same bridge.
+- *Casework / exhaustion* — the per-region LP dual is casework over sort-regions; KB explicitly lists casework as a valid method (keep cases disjoint and exhaustive — the regions are).
+- *Extremal principle* — the continuous min sits at a degenerate vertex (cross-piece equalities); "take the extremal configuration" is the structural reason.
+- *Constructive vs existence* — the per-region dual must produce, per region, an explicit weighting (construction), not just argue existence.
+- (LP duality / von-Neumann / Farkas are NOT in `knowledge_base.md` — they are "off the corpus grid" per the round-4 explorer. Cite them as standard tools but do not expect a KB entry.)
+
+### Analogous past problems (cruxes)
+
+- **aimo-0117** (Dutch TST / "Jesse & Tjeerd boxes") — crux: *assign played values as a two-sided dyadic sequence `2^k/D_n` so the largest strictly exceeds the sum of all others.* Analogous to the **dyadic-weight Farkas certificate** (opening 2 spiky half): the weights `λ_k = g_k` and the complementary-slackness `Σ 2^k = D_n` mirror the "largest exceeds sum of rest" domination. Adapt, don't cite.
+- **aimo-0019** (IMO-SL 2013 C8 / paint game) — crux: *amortized linear potential `3x_r` charging frontier advances against absorbed dyadic pieces; bound total ink by geometric sum of distinct powers.* Analogous in that the geometric-series bound is the engine, but the game is simultaneous (paint) not perfect-info sequential; the amortized-potential route was already tried and conceded by `alternating-potential` (factor-of-2 wall). Not a fresh opening for the upper bound; relevant only as confirmation that geometric-series domination is the structural engine.
+- **No crux in the corpus is a direct per-region-LP-dual / Farkas hit for a sequential marking game** (round-4 explorer's finding, confirmed). The per-region-LP-dual lens is genuinely off the corpus grid — a signal it is a real diversification, but also that it has no proven analog to adapt from.
+
+### Prior progress (current best, relevant to this lens)
+
+- **Certified lemmas usable as per-region dual ingredients:**
+  - `parity-integral` (`D = ∫[j odd]`) — the linear form of `D` within each sort-region.
+  - `peeling` (`D_final = D_rest` at an equal pair) — explains WHY degenerate vertices (cross-piece equal pairs) give small `D`: each equal pair is parity-neutral.
+  - `equal-halve-n-largest` (`D = p_{n+1}`) — closes spiky regime; re-derivable as the dyadic-weight Farkas certificate (round-4).
+  - `pairwise-diff-strategy` (`D = p_i − p_j` via EH complement) — a within-piece degenerate vertex; the continuous LP generalizes it to cross-piece equal pairs.
+  - `peel-once-inductive` (Lemma 5: `D ≤ (1−2p_j)/D_{n−1} ⟺ p_j ≥ g_{n−1}`) — closes "some `p_j ≥ g_{n−1}`" regime for all n; this is the inductive packaging of one family of per-region dual certificates.
+- **n=2 upper bound PROVED** (`pairing-charging` §6.3 / `minimax-strategy-family` §3): the §3.2 contradiction IS the n=2 Farkas certificate (opening 2 base case).
+- **n=3 Cases A & B PROVED** (Lemma 5): the spiky-ish flat sub-cases; the very-flat Case C is the open residual where the per-region LP-dual is the proposed attack.
+
+### Dead ends (do not retry)
+
+- **Stackelberg-blind LP as a G2-flat attack** (round-4 LP explorer): integrality gap `1/6 − 1/7 = 1/42` at n=2 (verified exact, robust to 756-strategy menus); n=3 gap ≈ `0.062 ≫ 0`. The gap is the value of Xiang's perfect information — structural. **No menu enrichment closes it.** DEAD as a top-level G2-flat attack. (But: this is a DIFFERENT LP from the per-region route — the round-4 "the LP-dual angle is dead" verdict over-generalized. The per-region LP has no such gap.)
+- **Lower-bound LP dual as a G1 bypass** (round-4): reduces to the overlap bound `2C ≥ D_{R_0}+D_F+1−M` (splits-inequality Lemma 5 corollary). Same wall, different words. Not a G1 bypass.
+- **Linear-in-D potential `Φ = D − λ·Π`** (round 2–3, alternating-potential): factor-of-2 wall, DEAD. The measure framing (opening 3) is the non-linear generalization and also reduces to per-region LP — no shortcut.
+- **Collapse-theorem / flattening (Liu-side convexity)** (round 4): flattening monotonicity numerically FALSE for n=2. DEAD. This was the natural von-Neumann-minimax realization; its death is why opening 5 (minimax duality) is a trap.
+- **Naive (n−1)-mark surplus-chain** (round 4, pairing-charging): leaves `p_{n+1}` unpaired, `D = |2p_1−1|`, 18050/30000 fail. DEAD.
+- **Clean finite Xiang family for n≥3 flat** (round 4, minimax-strategy-family): 14-member enriched family within 0.68% but doesn't cap (worst 0.0876 > 1/15); rich fixed-fraction family caps only via continuous tuning. The probe above shows WHY: the finite family misses cross-piece equal-pair vertices. DEAD as a *finite*-family attack; the per-region LP is the continuous generalization.
+
+### Small-case / intuition notes (labeled CONJECTURE from numerics)
+
+- **CONJECTURE (n=3, 80 configs verified):** the per-region LP min `≤ 1/D_n` for ALL flat n=3 configs, with equality ONLY at the dyadic config `(8,4,2,1)/15`. Continuous optima are dramatically below `1/D_n` on flat configs (worst non-dyadic `0.0555`, often `0`). This is the numeric evidence that the per-region LP-dual route is viable; it is NOT a proof (the per-region dual certificate is unwritten).
+- **CONJECTURE (mechanism):** the binding per-region dual certificates correspond to **cross-piece equal-pair** vertices (a fragment of `p_i` equals `p_j`), generalizing the certified `pairwise-diff-strategy` from within-piece to cross-piece equalities. Verified on the round-4 "worst 14-family" config (continuous opt `D = 0` via two cross-piece equal pairs). If this mechanism is the unifying structure, opening 1's "unifying per-region dual scheme" exists; otherwise the route degenerates to mechanical casework.
+- **Intuition (integrality gap is Stackelberg-blind-specific):** the round-4 explorer's `V_blind ≥ 1/(D_n−1)` for n≥2 is the value of Xiang's *information* (Liu best-responds to a fixed mixed strategy). The per-region LP fixes Liu first, so there is no information to discard — no gap. The two LPs measure different things; only the per-region one is relevant to G2.
+- **Intuition (why the flat regime is "easy" continuously but "hard" for finite families):** flat configs have many near-equal pieces, so cross-piece equal-pair opportunities abound (continuous LP finds `D ≈ 0`). The finite family is restricted to within-piece operations and misses these. The dyadic config is the UNIQUE flat-ish config where cross-piece equal pairs coincide with within-piece equal-halves (the certified strategies) — which is why the finite family is tight ONLY there and slack everywhere it can reach. The wall is not "the construction is hard"; it is "the construction is not a finite list."

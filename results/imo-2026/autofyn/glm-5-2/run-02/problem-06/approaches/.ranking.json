@@ -1,0 +1,74 @@
+{
+  "covering-system-redundancy": {
+    "copied_from": null,
+    "elo": 1444.7538916816568,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 4,
+    "slug": "covering-system-redundancy",
+    "stale": false,
+    "summary": "Allowed set as complement of covering system; late primes redundant mod L=prod(E); finite-state tail. Shares the E-finite crux with crude."
+  },
+  "crude-reduced-type": {
+    "copied_from": null,
+    "elo": 1578.6004343030427,
+    "expanded": 1,
+    "last_note": "Conditional bridge correct (Steps 1-6, 8-10 rigorous); crux Lemma 4 [GAP] imported. Now fillable from essential-monovariant's Lemma 4' (same threshold). Honest partial; redundant once essential-monovariant is APPROVED.",
+    "last_outcome": "partial",
+    "last_round": 2,
+    "selected": 4,
+    "slug": "crude-reduced-type",
+    "stale": true,
+    "summary": "Finite-state mod L_0=prod(primes<=a_1); reduced types on finite lattice stabilize; frozen-prefix free-rider wall; lift to translation."
+  },
+  "essential-monovariant": {
+    "copied_from": null,
+    "elo": 1584.3349932087776,
+    "expanded": 1,
+    "last_note": "SOLVED. Game equivalence (Theorem GC) + stripping descent (G6) re-proved from scratch; Lemma 4' closed; periodicity machinery gives a_{n+T}=a_n+L_0 for all n>=1. Verified empirically for a_1 in {2,3,5,6,7,10,15}. Minor presentational gap on M-existence (one-line fillable).",
+    "last_outcome": "verified-milestone",
+    "last_round": 2,
+    "selected": 4,
+    "slug": "essential-monovariant",
+    "stale": true,
+    "summary": "Bound true essential-prime set E via min-of-set monovariant (aimo-0678 style), reduce mod prod(E). Direct attack on the E-finite crux."
+  },
+  "grid-counting-shared-primes": {
+    "copied_from": null,
+    "elo": 1501.8213168851162,
+    "expanded": 1,
+    "last_note": "Partial. Large-prime-span lemma certified & correct; growing-window ceiling honestly [GAP]. Lemma 5 proof has arithmetic error (subtracts 1/25 for n=5 in {n>=5}); stated bound 389/900 is FALSE (true ~0.4522). Conclusion <1/2 survives via corrected bound 17/36. Not load-bearing. Fix: 389/900 -> 17/36.",
+    "last_outcome": "partial",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "grid-counting-shared-primes",
+    "stale": true,
+    "summary": "Attack Lemma 4 by counting: form (i,j) grid of shared primes; bound cells-per-prime; large prime > span divides <=1 term (provable). Genuinely different mechanism; central gap = growing-window threshold (yields <=(N-1)R, not <=R)."
+  },
+  "propagation-bezout": {
+    "copied_from": null,
+    "elo": 1498.9912043399186,
+    "expanded": 1,
+    "last_note": "Dead-end. Propagation route circular as filed (Sub-step 4b: phi defined via V, V's relevance uses Lemma 4). Non-transitivity of shares-small-prime verified. Growing bound only (<=kR). No promotable lemma; partial subsumed by Lemma 1.",
+    "last_outcome": "dead-end",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "propagation-bezout",
+    "stale": true,
+    "summary": "Attack Lemma 4 by propagation: spread small-prime sharing from the consecutive seed (Lemma 3) via Bezout-style composition of index-shifts (aimo-0648 crux (ii)+(iii)). Genuinely different mechanism from descent/counting; central risk = circularity (shift algebra may need the residue-walk = Lemma 4)."
+  },
+  "translation-self-similarity": {
+    "copied_from": null,
+    "elo": 1391.4981595814884,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 4,
+    "slug": "translation-self-similarity",
+    "stale": false,
+    "summary": "Exhibit translation symmetry A_{T+n}=L+A_n (set-translation) and lift by induction. NB: literal set-translation is FALSE; needs weakening to min-preservation."
+  }
+}

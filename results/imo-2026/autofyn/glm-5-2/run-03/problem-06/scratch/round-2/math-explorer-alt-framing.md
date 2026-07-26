@@ -1,0 +1,72 @@
+## imo-2026-06 (IMO 2026 P6) — alt-framing lens
+
+**Context.** Two live approaches (`transversal-saturation` Elo 1546, `prime-power-dichotomy` Elo 1515) both bottom out on Gap A: *finitely many primes ever enter a minimal transversal of $\mathcal F_\infty$*, equivalently $\mathcal B_\infty$ is $L$-periodic. The endgame (cyclic-successor bijection ⇒ $a_{n+T}=a_n+L$ from $n=1$) and the LOCK sub-case are **certified** (Lemmas 1–9). The unbuilt `growing-modulus-descent` (Elo 1470) already targets a different finiteness mechanism but its rank $r(q)$ is undefined. Task: scout framings *far* from "stabilize the minimal-transversal antichain."
+
+### Distinct openings (scouted)
+
+**F1 — AIMO-0678 finite-state-lift + min-of-a-set monovariant descent (MOST VIABLE, genuinely different).**
+- *Spine.* This is the crux pattern of `aimo-0678` (France, divisibility-and-gcd / size-bounding-and-descent / modular-arithmetic-and-CRT — three cruxes on one problem, see crux corpus). There, $a_{n+1}=\gcd(a_n,b_n)+1$ is coupled; the proof (i) freezes an invariant $s_n=a_n+b_n$ during the divisibility phase, (ii) defines $w_n=\min\{m\ge a_n:m\nmid s_n\}$ and proves $(w_n)$ **non-increasing** → $a_n$ bounded → takes finitely many values; (iii) sets $M=\operatorname{lcm}$ of all attainable $a_n$-values, reduces $b_n\bmod M$, shows the pair $(a_n,b_n\bmod M)$ is a **deterministic map on a finite set** → eventually periodic.
+- *Adaptation to imo-2026-06.* Replace "bound $a_n$" by "bound the governing-prime set $G$." The lift half (iii) is **already certified here** as the cyclic-successor-on-$\mathcal B_\infty$ endgame (Lemmas 4–6) — that IS the AIMO-0678 finite-state lift, with $L=\prod_{q\in G}q$ playing the role of $M$. So the genuinely-new load is the **monovariant half**: define an integer-valued quantity $w_n$ on the governing-prime frontier that is *non-increasing* across pull-in events, forcing finitely many pull-ins. This is exactly the unproved **Gap D** of `growing-modulus-descent` — AIMO-0678's $w_n=\min\{m\ge a_n:m\nmid s_n\}$ is the concrete template the builder was missing.
+- *Key lemma it would need.* "There exists a non-increasing integer monovariant $w_n$ (a min-of-a-set, à la AIMO-0678) such that each new governing prime $q\notin P_1$ forces $w$ to strictly drop; since $w\ge0$, finitely many $q$'s." Candidate $w_n$: the smallest prime $q>M_1$ that is *forced* to enter a transversal by the current configuration — prove it cannot increase because once a configuration is "covered" by primes $\le q$ it stays covered (distinct P_1-supports stabilize unconditionally, see F3). The builder must make this concrete; AIMO-0678's proof that $w_{n+1}\le w_n$ via "$a_n\notin W_{n+1}$ because the lcm term is divisible by $a_n$ but the gcd term is not" is the style of argument to mirror.
+- *Sidesteps Gap A?* **No — it re-proves Gap A by a different mechanism** (descent on an integer monovariant, NOT antichain-shrink). This is the honest situation: every framing bottoms out at finiteness of governing primes, because that IS the theorem's core. But F1 avoids the round-1 trap (MT-antichain is NOT monotone — the counterexample $F=\{\{1,2\}\}$, add $\{2,3\}$, gains $\{1,3\}$ killed the transversal-saturation Step 7). The monovariant descent does not touch MT-monotonicity.
+- *Recommendation.* **Replan `growing-modulus-descent` with AIMO-0678's monovariant as the template.** This is the field's most genuinely-different viable attack; it is unbuilt (Elo 1470) and already targets this route. The dispatch outliner should open it as a rival approach with the AIMO-0678 crux cited as the adaptation target.
+
+**F2 — König's lemma / compactness (non-constructive finiteness).**
+- *Spine.* Suppose infinitely many distinct primes $q_1<q_2<\dots$ enter MT($\mathcal F_\infty$). Each $q_j$ has a private witness $a_{i_j}$ ($S(a_{i_j})\cap T_j=\{q_j\}$) with some $p_j\in P_1$ dividing $a_{i_j}$ and $p_j\notin T_j$ (privacy). Build a finitely-branching tree on the "type" $(T_j\cap P_1,\,p_j)\in 2^{P_1}\times P_1$ (finitely many). König ⇒ an infinite path of same-type witnesses.
+- *Verdict: NOT viable as stated.* I could not materialize the contradiction with the gap bound $d_n\le M_1$. Same-type witnesses can be spread arbitrarily far apart in $n$ (the witnesses $a_{i_j}$ grow linearly, no density constraint), and $q_j\le a_{i_j}\le a_1+M_1 i_j$ admits unbounded $q_j$. The "contradiction with $d_n\le M_1$" the dispatch hoped for does not fall out — the gap bound constrains *consecutive* terms, not *witnesses*, and witnesses are non-consecutive. Flag as a candidate only if a density/counting argument on witness indices is later found; do not build it now.
+
+**F3 — Well-quasi-ordering / Dickson / Higman.**
+- *Spine.* View the $P_1$-valuation vectors $v^{(n)}=(v_p(a_n))_{p\in P_1}\in\mathbb N^{|P_1|}$; Dickson gives an infinite non-decreasing subsequence.
+- *Verdict: NOT viable.* **The distinct $P_1$-supports $S(a_i)\cap P_1\subseteq2^{P_1}$ are an increasing bounded family — they stabilize unconditionally at some stage $N_0$** (only $\le 2^{|P_1|}$ subsets). After $N_0$, every $P_1$-support is already seen, so Dickson's comparable-pair conclusion is trivially satisfied and yields no contradiction. Verified computationally: for $a_1\in\{77,91,35,65,15\}$ the $P_1$-admissible residue set stabilizes within 2–3 terms and **collapses to $\{0\}$** (only multiples of $M_1$ remain $P_1$-admissible, because both singleton supports $\{p\},\{p'\}$ appear). The wqo finiteness fact is real but trivial here; it does not bound the *large* (non-$P_1$) governing primes, which is exactly Gap A.
+
+**F4 — Direct monovariant on $a_n\bmod M_1$ (pigeonhole on finite residues).**
+- *Spine.* $d_n\le M_1$ so $r_n=a_n\bmod M_1$ lies in a finite set; if $r_{n+1}$ is eventually a well-defined function of $r_n$, then the residue sequence is eventually periodic, and since $d_n\in[1,M_1]$ is pinned by $(r_n,r_{n+1})$ the difference sequence is eventually periodic ⇒ AP.
+- *Verdict: partially sidesteps but the crux fails.* **The residue map is NOT a function.** Verified: for $a_1=77$ ($M_1=77$), residue $0$ maps to BOTH $7$ and $14$ (last violation at $n\approx396$, deep in the tail, well after $P_1$-support stabilization). Same for $a_1=91$. The disambiguation between $0\to7$ and $0\to14$ requires knowing which non-$P_1$ governing primes are active — i.e. the very transversal/governing-prime state that IS Gap A. So F4 reduces to Gap A under the hood. (For $a_1\in\{50,21,33\}$ — lock cases — the map IS a function and the framing works trivially, but those are already covered by Lemma LOCK.) Do not build.
+
+**F5 — Covering systems / Mirsky–Newman.**
+- *Verdict: NOT applicable.* $\mathcal B_\infty=\bigcup_{T\in\mathrm{MT}}\{m:\operatorname{rad}(T)\mid m\}$ is a union of *overlapping* divisibility classes (a term hits multiple transversals). The Mirsky–Newman / exact-covering-system theorem requires a *disjoint* cover of $\mathbb Z$ by APs; the overlap here voids the hypothesis. No clean covering-systems kill found.
+
+**F6 — $p$-adic / valuation linearity.**
+- *Verdict: NOT viable.* In the AP regime $a_{n+T}=a_n+L$, $v_p(a_n)$ is *periodic* in $n$ (period dividing $T$), not linear; in the lock regime it is bounded. "Eventually linear in $n$" does not match the actual structure. LTE does not obviously bound governing primes. Skip.
+
+### Candidate technique(s)
+- **AIMO-0678 monovariant + finite-state-lift** (the genuinely different one): non-increasing min-of-a-set integer descent on the governing-prime frontier, then the certified cyclic-successor endgame. Adapt $w_n=\min\{m\ge a_n:m\nmid s_n\}$ → a non-increasing $w_n$ on the modulus/pull-in frontier.
+- (Cheap kill still on the table, *not* a different framing) **prove $q\le M_1=\operatorname{rad}(a_1)$ for every governing prime $q$** — closes Gap A directly inside `transversal-saturation`.
+
+### Cheap-kill candidates
+- **$q\le M_1$ size bound.** Verified (clean period-finding, gov_primes $:=$ prime factors of the verified $L$): holds in **all 26 two-prime $a_1$ cases** tested ($15,35,65,77,91$ non-lock; rest lock) AND for $a_1=385$ ($L=43890=2\cdot3\cdot5\cdot7\cdot11\cdot19$, all $\le385$). Governing primes are always $\subseteq\{2,3\}\cup P_1\cup\{\text{small free-rider}\}$; in two-prime non-lock cases the free-riders are exactly $\{2\}$ or $\{2,3\}$. This is the cheapest route to finiteness — a proof would close Gap A in one stroke. Still a proof of Gap A, not a different framing, but the most economical.
+- **$P_1$-support stabilization** (unconditional, $\le2^{|P_1|}$ distinct supports) — already noted in `prime-power-dichotomy` as the replacement for the flawed MT-monotonicity. Free, but only bounds the $P_1$-part; does NOT bound large governing primes (F3 above).
+- **Residue $a_n\bmod M_1$ is eventually periodic** — verified in all tested cases (period $=T$ in non-lock, $=M_1/p$ in lock). Conjecture, not a proof; and the lift from residue-periodicity to AP needs the residue map to be a function, which fails (F4).
+
+### Knowledge-base entries to use
+- `Invariants & monovariants` (Combinatorics) — the AIMO-0678 descent.
+- `Order of an element, Fermat/Euler` + `Linear recurrences` (Number Theory) — "eventually periodic mod $m$" template; the finite-state-lift half.
+- `Pigeonhole / extremal principle` (Combinatorics) — the finite-state→periodic step.
+- `Vieta jumping & infinite descent` (Number Theory) — the no-minimal-counterexample framing for the monovariant.
+- (KB has no explicit Dickson/Higman/König entry — consistent with F2/F3 not panning out.)
+
+### Analogous past problems (cruxes)
+- **`aimo-0678` (France)** — three cruxes, all load-bearing and directly analogous:
+  1. *divisibility-and-gcd*: freeze an invariant during the "simple" phase; compare the climbing coordinate against it. **Analogue:** freeze the modulus $L$ during the no-new-governing-prime phase; the residues cycle against it.
+  2. *size-bounding-and-descent*: $w_n=\min\{m\ge a_n:m\nmid s_n\}$ non-increasing ⇒ bounded coordinate. **Analogue:** a non-increasing $w_n$ on the governing-prime frontier ⇒ finitely many governing primes (this is the unproved Gap D, and AIMO-0678 gives the concrete min-of-a-set template).
+  3. *modular-arithmetic-and-CRT*: once one coordinate is bounded, $M=\operatorname{lcm}$ of its values, reduce the other mod $M$, the pair is a deterministic finite-state map ⇒ periodic. **Analogue:** the certified cyclic-successor-on-$\mathcal B_\infty$ endgame (Lemmas 4–6), with $L=\prod G$ as $M$.
+  This is the single best analogue in the corpus; the whole spine of F1 is its mirror.
+- No other corpus entry resembles the gcd-greedy-minimal-transversal structure (searched NT subtopics `sequences-and-recurrences`, `invariants-and-monovariants`, `divisibility-and-gcd`, `size-bounding-and-descent`, `pigeonhole`, `modular-arithmetic-and-CRT`; the only gcd+progression hit was `aimo-0678`).
+
+### Prior progress
+Whole theorem reduced to Gap A (finiteness of governing primes / $L$-periodicity of $\mathcal B_\infty$). Certified: linchpin + gap bound $d_n\le M_1$, pairwise-intersecting supports, every term in $\mathcal B_\infty$, greedy $=$ cyclic successor in $\mathcal B_\infty$ from $n=1$ (Gap B closed unconditionally), cyclic-successor bijection ⇒ $a_{n+T}=a_n+L$ (conditional on Gap A), LOCK lemma ($T=1,L=p$). Gap F (same-type free-rider replacement) refuted and dead. `growing-modulus-descent` registered but unbuilt (Gap D = the monovariant is undefined).
+
+### Dead ends (do not retry)
+- **Gap F / `free-rider-type-replacement`** (RETHINK): same-type free-riders do NOT replace each other. $a_1=385$: 2 and 3 have identical type $(\{5\},\{5,7,11\})$ and BOTH stay non-redundant through $n\ge600$. $a_1=715$: 91 same-type free-riders coexist. Type-competition is dead as a distinct route.
+- **MT-antichain monotonicity** (the Step-7 trap): adding a set to a hypergraph can both delete AND create minimal transversals ($F=\{\{1,2\}\}$, add $\{2,3\}$, gains $\{1,3\}$). Any framing relying on "MT($\mathcal F_n$) is monotone" is broken — including the original transversal-saturation Step 7. F1's monovariant descent sidesteps this.
+- **F2 (König), F3 (Dickson), F4 (direct-residue), F5 (covering systems), F6 ($p$-adic linearity)** — scouted above, NOT viable. Do not build.
+- **Compute-explorer's "$a_1=385$ aperiodic through 12000 terms"** — was a bug (autocorrelation window $<T=5088$). $385$ IS periodic from $n=1$. Do not cite the faulty claim.
+
+### Small-case / intuition notes (CONJECTURES, not proofs)
+- **$q\le M_1=\operatorname{rad}(a_1)$ for every governing prime** — held in all $\approx30$ tested $a_1$ (26 two-prime + $385$). Governing primes $\subseteq\{2,3\}\cup P_1\cup\{\text{small}\}$; two-prime non-lock free-riders are always just $\{2\}$ or $\{2,3\}$. Conjecture; a proof is the cheap kill on Gap A.
+- **$L$ is always a multiple of $M_1$ in the NON-lock regime** ($77\to L=154=2M_1$, $91\to182=2M_1$, $385\to43890=114M_1$, $35\to210=6M_1$, $65\to20$... wait $65$: $M_1=65,L=20$, NOT a multiple — so this conjecture is FALSE; $65$ is a counterexample). Retract: $L$ need not be a multiple of $M_1$. So $a_n\bmod M_1$ need not be $T$-periodic in general ($65$: $T=4$, res-period would be $M_1/\gcd$-ish). The residue-period $=T$ coincidence for $77,91$ is special to those.
+- **Residue map is NOT a function** (verified $a_1\in\{77,91\}$, residue $0\mapsto\{7,14\}$) — kills F4 as an independent route.
+- **$P_1$-admissible residue set stabilizes to $\{0\}$** in all tested cases (singletons $\{p\},\{p'\}$ appear) — trivial, not a useful lift.
+
+### Bottom line for the outliner
+The field has collapsed to one wall (Gap A). The genuinely-different viable attack is **F1: replan `growing-modulus-descent` (unbuilt, Elo 1470) using `aimo-0678`'s min-of-a-set monovariant as the template for Gap D.** It does not sidestep Gap A (no framing does — finiteness of governing primes IS the theorem), but it proves it by a *different mechanism* (integer descent on the pull-in frontier) that avoids the MT-monotonicity trap that broke transversal-saturation Step 7. The lift half is already certified. F2/F3/F4/F5/F6 are scouted and judged not viable; do not build them. The cheap kill (prove $q\le M_1$) remains the most economical Gap-A closure and should stay in play inside `transversal-saturation`, but it is not a *different framing* — F1 is.

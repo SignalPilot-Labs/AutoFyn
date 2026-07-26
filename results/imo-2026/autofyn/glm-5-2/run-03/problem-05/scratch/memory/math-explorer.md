@@ -1,0 +1,13 @@
+
+ALWAYS: When scouting a functional-equation/inequality problem, test the affine family f(x)=a*x+c first (discriminant/QM-AM-GM of the pair (x,f(y)) collapses a→1); the real family is often f=x+c, NOT f=x (round 1, imo-2026-05: answer turned out to be f(x)=x+c, c>=0).
+NEVER: Trust the "two lower bounds on the same quantity imply the bounds are ordered" argument — having A>=L1 and A>=L2 does NOT give L1>=L2 (the dispatch's "f(x)/x>=f(y)/y" chain is lossy/invalid; round 1, imo-2026-05).
+ALWAYS: Probe the diagonal substitution that collapses the [GM,QM] interval to a point — setting the variable equal to its image (x=f(y)) forces equality and yields a clean FE; but remember the FE alone usually underdetermines (orbit-invariant g has many nonconstant solutions), so the converse needs the off-diagonal inequality (round 1, imo-2026-05).
+
+ALWAYS: for a two-sided sandwich inequality (A >= B >= C), decompose via (A-C) and (A-C) = (L+R) and (L-R) — the sum gives the trivial "outer gap" (often a perfect square like 2(x-f(y))^2 here) and the difference gives a *sign identity* (L-R = 2*(D(y)-D(x))*(positive)) that converts "both L,R >= 0" into one clean master bound |D(y)-D(x)|*P <= (x-f(y))^2. This was the actual crux of imo-2026-05 round 1; it turned a messy pair of quadratic inequalities into one signed inequality that admits a Diophantine kill. (round 1)
+NEVER: stop an equality-case analysis at the diagonal substitution x=f(y) and declare the function characterized — the diagonal collapse gives an orbit recurrence (here f(f(y))=2f(y)-y) plus a sign constraint (D>=0) but leaves per-orbit freedom; non-constant D satisfying the recurrence exist in principle. Always probe whether the FULL inequality (off-diagonal) forces constancy before claiming uniqueness. (round 1, imo-2026-05)
+
+ALWAYS: the iterate forced by a QM-AM-GM sandwich is a TRANSLATION (f(f(y))=2f(y)-y, displacement g=f-id), not an involution — do not build an approach around proving f(f(x))=x; it fails whenever the displacement is nonzero (round 1, imo-2026-05).
+
+ALWAYS: close the "parametric works, does every function" gap for a continuous-domain FE via (i) continuity from the master Lipschitz bound, (ii) limit-at-infinity by approximating a target real with an AP orbit point (Dirichlet spacing) and sending the target to infinity so a ~4a growth in the denominator kills the residual, (iii) connectedness of the domain once the value set is provably finite ({0,L} here) (round 1, imo-2026-05).
+
+NEVER: expect the scaling symmetry (g_k(x)=k·f(x/k)) to classify the solution family on its own — it is transitive on c>0 but fixes the c=0 point, so it cannot bridge the c=0 vs c>0 cases; the global continuity/connectedness argument is still required (round 1, imo-2026-05).

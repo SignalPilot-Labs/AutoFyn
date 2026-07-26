@@ -1,0 +1,23 @@
+# proof-outliner role rules (persist across rounds)
+
+ALWAYS: read all explorer reports before outlining — they already scouted the terrain and verified numerics; reuse their target reformulations rather than re-deriving (round 1, imo-2026-02: the three explorers converged on the perpendicular-bisector-of-MN target and two clean reformulations (antipode, power-of-point secant) that became the spines of the best approaches).
+
+ALWAYS: for geometry problems with three paired-angle conditions, check the "spiral similarity at vertex sends X→Y" claim numerically before assuming it — direction coincidence does NOT imply ratio coincidence (round 1, imo-2026-02: "spiral sim at A sends K→L" was FALSE; using it would have killed an approach).
+
+NEVER: commit a slug to pure 4-variable ideal-membership of the angle-equality polynomials when inside-region hypotheses are present — the directed-angle tangent encoding admits spurious real branches and the target polynomial is NOT in the ideal (round 1, imo-2026-02: 2094/5657 spurious solutions had P≠0; the inside hypotheses are load-bearing inequalities, not removable equalities).
+
+NEVER: rely on numpy's `arccos`/`arctan2` for angle-equality verification in spiral-triangle configs — it picks the smaller angle, so obtuse angles read as supplements and produce spurious "equalities"; use directed angles mod 180 throughout (round 1, imo-2026-02: explorer flagged this trap).
+
+ALWAYS: when a verified numerical invariant is α-independent (holds along a whole 1-parameter family), frame the proof as an identity-on-a-curve / invariant chase, NOT as "solve for K,L then check" — there is nothing to solve to a point (round 1, imo-2026-02: OM=ON held identically along the 1-param family, signalling a hidden-symmetry / invariant proof).
+
+ALWAYS: hold the most speculative framing out of the build set until an explorer confirms its load-bearing conjecture numerically (round 1, imo-2026-02: spiral-compose-midpoints composition Φ(M)=N was unverified, so it was kept out of the build set to avoid a builder dying on an unconfirmed premise).
+
+ALWAYS: when a prior round declared a polynomial identity FALSE via a "counterexample point," instruct the builder to recompute the substituted target value from scratch from its defining formula (not trust the prior round's printed numeric) before treating the identity as dead — round-2 imo-2026-02: the round-1 saturation identity was declared FALSE at a "counterexample" where the cleared target Q was printed as 256, but recomputing Q from its defining formula gave 320/3 and the LHS vanished; the "FALSE" verdict was the bug. (round 2)
+
+ALWAYS: when a live approach has two viable but different closing certificates for the same final step (e.g. saturation identity vs resultant factorisation), open the second as a sibling slug so both run in parallel as insurance against one being a false-verified artifact — the last step is the single point of failure, and round-1's false-verified trap shows one certificate alone is risky. (round 2, imo-2026-02: opened analytic-resultant-cert alongside analytic-branch-cert)
+
+ALWAYS: when a problem is already SOLVED and a later round's purpose is to strengthen with independent rival certificates, frame the revise targets as "close the gap WITHOUT leaning on the solved approach's backbone" — and explicitly flag the independence-losing fallback (invoke the solved approach as a black box) as a last resort that forfeits the round's purpose, not as a normal close. (round 3, imo-2026-02: antipode must close (T') via its own ideal-membership, NOT by citing analytic-branch-cert's saturation identity)
+
+ALWAYS: when a scout has already run and verified a closing certificate (script + remainder zero + timing), instruct the builder to REPLICATE the scout's script verbatim in the approach file rather than re-deriving from scratch — the scout's terrain verification is the load-bearing evidence; re-deriving risks re-hitting the blowup the scout already bypassed. (round 3, imo-2026-02: antipode scout's /tmp/probe_reduce.py runs in 81s with remainder zero; builder's job is to reproduce it + add the leading-coeff-nonzero check + denominator-clearing, not to re-explore)
+
+NEVER: force-close a half-baked symbolic verification with unresolved signs — when a gap's blocker is a directed-sign pin (the numpy-sign-trap), the honest move is deferral (approach stays `partial`, alive, not dead), NOT a guessed-sign symbolic check that would false-verify. (round 3, imo-2026-02: power-secant-product Step 9a sign-pinning is the blocker; if it can't be closed rigorously in one round, defer rather than guess)

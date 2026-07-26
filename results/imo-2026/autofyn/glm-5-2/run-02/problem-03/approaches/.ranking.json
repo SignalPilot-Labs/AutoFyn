@@ -1,0 +1,86 @@
+{
+  "cell-complex-l3": {
+    "copied_from": null,
+    "elo": 1591.697627369317,
+    "expanded": 3,
+    "last_note": "2-adic D3 lever FALSIFIED (valuation-reduction lemma sound; min fractional A=5/3 has v_2=0, odd denom 3; 27/2019 at n=3 have v_2<0). L(4) certified stands. D3 conjecture open (unproven, rejected as lemma). Conditional L(n)-all-n corollary sound.",
+    "last_outcome": "verified-milestone",
+    "last_round": 6,
+    "selected": 8,
+    "slug": "cell-complex-l3",
+    "stale": true,
+    "summary": "Lower bound G1 via undecomposed piecewise-linear A on the mark-simplex; n=3 cell/vertex enumeration as the first real-n>=3 foothold; escapes the -2T/Hall decomposition wall."
+  },
+  "dyadic-halving-induction": {
+    "copied_from": null,
+    "elo": 1481.019515522675,
+    "expanded": 1,
+    "last_note": "Central route DEAD: strict-decrease conjecture (Phi>0 => cap<alpha) FALSIFIED by ridge R_e=(8,4,2+e,1-e)/15 (non-dyadic Phi=5e>0 but pair-pile gives cap=alpha=1/15, verified no strategy beats it). Two harvestable PARTIAL lemmas proved (Phi=0 uniqueness one-line all-n; local-kink level-1 perturbations n=3 asymmetric slopes 1/2 verified). Ridge falsification recorded as negative result. Far-from-dyadic closure is shared wall with two-regime (single-gap-trap risk). Cert lemmas phi-zero-uniqueness + local-kink-level1 + ridge-falsification. Approach goes back to outliner (central route dead; harvest lemmas; re-conceive or retire).",
+    "last_outcome": "dead-end",
+    "last_round": 5,
+    "selected": 4,
+    "slug": "dyadic-halving-induction",
+    "stale": false,
+    "summary": "Upper bound G2 via 2-adic structural invariant Phi=sum|p_i-2p_{i+1}| (Phi=0 iff dyadic, uniqueness); local-kink near-dyadic (harvestable partial); halving-depth induction on config structure for general-n U(n)."
+  },
+  "induct-one-mark": {
+    "copied_from": null,
+    "elo": 1341.265804580977,
+    "expanded": 2,
+    "last_note": "Value-recursion route (Mersenne identity 1/V(n+1)=1+1/(2V(n))) conceded by builder as a REPHRASING of (L+U), not an independent bypass \u2014 central strategy dead. k=0/k=1 sub-cases duplicate pairing-partner. Algebraic identity verified but consequent, not proof. Both main gaps delegated to siblings.",
+    "last_outcome": "partial",
+    "last_round": 2,
+    "selected": 14,
+    "slug": "induct-one-mark",
+    "stale": false,
+    "summary": "Upper bound by strong induction on n via one-mark reduction factoring 1/f(n+1)=1+1/(2f(n)); n=1 two-mode (bisect/sliver) template."
+  },
+  "pairing-partner": {
+    "copied_from": null,
+    "elo": 1590.0075530296901,
+    "expanded": 6,
+    "last_note": "Reduction D equivalence L(n+1)\u27fa\u03c6-existence is FALSE (total sum (Match) \u2260 Hall per-subset condition; counterexample L={3,3},R={5,1}); lemma rejected. Staircase equality + m_1-split consolidation sound; H1/H2 open.",
+    "last_outcome": "partial",
+    "last_round": 6,
+    "selected": 14,
+    "slug": "pairing-partner",
+    "stale": true,
+    "summary": "Upper bound by consecutive-pair excess decomposition A=\u03a3(p_{2k-1}-p_{2k}) with dyadic pair-pile certificate and Hall matching."
+  },
+  "pairing-partner-transfer": {
+    "copied_from": "pairing-partner",
+    "elo": 1444.24391176953,
+    "expanded": 3,
+    "last_note": "Engine A (two-tail cancellation) FALSIFIED on n=3 brute force (21/33 k>=2 minimizers admit no single-pair transfer; tails ADD, same -2T wall); CK lemma harvested (certified); approach is a near-twin of pairing-partner with no live engine -- RETHINK/retire",
+    "last_outcome": "dead-end",
+    "last_round": 3,
+    "selected": 14,
+    "slug": "pairing-partner-transfer",
+    "stale": false,
+    "summary": "Lower bound G1 k>=2 via extremal minimizer + non-improving 2-piece transfer (merge two smallest M-sub-pieces + bisect largest unsplit R-piece); different mechanism from pairing-partner's global weight-function."
+  },
+  "self-reproducing-invariant": {
+    "copied_from": null,
+    "elo": 1481.218092447161,
+    "expanded": 1,
+    "last_note": "New G2 framing (crux aimo-0262): self-reproduction + ridge-reproduction (all n\u22652) + 2-strategy near-dyadic bound all sound. Promotable lemma 3 overclaims (a\u2208(-1,1) vs proved a\u2208(-1/2,1)). Far-from-dyadic OPEN (single-gap-trap risk noted, not papered over).",
+    "last_outcome": "partial",
+    "last_round": 6,
+    "selected": 0,
+    "slug": "self-reproducing-invariant",
+    "stale": true,
+    "summary": "General-n U(n) via aimo-0262 self-reproducing pair-pile invariant on the pair-excess vector (e_1,...,e_n, ell); equality locus E_n (dyadic + ridge); non-strict cap<=alpha, far from dead strict-decrease and the 17-family casework."
+  },
+  "two-regime-disjunctive": {
+    "copied_from": null,
+    "elo": 1587.949324166867,
+    "expanded": 5,
+    "last_note": "c(3)=8/15 SOLVED end-to-end (APPROVE for n=3): 7-cap extreme closure (regime IV) closes last U(3) gap; all 8 sign-triple sub-cases re-derived and verified; L(3) certified (cell-complex). General-n U/L remain open.",
+    "last_outcome": "verified-milestone",
+    "last_round": 6,
+    "selected": 10,
+    "slug": "two-regime-disjunctive",
+    "stale": true,
+    "summary": "Upper bound by a disjunctive two-regime invariant (regime D dyadic-dominant caps at f(n) via pair-pile+self-similar recursion; regime N non-dyadic caps < f(n) via sliver/shave); cap tight only at the dyadic config."
+  }
+}

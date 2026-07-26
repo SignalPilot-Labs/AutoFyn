@@ -1,0 +1,15 @@
+{
+  "pr_title": "IMO 2026 P2: prove OM=ON — solved via A*-cyclicity reduction + exact Gröbner ideal-membership certificate",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": " ended without summary -- autocommit",
+      "ended_at": "2026-07-25T15:34:38Z"
+    },
+    {
+      "n": 2,
+      "summary": "Solved imo-2026-02: a-star-cyclicity APPROVED (Gröbner cert re-verified)",
+      "ended_at": "2026-07-25T15:46:24Z"
+    }
+  ]
+}

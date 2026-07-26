@@ -1,0 +1,3 @@
+
+ALWAYS: verify the listed case partition in a (W,C)/monovariant casework by testing concrete instances computationally — the outlined "intermediate" case condition can be too narrow (round 1: invariant-first & monovariant-first listed "g>1, a>1, b>1" but missed the g>1, exactly-one-of-a,b=1 subcase like {4,8}, {9,27}; the ΔW/ΔC computation still held, so it was CHANGES REQUESTED not RETHINK).
+ALWAYS: when two approaches share one verified core, accept the field but flag the single-core-field risk to the orchestrator so next round can branch a genuinely different framing if both stall together (round 1, imo-2026-01).

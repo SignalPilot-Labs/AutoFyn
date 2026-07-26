@@ -1,0 +1,71 @@
+## imo-2026-06 — scout report, lens: covering-systems / sieve on the forbidden residue-class union
+
+Start: 2026-07-25 16:19 UTC. Route: reframe the greedy rule as a sieve/covering problem on Forbidden_n = ∪_{i≤n}{m : gcd(m,a_i)=1}; ask when the forbidden set (equivalently its complement B_∞) becomes periodic mod a finite L. All lemmas from rounds 1–2 (linchpin+gap bound d_n≤M_1, pairwise-intersecting, every term in B_∞, greedy=cyclic-successor in B_∞ from n=1, cyclic-successor bijection, LOCK) are taken as certified inputs and not re-derived.
+
+### Distinct openings surfaced
+
+1. **Static collapse observation (the headline negative finding).** The forbidden-set/sieve framing, pushed to the limit, IS the transversal framing in a relabelled costume. Concretely:
+   - Forbidden_n = ∪_{i≤n}{m: gcd(m,a_i)=1} = ∪_{i≤n}(Z \ ∪_{p|a_i} pZ).
+   - Complement B_n = {m: S(m) hits every S(a_i), i≤n} = ∪_{T∈MT(F_n)} rad(T)·Z (the SAME divisibility classes as the transversal route).
+   - B_n is L_n-periodic with L_n = rad(P_n) = product of all primes dividing any a_i, i≤n. L_n GROWS with n (P_n is the term-prime set, which is INFINITE in every non-trivial case — verified a1=77: 53 distinct transient primes by n=400, 362 of the 400 terms carry a prime outside S(L)={2,7,11}).
+   - B_∞ = ∩_n B_n = ∪_{T∈MT(F_∞)} rad(T)·Z. B_∞ is L-periodic ⟺ finitely many primes enter some T∈MT(F_∞) ⟺ **Gap A**. So the sieve framing at the static limit reduces to the SAME wall the transversal framing hit. This is not a new route to a different target; it is the transversal route.
+
+2. **Dynamic-stabilization observation (the one non-circular input).** For any FIXED modulus L_0, the "resolved" forbidden pattern R_n(L_0) := {r mod L_0: ∃i≤n with S(a_i)⊆S(L_0) and gcd(r, rad(a_i))=1} is an INCREASING sequence of subsets of the finite set Z/L_0, hence stabilizes in ≤ L_0 steps. This is trivial (finite increasing) and non-circular. The hope: a fixed L_0 gives a stabilized pattern that determines the orbit, avoiding Gap A. **Empirically falsified for the natural L_0:**
+   - L_0 = M_1 = rad(a_1): stabilized pattern collapses to {0} (round-2 finding, reproduced) — trivial, does not determine the orbit (a1=77: residue 0 mod 77 maps to both 7 and 14 mod 77 in the tail).
+   - L_0 = true L (e.g. 154 for a1=77): stabilized pattern = B_∞ mod L, |R|=T, DOES determine the orbit — but choosing L_0 = L PRESUPPOSES Gap A.
+   - **Functionality test (a1=77, tail n=300–599):** the residue map a_n mod L_0 ↦ a_{n+1} mod L_0 is a FUNCTION in the tail IFF L_0 is a multiple of the true L. L_0=77 → not a function; L_0=1001=13·77 (not a multiple of 154) → not a function; L_0=154, 308, 462, 5929 (multiples of 154) → function. The minimal functional L_0 IS L, and finding L IS Gap A. So routes (a) finite-automaton, (c) sieve, and (d) increment-induction — if they key on a residue modulus — CONVERGE on the same wall.
+
+3. **The aperiodic-syndetic-divisibility-closed counterexample (genuinely new contribution of this route; a NEGATIVE LEMMA worth certifying).** The bare static properties of B_∞ — divisibility-closed (closed under multiples: m∈B_∞ and m|m' ⟹ m'∈B_∞), and syndetic (bounded gaps, since every multiple of M_1 lies in B_∞ by the linchpin) — do NOT force periodicity. Concrete verified counterexample:
+   $$B \;=\; 6\mathbb Z \;\cup\; \bigcup_{\substack{p\equiv1\pmod4\\p\text{ prime}}} p\mathbb Z.$$
+   - Divisibility-closed: union of ideals (dZ), closed under multiples.
+   - Syndetic: contains 6Z, so gaps ≤ 6.
+   - Aperiodic: verified non-L-periodic for every L ≤ 400 (brute force, m up to 4L). Structural proof: for any fixed L, take a prime q≡3 mod 4 with gcd(q,6)=1 and q>L (infinitely many by Dirichlet); then q∉B. By L-periodicity q+L∉B, but for a density-1/2 subfamily of such q (those where q+L has a prime factor ≡1 mod 4) we have q+L∈B — contradiction. So no finite period exists.
+   **Consequence (rigorous):** any proof of periodicity of B_∞ MUST use a GREEDY-SPECIFIC DYNAMIC property beyond (divisibility-closed + syndetic). This is the formal, non-circular version of the round-2 "covering-capacity unbounded compatibly with Gap A" finding — reached here from the static-structure side. It certifies that routes (a)/(c)/(d), to succeed, must identify and exploit a greedy-dynamic property that the counterexample lacks; pure structural/sieve statics cannot close the gap.
+
+### Candidate technique(s) (the problem points to — pointers, not a plan)
+
+- **Mirsky–Newman / exact covering systems: DOES NOT APPLY directly.** The theorem (the two largest moduli in an exact/disjoint residue-class cover of Z coincide) governs COVERS of Z (density-1 unions of disjoint residue classes). Our forbidden set is NOT a cover of Z — B_∞ is nonempty and syndetic. The forbidden set is a UNION (overlapping, not disjoint) of residue classes that does NOT cover Z. No version of Mirsky–Newman bounds the moduli of a positive-density (non-covering) union. Searched the crux corpus: no problem with `mirsky`/`newman`/`syndetic`/`exact cover` tags exists.
+- **Large sieve / Σ1/p² density (aimo-0643-style):** bounds the density a union of bad sublattices can cover, but density arguments on the forbidden set are INSUFFICIENT — the counterexample above has a perfectly controlled density and is aperiodic. Round-2 already certified the density/covering-capacity lower bound as CIRCULAR (`monovariant-non-monotonicity`, `witness-density-recurrence` Step 5). The sieve route does not refresh this.
+- **aimo-0447 grid-covering crux (bound cells a prime can occupy, force large primes distinct):** works in the WRONG direction for us — it shows a covering NEEDS large primes; we want to show the governing set needs NO large primes. Not adaptable to Gap A.
+
+### Cheap-kill candidates
+- **The stabilized-resolved-pattern mod a CANDIDATE L_0 is a finite increasing sequence (≤ L_0 steps).** Cheap to compute, non-circular, but (per opening 2) needs L_0 = L to determine the orbit, so it does not yield a cheap kill.
+- **Counterexample certification:** the syndetic-divisibility-closed-aperiodic set above is a one-shot cheap kill of the hope that pure statics suffice — worth certifying as a negative lemma to fence off future "B_∞ has bounded gaps ⇒ periodic" attempts.
+- No v_p / multiplicity / parity kill is visible; the obstruction is genuinely about which primes enter MT(F_∞), not a residue-counting artifact.
+
+### Knowledge-base entries to use
+- The linchpin + gap bound `d_n ≤ M_1` (linchpin-and-gap-bound): every multiple of M_1 is in B_∞, giving both bounded gaps and the syndetic anchor. This is the ONLY structural input the sieve route needs, and it is already certified.
+- Pairwise-intersecting-supports + every-term-in-B_∞ + greedy-equals-cyclic-successor: the orbit IS the increasing enumeration of B_∞ from a_1 (already certified). The sieve route does not re-derive these.
+- cyclic-successor-bijection: B_∞ L-periodic ⟹ orbit periodic (conditional endgame, certified).
+- No NEW knowledge-base entry is needed for the sieve route; and none in knowledge_base.md resolves Gap A for it (covering-systems theorems there are about multiplicative orders / CRT, not about syndetic-divisibility-closed set periodicity).
+
+### Analogous past problems (cruxes)
+- **aimo-0447** (NT, `modular-arithmetic-and-CRT`-adjacent / `size-bounding-and-descent`) — crux: encode "gcd>1 for every pair of shifts" as a prime-covering of a grid; bound cells a prime can occupy by ⌈N/p⌉²; force large primes distinct. **Analogous in encoding (gcd>1 ⇔ prime cover) but works the WRONG direction** (forces large primes IN; we want them OUT). Not adaptable to Gap A; recorded to prevent a future builder from re-trying it.
+- **aimo-0643** (NT, sieve) — crux: bad sublattices p·Z² fail to cover a disk because Σ1/p²<½. Analogous in spirit (non-covering via convergent prime sum) but the target there is existence of ONE uncovered point near a target, not periodicity of an infinite enumeration. Not adaptable.
+- **aimo-0678** (NT, `modular-arithmetic-and-CRT`) — crux: once one coordinate of a coupled recurrence is bounded, reduce the other mod lcm of the bounded coordinate's values, turning the state pair into a finite deterministic map. This IS the transversal framing's "MT stabilises ⇒ B_∞ periodic" mechanism, and round-2 showed the required monovariant (MT-frontier w_n) is PROVABLY NON-MONOTONE in the real greedy (a1=116). Already a certified dead-end; the sieve route does not refresh it.
+- No crux in the corpus is a genuine match for "prove a greedy-generated syndetic divisibility-closed set is periodic" — the corpus has no Mirsky–Newman / exact-cover / syndetic-set periodicity problem. **Report "none" for a truly analogous crux.**
+
+### Prior progress
+The whole theorem is reduced to Gap A (rounds 1–2, certified). The endgame (cyclic-successor bijection ⟹ a_{n+T}=a_n+L for all n≥1, from the start), pure-from-start, and LOCK sub-case are all proved and reviewer-verified. Three attack mechanisms (aimo-0030 strip, aimo-0678 monovariant, density/covering-capacity) are certified dead-ends on the SAME obstruction: bounding which primes enter term supports between large-prime witnesses IS Gap A, and no greedy-coupling mechanism bounds them non-circularly. The sieve route (this report) adds a fourth angle that reaches the same wall, plus a negative lemma (counterexample) sharpening the target.
+
+### Dead ends (do not retry)
+- **aimo-0030 prime-factor strip** (transversal-saturation Step 7 / prime-power-dichotomy C.4): Lemma C structural no-go + 51 obstructed admissibility-transfer pairs (a1=385, q=19). Certified dead.
+- **MT-frontier monovariant w_n** (growing-modulus-descent): provably non-monotone (a1=116=2²·29: w_n = +∞→59→…→59→+∞). Certified dead (`monovariant-non-monotonicity`).
+- **Covering-capacity density lower bound** (witness-density-recurrence Step 5): circular — covering capacity of T\{q} unbounded compatibly with Gap A; minimal-criminal induction not well-founded. Certified dead.
+- **NEW (this route): pure static sieve on B_∞.** B_∞ = ∪_{T∈MT(F_∞)} rad(T)·Z is periodic ⟺ Gap A; the sieve framing collapses to the transversal framing at the static limit. The "stabilized resolved pattern mod L_0" determines the orbit ONLY for L_0 a multiple of the true L, and finding L is Gap A. The syndetic-divisibility-closed aperiodic counterexample (opening 3) PROVES no pure-static argument can work. Do not pursue the sieve route as a separate approach — it would die the same death as transversal-saturation.
+
+### Small-case / intuition notes (labelled CONJECTURE / VERIFIED)
+- VERIFIED (a1=77, n=1..399): the "resolved" forbidden pattern mod L=154 stabilizes at |R|=18=T by n=5, while unresolved terms (transient-prime carriers) accumulate WITHOUT bound (53 distinct transient primes, 362/400 terms unresolved). The unresolved terms NEVER forbid a new residue class mod L (resolved count = true count = 18 from n=5 onward) — but PROVING this without knowing L is Gap A.
+- VERIFIED (a1=77, tail n=300..599): a_n mod L_0 ↦ a_{n+1} mod L_0 functional IFF L_0 is a multiple of true L (=154). Minimal functional L_0 = L. Finding L = Gap A.
+- VERIFIED: counterexample B = 6Z ∪ (∪_{p≡1 mod 4} pZ) is divisibility-closed, syndetic (gaps ≤ 6), and aperiodic (non-periodic for all L ≤ 400, structural proof via primes q≡3 mod 4). CONJECTURE: this B is not the B_∞ of any greedy sequence (the greedy coupling excludes it) — but the burden is on the prover to identify WHICH greedy property excludes it, and that is exactly the unsolved crux.
+- VERIFIED (rounds 1–2, 273+ cases): every governing prime q (factor of L) satisfies q ≤ M_1 = rad(a_1). If provable, this closes Gap A directly — but the sieve route offers no mechanism to prove it that the transversal route did not already have.
+
+### Concrete recommendation for the outliner
+
+**OBSTRUCTION VERDICT for the sieve route as a standalone approach.** Do NOT open a `covering-systems-sieve` slug — it would re-encounter Gap A at the static limit (B_∞ = ∪ rad(T)Z, periodicity = Gap A) and at the dynamic level (L_0 must = L). It is a relabeling of the transversal framing, not a genuinely different route to a different target.
+
+**DO harvest two reusable outputs from this scout:**
+1. **Certify as a negative lemma** (`syndetic-divisible-closed-not-periodic`): the counterexample B = 6Z ∪ (∪_{p≡1 mod 4} pZ) proves that divisibility-closure + syndetic-bounded-gaps do NOT imply periodicity. Any viable proof of periodicity MUST use a greedy-specific DYNAMIC property. This fences off all future "B_∞ has bounded gaps ⇒ periodic" attempts and sharpens the target for routes (a) finite-automaton, (b) structural induction on |P_1|, (d) increment-pattern induction: they must identify a greedy-dynamic property (e.g. the specific cyclic-successor generation order, or a bounded non-residue statistic that the counterexample lacks) — NOT a static structural one.
+2. **Record the L_0-functionality test** as a sub-lemma: "the residue map a_n mod L_0 ↦ a_{n+1} mod L_0 is functional in the tail iff L_0 is a multiple of the minimal period L." This proves that the finite-automaton route (a) and the sieve route (c), if they key on a residue modulus, MUST recover L exactly — they cannot avoid Gap A by choosing a smaller modulus. This is a negative result steering route (a) AWAY from "find a small L_0" and toward "find a bounded NON-residue statistic" (e.g. a bounded function of the recent increment window, or a bounded witness-type count), which is the only kind of finite statistic that could dodge the obstruction.
+
+**Forward pointer for routes (a)/(b)/(d):** the counterexample shows the gap-closing property must be DYNAMIC. The most promising untried dynamic property is the cyclic-successor structure itself (Lemma 4, certified): the orbit is the increasing enumeration of B_∞, so each a_i is the smallest element of B_∞ above a_{i-1}. A finite sufficient statistic would have to be a bounded function of the recent orbit segment (the d_n window) that determines the next pick — NOT a function of a_n mod L_0 (those fail unless L_0 = L). Whether such a bounded dynamic statistic exists is the open question for route (a); the sieve route cannot supply it.

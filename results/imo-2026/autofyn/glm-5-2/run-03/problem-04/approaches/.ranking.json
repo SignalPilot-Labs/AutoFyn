@@ -1,0 +1,50 @@
+{
+  "altitude-halving": {
+    "copied_from": null,
+    "elo": 1531.193493386135,
+    "expanded": 1,
+    "last_note": "SOLVED: Evan Chen route complete. Halving lemma (strong induction), altitude-to-right-triangle (foot-on-segment fact correctly invoked for acute+obtuse), round-up cut k-existence verified numerically n\u2208{3,4,5,6,7,8,11,60,180,1000}; n=2 boundary; four-case external-angle necessity closure. Both directions, no gaps.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "altitude-halving",
+    "stale": true,
+    "summary": "Canonical Evan Chen route: halving lemma + altitude round-up for sufficiency, safe/unsafe external-angle dichotomy for necessity. Matches official solution."
+  },
+  "attractor-potential": {
+    "copied_from": null,
+    "elo": 1454.0764019087514,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "attractor-potential",
+    "stale": false,
+    "summary": "Game-theoretic wrapper: winning attractor W = least fixed point, potential Phi=min multiple-index descends; depends on importing an entry sub-lemma from lattice/altitude/pairing routes."
+  },
+  "lattice-coset-descent": {
+    "copied_from": null,
+    "elo": 1529.926295824354,
+    "expanded": 1,
+    "last_note": "SOLVED: complete both-directions characterization (\u03b8=180\u00b0/n). Necessity via four-coset closure (exhaustive 4-case, all checked); sufficiency via max-angle lattice-point entry Lemma B (verified numerically n\u2208{3..7}) + index-k descent Lemma D; n=2/\u03b8=90 and equilateral handled. No gaps.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "lattice-coset-descent",
+    "stale": true,
+    "summary": "Mulan wins iff theta=180/n; necessity by four-coset intersection lemma (L_theta complement closed under Shan-Yu), sufficiency by max-angle lattice-point entry cut + k-descent."
+  },
+  "safe-unsafe-pairing": {
+    "copied_from": null,
+    "elo": 1484.8038088807596,
+    "expanded": 1,
+    "last_note": "SOLVED: deedy route complete. Deficit-sum lemma (d-sum\u2208{\u03b8,2\u03b8}), refined pairing lemma (no-top cyclic contradiction; one-top via a+b<\u03b8), pairing cut produces both children marked with m_u\u2264n\u22121 refinement preventing degenerate zero angle; n=2 direct 90\u00b0-trick. Pairing + cut verified numerically n\u2208{3,4,5,6,7,11,60,180}. Both directions, no gaps.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "safe-unsafe-pairing",
+    "stale": true,
+    "summary": "Necessity via safe/unsafe external-angle closure; sufficiency via deficit round-up d(a)+d(b)+d(c) in {theta,2theta} and pairing lemma d(u)<v forcing a theta-multiple in both supplementary children."
+  }
+}

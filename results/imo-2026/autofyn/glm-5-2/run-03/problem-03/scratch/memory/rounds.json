@@ -1,0 +1,35 @@
+{
+  "pr_title": "IMO 2026 P3 Chu-Han war: c(n)=2^n/(2^{n+1}−1) — n=4 both bounds closed (frontier n≤3→n≤4), G1-i-HC s=3 closed all n≥3, parity-xor F_2 framing seeded (partial, fatal gap caught), n≥5 walls open (partial)",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "Round 1: c(n)=2^n/(2^{n+1}-1) conjectured+verified(n=1-3); greedy lemma proven+certified; 4 approaches seeded, 3 partial, 1 RETHINK; upper bound is the wall.",
+      "ended_at": "2026-07-25T15:15:32Z"
+    },
+    {
+      "n": 2,
+      "summary": " ended without summary -- autocommit",
+      "ended_at": "2026-07-25T16:06:34Z"
+    },
+    {
+      "n": 3,
+      "summary": "Recovered R2 cycle; 3 lemmas certified, G1 reduced to overlap-bound sub-case",
+      "ended_at": "2026-07-25T16:40:59Z"
+    },
+    {
+      "n": 4,
+      "summary": "R4: 2 lemmas certified; G1-i/ii narrowed; G2 peel-once verified; walls open",
+      "ended_at": "2026-07-25T17:41:54Z"
+    },
+    {
+      "n": 5,
+      "summary": "R5: n=3 G2 upper bound CLOSED; G1 discrepancy identity; 2 lemmas certified",
+      "ended_at": "2026-07-25T18:42:03Z"
+    },
+    {
+      "n": 6,
+      "summary": "R6: n=4 both bounds CLOSED; G1-i-HC s=3 all-n; parity-xor downgraded (fatal gap)",
+      "ended_at": "2026-07-25T20:18:32Z"
+    }
+  ]
+}

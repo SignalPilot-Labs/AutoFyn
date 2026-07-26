@@ -1,0 +1,26 @@
+{
+  "confluence-newman": {
+    "copied_from": null,
+    "elo": 1484.0,
+    "expanded": 1,
+    "last_note": "Part (a) proven on this route; part (b) reduced via Newman's lemma to local confluence; case A (disjoint redexes) proven, case B (overlapping redexes {a,b,c}) joinability is the open gap \u2014 asserted empirically (2000/2000) but not proven; per-prime 1D lifting fails (moves couple primes).",
+    "last_outcome": "partial",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "confluence-newman",
+    "stale": true,
+    "summary": "Reframe (b) as unique normal form of a terminating ARS; Newman's lemma (terminating + locally confluent \u21d2 confluent). Termination via imported (\u03a9,K) monovariant; local confluence by critical-pair joinability (overlapping-redex case is the load-bearing unproven gap). Diversity bet; the only non-invariant framing of (b)."
+  },
+  "perprime-gcd-lexmonovariant": {
+    "copied_from": null,
+    "elo": 1516.0,
+    "expanded": 1,
+    "last_note": "Both parts solved: (\u03a9,K) lex monovariant for termination + d_p=gcd of p-valuations invariant forces v_p(M)=d_p at terminus, M=\u220fp^{d_p}; all load-bearing identities (per-prime move, Euclidean step, \u03a9(g) drop, exhaustive 3-case, K=0 ruled out) independently verified, including computationally.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "perprime-gcd-lexmonovariant",
+    "stale": true,
+    "summary": "Per-prime p-adic exponent tracking: d_p = gcd of exponent multiset (invariant, Euclidean identity) gives (b); (\u03a9,K) lexicographic monovariant gives (a) termination; d_p rules out all-ones terminus. Complete and correct modulo one arithmetic slip in the \u03a9-difference lemma (2\u03a9(g) should be \u03a9(g))."
+  }
+}

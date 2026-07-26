@@ -1,0 +1,10 @@
+{
+  "pr_title": "Solve IMO 2026 P1 (gcd/lcm blackboard): per-prime exponent Euclidean invariant + lexicographic (Ω,K) monovariant — full rigorous proof of termination and choice-independence",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "Solve imo-2026-01: perprime-gcd+lexmonovariant APPROVE, problem solved",
+      "ended_at": "2026-07-25T14:27:27Z"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "pr_title": "Solve IMO 2026 P1 (blackboard gcd/lcm process): prove termination at exactly one M>1 and choice-independence via per-prime exponent invariant g_p=gcd(v_p) and (W,C) lex monovariant",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "Solved imo-2026-01: two APPROVE'd proofs (invariant-first, monovariant-first)",
+      "ended_at": "2026-07-25T14:21:55Z"
+    }
+  ]
+}

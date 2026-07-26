@@ -1,0 +1,50 @@
+{
+  "analytic-branch-cert": {
+    "copied_from": null,
+    "elo": 1595.2662662256996,
+    "expanded": 2,
+    "last_note": "SOLVED. Saturation identity Qt2*e3_line-et2*Q_line=D0*G VERIFIED by true field division over Q(b,u,v,lx,t)[ly] (remainder 0, explicit G); round-1 \"FALSE\" was an arithmetic slip (Q=320/3 not 256 at alleged counterexample). Positivity et2>0 on inside arc rigorous (barycentric ly<v, L!=C). Degenerate L=C excluded. Target line Q=0<=>OM=ON standard.",
+    "last_outcome": "verified-milestone",
+    "last_round": 2,
+    "selected": 3,
+    "slug": "analytic-branch-cert",
+    "stale": false,
+    "summary": "Computational: 2-var reduction (cubic D(L) + K=B+t\u00b7d(L)); crux = prove cleared target Q vanishes on the REAL arc of <D=0,e3_sub=0> selected by inside-inequalities (ideal/radical membership both FAIL; real-variety-only)."
+  },
+  "analytic-resultant-cert": {
+    "copied_from": null,
+    "elo": 1514.8767958228427,
+    "expanded": 1,
+    "last_note": "SOLVED (leans on saturation identity for exceptional strata). Resultant res_t=(b^8/16)v^2|C|^2(|C|^2-b^2)D0^2*R with D0^2 EXACT (R mod D0!=0) verified; D0 irreducible verified; non-split Lemma 9 verified (spec b=1,u=0,v=2,lx=-2: D0_s real root in (1,2), Delta_red=-101/4 ly^2+89ly-175/2, discr=-1833/2<0, lead<0 => <0); inert-Galois valuation argument sound. Sec10 generic-to-all leans on saturation identity (verified TRUE) for isosceles stratum.",
+    "last_outcome": "verified-milestone",
+    "last_round": 2,
+    "selected": 1,
+    "slug": "analytic-resultant-cert",
+    "stale": false,
+    "summary": "Analytic insurance: same coordinate reduction as analytic-branch-cert but a different closing certificate \u2014 resultant-in-t res_t(e3_line,Q_line) divisible by D0^2 forces a common root, with et2>0 + inside hypotheses selecting the configuration's t (root-selection is the hard step)."
+  },
+  "antipode-rightangle": {
+    "copied_from": null,
+    "elo": 1495.5833534791298,
+    "expanded": 3,
+    "last_note": "SOLVED (3rd independent cert): \u00a78 sequential field-division reproduced \u2014 step-2 remainder is_zero=True, LCs 0.4611/0.0439 nonzero (genuine field division), closing chain \u00a7\u00a71-6,9 rigorous & independent of saturation identity; APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 3,
+    "selected": 3,
+    "slug": "antipode-rightangle",
+    "stale": true,
+    "summary": "Synthetic: OM=ON \u27fa antipode A' of A on (AKL) lies on pbis(BC); crux = directed-angle chase to \u2220A'BK=90\u00b0\u2212\u2220C from the three true angle equalities + Thales right angles (isogonality/three-similarities forbidden as FALSE)."
+  },
+  "power-secant-product": {
+    "copied_from": null,
+    "elo": 1394.273584472328,
+    "expanded": 3,
+    "last_note": "Step 9a closed (sign-pinning); Step 9b counterexample reproduced EXACTLY (crux=-0.0366, B-resid 1e-12) \u2014 (**)_corr \u2209 ideal\u27e8(B),(C),angle-sum\u27e9; gap = 2 missing K-L incidence relations (\u0393-local B,C don't couple sides); honest deferral, CHANGES REQUESTED, approach alive.",
+    "last_outcome": "partial",
+    "last_round": 3,
+    "selected": 3,
+    "slug": "power-secant-product",
+    "stale": true,
+    "summary": "Synthetic: OM=ON \u27fa AB\u00b7MA'_B=AC\u00b7MA'_C (secant-power at midpoints); crux = sine-rule + concyclicity ratio identity for MA'_B/MA'_C from the three true angle equalities (false similarities forbidden)."
+  }
+}

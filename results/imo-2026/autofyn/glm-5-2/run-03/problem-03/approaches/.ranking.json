@@ -1,0 +1,86 @@
+{
+  "alternating-potential": {
+    "copied_from": null,
+    "elo": 1410.6378304655566,
+    "expanded": 3,
+    "last_note": "G1-ii r=2 closed (subsumed by Case B boundary, verified n=2..5); G1-ii r>=3 soundly reduced to G1-i via perturbation/continuity (verified n=3, conditional on dyadic-induction closing G1-i with rest split \u2014 not yet closed). Band-parity lens confirmed = Lemma-4 re-lensing not a bypass. G2 upper bound conceded (sound). Lower-bound machinery certified+reusable.",
+    "last_outcome": "advanced",
+    "last_round": 4,
+    "selected": 3,
+    "slug": "alternating-potential",
+    "stale": false,
+    "summary": "Reframe around the alternating sum D=S_odd-S_even; lower bound by self-reproducing D-invariant (D>=1/D_n), upper by a D-driving-down potential cap (D<=1/D_n)."
+  },
+  "dyadic-induction": {
+    "copied_from": null,
+    "elo": 1605.3388572826675,
+    "expanded": 4,
+    "last_note": "s=3 all-n G1-i-HC CLOSED (Lemma 16, verified 0 violations n=3..7, spill-case reduction to Lemma 8 sound, (star) identity D-1=2(T_n-Psi) exact, tower-prefix tight n=3,4). Lemmas 13/14/15/16 certified. General s>=4 W-sum coupling OPEN. G1-iii-a (3 failed mechanisms, needs 4th), iii-b flat, G1-ii conditional all OPEN. Honest partial.",
+    "last_outcome": "advanced",
+    "last_round": 6,
+    "selected": 3,
+    "slug": "dyadic-induction",
+    "stale": true,
+    "summary": "Induction on n via the real recursion 1/c(n)=1/c(n-1)+1/2^n; lower bound by dyadic construction, upper by a one-mark peeling reduction to the (n-1)-game."
+  },
+  "lp-dual-region": {
+    "copied_from": null,
+    "elo": 1437.355787401835,
+    "expanded": 1,
+    "last_note": "Cross-piece equal-pair lemma PROVED + CERTIFIED (lemmas/cross-piece-equal-pair.md); per-region LP framework set up; n=3 Case-C closure OPEN; numerical grid claim inaccurate (3-cut grid exceeds, not 0/400)",
+    "last_outcome": "partial",
+    "last_round": 5,
+    "selected": 0,
+    "slug": "lp-dual-region",
+    "stale": false,
+    "summary": "G2 upper bound via per-region LP duality on Xiang's continuous cut-space + cross-piece equal-pair cheap-kill generalizing pairwise-diff-strategy."
+  },
+  "minimax-strategy-family": {
+    "copied_from": null,
+    "elo": 1479.0211922613942,
+    "expanded": 2,
+    "last_note": "M2 XOR bug FIXED+sort-verified (D=p_1-p_2, 0/3000; file internally consistent). n=2 upper bound theorem stands (0/30000 exceed). Pairwise-diff realization PROVED+CERTIFIED (lemmas/pairwise-diff-strategy.md, general n>=2). Peel-complement (n=3) PROVED+verified. G2-flat n>=3 OPEN: enriched 14-member clean family fails (204/30000, 0.68%); rich fixed-fraction caps (0/879) but via continuous tuning. Spec concern confirmed: finite-family framing insufficient for n>=3; route to outliner for continuous/LP-dual re-framing.",
+    "last_outcome": "advanced",
+    "last_round": 4,
+    "selected": 2,
+    "slug": "minimax-strategy-family",
+    "stale": false,
+    "summary": "Upper bound via minimax over a finite family of explicit Xiang strategies (barely-split + equal-halve combinations) with regime casework; pairing is one family member. Genuinely different from direct-partition and amortized-potential framings."
+  },
+  "pairing-charging": {
+    "copied_from": null,
+    "elo": 1705.5769416736741,
+    "expanded": 5,
+    "last_note": "n=4 G2 upper bound CLOSED (Theorem 7, finite-computational milestone \u2014 max-at-boundary, 0 interior cell-vertices over C(94,4), all facets PROVED, f_4(p*)=1/31 exact, 0 violations/5000+ configs). f_n uniform-induction CONJECTURE n>=5 OPEN. Lower bound G1-general n>=3 OPEN. Honest partial.",
+    "last_outcome": "advanced",
+    "last_round": 6,
+    "selected": 3,
+    "slug": "pairing-charging",
+    "stale": true,
+    "summary": "Direct combinatorial charging upper bound (no induction): Xiang partitions the stick into response dominoes, answers Liu's mark antipodally, deficits telescope to 1/D_n."
+  },
+  "parity-xor-reachability": {
+    "copied_from": null,
+    "elo": 1543.300986820319,
+    "expanded": 1,
+    "last_note": "FATAL GAP \u2014 Status downgraded solved->partial. Toggle decomposition h=h_{2^n}+h_rest (h_rest=0 on B) is INVALID when Xiang re-splits a large fragment of 2^n (>2^{n-1}); that toggle reaches B, breaking residual-on-B=y. Demo: n=3, 8->5+3, 5->2.5+2.5: proof claims residual-B=1, actual=0 (D=2 still ok but proof reasoning wrong). Also \u00a79.6 'min D=1+2y>1 in C2' is FALSE (n=2,3 y=0.5 gives D=1 not 2). Bound D>=1 TRUE (brute-forced), structural facts (band structure, complement-on-L, reverse triangle ineq) correct, but induction doesn't cover all Xiang strategies. Full G1 NOT closed.",
+    "last_outcome": "partial",
+    "last_round": 6,
+    "selected": 0,
+    "slug": "parity-xor-reachability",
+    "stale": true,
+    "summary": "Lower bound G1 via F_2-representation impossibility: f=[j_Liu odd] has superincreasing-distinct band lengths, so equal-length paired-interval toggles (\u2264n) cannot represent f exactly, forcing residual D\u22651/D_n."
+  },
+  "surrogate-adversary": {
+    "copied_from": null,
+    "elo": 1318.7684040945537,
+    "expanded": 1,
+    "last_note": "Dead-end confirmed: exhaustive falsification sweep shows NO non-pairing restricted Xiang strategy caps Liu at 2^n/D_n for n>=2 (all candidates ratio > 1.0); the only cap mechanisms reproduce pairing structure (= pairing-charging). Surrogate technique sound but moot without a working restricted strategy. Confirms builder's RETHINK. No correct positive progress on upper bound.",
+    "last_outcome": "dead-end",
+    "last_round": 1,
+    "selected": 3,
+    "slug": "surrogate-adversary",
+    "stale": false,
+    "summary": "Upper bound via a restricted Xiang strategy (equal-split-largest R_n) that caps Liu; surrogate transfers up to real Xiang via aimo-0560 weaker-minimizer direction."
+  }
+}

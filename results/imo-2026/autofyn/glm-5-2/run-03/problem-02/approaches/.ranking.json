@@ -1,0 +1,50 @@
+{
+  "a-star-cyclicity": {
+    "copied_from": null,
+    "elo": 1529.926295824354,
+    "expanded": 1,
+    "last_note": "Solved. Gr\u00f6bner certificate independently reproduced (6-element basis, exact 0 remainder over Q); K,L sine-rule formulas, Lemma 1, Lemma 2, \u0394 factorisation, degenerate B=C case, inside-component sufficiency all verified. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "a-star-cyclicity",
+    "stale": true,
+    "summary": "Reflect A across perp-bis(MN) to get A*; prove A,K,L,A* concyclic via angle chase + sine rule in \u25b3BMK,\u25b3CNL; then O\u2208perp-bis(AA*)=perp-bis(MN)\u27f9OM=ON."
+  },
+  "analytic-resultant": {
+    "copied_from": null,
+    "elo": 1531.193493386135,
+    "expanded": 1,
+    "last_note": "Outline only, no proof built; same algebraic crux as a-star (which already closed it via 0.12s grevlex). Strictly dominated; RETHINK.",
+    "last_outcome": "dead-end",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "analytic-resultant",
+    "stale": true,
+    "summary": "Cartesian A=(0,0),B=(2,0),C=(2p,2q); tangent-parametrize K,L by (t\u03b1,t\u03b2,t\u03b3); show OM\u00b2\u2212ON\u00b2 \u2208 ideal of residual angle equations via resultant/Groebner+interpolation. Isosceles case already verified."
+  },
+  "dilation-equal-power": {
+    "copied_from": null,
+    "elo": 1484.8038088807596,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "dilation-equal-power",
+    "stale": false,
+    "summary": "Dilation D(A,2): reduce OM=ON to equal power of B,C wrt circle(AK*L*); compute via secant lengths + sine rule. Sibling of a-star (same coaxal crux)."
+  },
+  "miquel-spiral": {
+    "copied_from": null,
+    "elo": 1454.0764019087514,
+    "expanded": 1,
+    "last_note": "Numeric gate failed; conjectured spiral/Miquel centre does not exist on any scalene triangle. RETHINK; kept as recorded negative.",
+    "last_outcome": "dead-end",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "miquel-spiral",
+    "stale": true,
+    "summary": "Miquel point of complete quadrilateral (AB,AC,BK,CL) + spiral/indirect similarity centered at S\u2080\u2260A; prove S\u2080\u2208perp-bis(MN) (or S\u2080=O). Numeric gate first (CONJECTURE S unverified)."
+  }
+}

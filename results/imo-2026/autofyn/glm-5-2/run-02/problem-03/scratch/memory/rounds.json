@@ -1,0 +1,35 @@
+{
+  "pr_title": "imo-2026-03: c(1)=2/3, c(2)=4/7, c(3)=8/15 SOLVED end-to-end; general-n c(n)=2^n/(2^{n+1}-1) conjectured & open",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "R1: conjectured c(n)=2^n/(2^{n+1}-1) (verified n=1..5); certified Lemma G + pair-pile; upper bound open, status partial",
+      "ended_at": "2026-07-25T15:34:04Z"
+    },
+    {
+      "n": 2,
+      "summary": "R2: c(1),c(2) proved E2E; new lemmas; L k>=2 + U regime-N open",
+      "ended_at": "2026-07-25T16:32:58Z"
+    },
+    {
+      "n": 3,
+      "summary": "R3: G1 localized to e_M≤o_R reduction+grid-parity(all-n); R-pile/two-tail/unified dead",
+      "ended_at": "2026-07-25T17:30:32Z"
+    },
+    {
+      "n": 4,
+      "summary": "R4: BREAKTHROUGH L(3) reals CERTIFIED (cell-complex vertex-principle); pairing-partner converges; two-regime sliver S1/S2/S3; 5 new lemmas (16)",
+      "ended_at": "2026-07-25T18:31:34Z"
+    },
+    {
+      "n": 5,
+      "summary": "R5: L(4) certified; U(3) mostly closed, extreme GAP; 7 lemmas",
+      "ended_at": "2026-07-25T19:43:59Z"
+    },
+    {
+      "n": 6,
+      "summary": "R6: BREAKTHROUGH c(3)=8/15 SOLVED E2E (7-cap U3 closure); 3 new lemmas",
+      "ended_at": "2026-07-25T20:56:26Z"
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+# Outline review — IMO 2026 P6 (round 2)
+
+## Headline finding (read this first)
+
+**The crux holds and the field is now genuinely diverse in *mechanism*.** Round 1 collapsed to one framing (finite-state mod ∏E + free-rider dichotomy); the three round-2 explorers independently confirmed that no framing *escapes* the crux (Lemma 4: every pair of terms shares a prime ≤ R = rad(a_1)) — it is a real structural fact, not an artifact of one framing. The round-2 outliner correctly reinterpreted the diversity mandate as **three genuinely different PROOF ROUTES to the crux itself**: descent + CRT-coprime-shift (Route D, absorbed into `essential-monovariant`), propagation from the consecutive seed (Route P, new `propagation-bezout`), and grid-covering counting (Route G, new `grid-counting-shared-primes`). I verified the diversity claim: the three routes use distinct engines (descent on a violating pair / Bezout index-shift composition / aggregate double-counting), and the two dormant approaches are honestly restatements, not independent routes.
+
+**Two honest flags confirmed by computation:**
+1. `propagation-bezout` — the outliner's circularity flag is real and I confirmed it: the only natural "shift algebra" on the greedy is the residue-walk map φ, which is *defined via* the transversal family V, which *requires* Lemma 4. No pre-Lemma-4 shift algebra is visible in the greedy rule (the decision depends on the full prime history, not a fixed recurrence). The route is **speculative as a proof of Lemma 4** but the "extremal-forces-equality" sub-lemma (Step 3) may yield a genuine partial result, and one builder round to definitively characterize the circularity is worth the slot.
+2. `grid-counting-shared-primes` — the outliner's growing-window flag is real and I confirmed it numerically: the counting yields "every pair shares a prime ≤ span = (N−1)R" (the GROWING bound), NOT "≤ R" (the fixed Lemma-4 bound). Sharpening to the fixed R requires the free-rider dichotomy = the crux itself. However, the **large-prime-span lemma** (a prime p > span divides ≤ 1 of the first N terms) is clean and provable (verified: max count among large primes = 0 in every test case), so the route produces one real lemma + an honest characterization of why counting alone doesn't close.
+
+**Free partial lemma verified:** "if a_j is a multiple of R = rad(a_1), then (a_i, a_j) satisfies Lemma 4 for every i < j" — verified for a_1 ∈ {15, 35, 77, 105} over 60 terms (every multiple-of-R term shares a small prime with every earlier term). This is `lemmas/`-certifiable material; the builder of `essential-monovariant` should certify it this round.
+
+**Crux advancing?** Not yet closed, but the leader (`essential-monovariant`, now Elo 1584) has the sharpest attack (Route D: minimal-counterexample descent + stripped-auxiliary-transversal + CRT coprime-shift) and a free partial lemma in hand. The CRT step produces a *finite reduction* (j_0 ≤ O(L_0 log L_0)) — not a contradiction, but a real lever the other routes lack. Honest target this round: **partial → partial with sharper gap + one certified lemma**, not solved.
+
+## Per-approach verdicts
+
+### essential-monovariant — APPROVE (advance with Route D)
+Sound end-to-end. Lemmas 1, 2, 3 and the full Theorem (Section 5) are certified-correct conditional on Lemma 4. The Route D attack (Steps 4a–4d) is a legitimate, honestly-flagged descent: the CRT coprime-shift mechanism (each large prime p | a_j forbids one residue of the shift multiplier mod p; pigeonhole gives k ≤ |P_large|+1) is verified on the synthetic failure (a_i = 2·3·107, a_j = 5·7·107, R = 105, L_0 = ∏_{p≤105}p: k = 1 works). The central tension is honestly named: making the stripped auxiliary x a *transversal* of F_{j−1} may require more small primes than τ(a_i) carries, pushing x > a_i. The outliner does NOT assert this resolves — it is left as the wall. The CRT bound gives a finite reduction (j_0 ≤ O(L_0 log L_0)), not a contradiction; the missing lever is a second independent constraint on (i_0, j_0) conflicting with the size bound.
+
+**No fatal flaw.** The descent spirit ports from aimo-0030; the P6-native replacement (greedy minimality: x < a_j admissible ⟹ a_j not minimal) is the correct analogue of aimo-0030's "bad ⇒ move to good." The wall is real but attackable. Build it.
+
+**Bounded build deliverable this round (STUCK-RECOVERY constrained):**
+1. **Certify the free partial lemma** "a_j multiple of R ⟹ Lemma 4 for (a_i, a_j)" into `lemmas/multiple-of-r-satisfies-lemma-4.md` (mechanism: a_j mult of R ⟹ every prime of a_1 divides a_j; Lemma 1 gives a_i a prime of a_1 ⊆ Q_R; shared). This is one paragraph, write-able in minutes.
+2. **Attempt the stripped-auxiliary-transversal descent (Steps 4a–4d).** If it closes, great. **If it does not close in this session, write the SHARPEST partial:** the CRT finite bound on j_0 (explicit formula), the precise obstruction (where transversal enlargement breaks x ≤ a_i — give the concrete sub-step), and the bridge 4-cycle a_i—(small)—a_{j−1}—(small)—a_j—(large)—a_i as the structural lever to hunt for the second constraint. **Do NOT grind past 908s idle** — if the descent stalls, report the obstruction and stop. The CRT bound + the certified free lemma are the floor deliverables; closure is the ceiling.
+
+### crude-reduced-type — APPROVE (advance, build out the certified scaffold)
+Sound. Steps 1–6 (finite-lattice stabilization) are standard and correct (R1 reviewer: "standard and correct"). The free-rider wall (Step 7 = Lemma 4) is honestly marked INHERITED, not independently closed — the outliner explicitly says "crude-reduced-type does NOT independently prove Lemma 4; it INHERITS it." The R1 reviewer's "route (b)" (direct dichotomy) is correctly identified as Lemma 4 in disguise, so the approach does not pretend to bypass the crux. Steps 8–10 (deterministic walk + cyclic-permutation-no-transient + telescoping lift) mirror essential-monovariant's certified Theorem. The "for all n ≥ 1 / no transient" is handled by the bijection observation (φ is a cyclic permutation, so the orbit is purely periodic from n = 1) — correctly flagged as an explicit step.
+
+**No fatal flaw.** This produces a *second* complete conditional-on-crux proof, giving the run two independent conditional bridges (so if any one route closes Lemma 4, both bridge to the theorem). The Q = primes ≤ a_1 (not just primes dividing a_1) subtlety is correctly flagged (using primes dividing a_1 is too coarse, drops 2 for odd a_1 = 15).
+
+**Bounded build deliverable this round:**
+1. **Write Steps 1–6 rigorously** (the certified scaffold, full proofs — finite-lattice stabilization, transversal-family stabilization, fixed V_0). No crux attack; just the clean conditional machinery.
+2. **State Step 7 as the explicit free-rider wall gap** (= Lemma 4, imported from essential-monovariant). One paragraph: name it, do NOT attempt to close it.
+3. **Add Steps 8–10** (deterministic walk φ: V_0 → V_0, cyclic-permutation-no-transient via bijection, telescoping lift to a_{n+T} = a_n + L_0). Mirror essential-monovariant's Theorem; verify the gap-sum = L_0 over one cycle (wraps exactly once).
+4. Output: a second complete conditional-on-crux proof with the free-rider wall as the single marked [GAP]. **Do NOT attempt to close the wall.**
+
+### propagation-bezout — CHANGES REQUESTED (register, build with bounded task)
+The outliner's circularity flag is **real and I confirmed it.** The route's central step (Step 4, Bezout-propagation) needs an "index-shift algebra" — a notion of composing shifts of the sequence. The only natural such algebra in P6 is the residue-walk map φ from essential-monovariant's Theorem, but φ is *defined via* the transversal family V, which *requires Lemma 4 (free-rider irrelevance)*. So propagation as a *proof* of Lemma 4 is **circular as filed**: it uses the residue-walk structure (Lemma 4) to define the shift algebra, then "proves" Lemma 4 by Bezout-propagating through that algebra.
+
+The aimo-0648 move composes shifts of a *linear recurrence* (x_n = ⌊mean of predecessors⌋); P6's greedy has no linear recurrence — the decision depends on the full prime-factorization history, so shifts do NOT compose like integer additions in any pre-Lemma-4 sense. I checked the shift-1 → shift-2 propagation concretely: (a_i, a_{i+1}) shares small prime r (Lemma 3), (a_{i+1}, a_{i+2}) shares small prime s (Lemma 3); if r = s then a_i, a_{i+2} share r, done; but if r ≠ s, a_{i+1} carries both r and s, and this does NOT force a_i, a_{i+2} to share a small prime. So propagation from shift-1 to shift-2 is **not automatic** — it is a nontrivial sub-claim, exactly the wall.
+
+**Why CHANGES REQUESTED, not RETHINK:** the route is genuinely different in mechanism (propagation, not descent or counting), and the "extremal-forces-equality" sub-lemma (Step 3: if a_{n+1} hits some a_i only via a large prime, every cheaper small-prime candidate must fail admissibility against some other term, forcing a structural tension that Lemma 3 breaks) is a portable intuition that may yield a **real partial result** independent of the circular Bezout step. The builder's task is to extract that partial and definitively characterize the circularity — a legitimate, bounded, write-able deliverable.
+
+**Bounded build deliverable this round:**
+1. **Write the skeleton (Steps 1–5)** — inherit Lemmas 1, 2, 3; state the consecutive seed; state Step 3 (extremal-forces-equality) as a sub-lemma with its mechanism; state Step 4 (Bezout-propagation) as the gap.
+2. **Identify PRECISELY where Step 4 needs the residue-walk structure (= Lemma 4).** Name the exact sub-step where the shift algebra is defined via V (the transversal family requiring Lemma 4).
+3. **Attempt a pre-Lemma-4 shift algebra** based only on the gap-bound window (Lemma 2) — investigate whether "a_i and a_{i+k} share a small prime" can be composed without invoking V. **Likely no** — but characterize honestly.
+4. **Extract whatever partial result Step 3 yields** (e.g. "a_{n+1} shares a small prime with at least one earlier non-consecutive term" — if provable, certify it; if not, state the obstruction).
+5. **If circular, report the obstruction honestly.** Do NOT assert the propagation closes. The route stays live in the ranker either way; a clean "circular as filed, here's the partial" is a successful deliverable.
+
+### grid-counting-shared-primes — CHANGES REQUESTED (register, build with bounded task)
+The outliner's growing-window flag is **real and I confirmed it numerically.** For a_1 ∈ {15, 35, 77, 105}, N ∈ {20, 40}, both the fixed-R Lemma 4 and the growing-span "≤ span" analogue hold, but the counting route (Step 4: large prime > span divides ≤ 1 term) only ever produces the **growing** bound (≤ (N−1)R), not the fixed bound (≤ R). Sharpening the threshold from (N−1)R to R requires proving large primes > R (not > span) divide ≤ 1 term — but that is exactly the free-rider dichotomy = Lemma 4 = the crux itself. So the counting route as a *proof of Lemma 4* has a **structural ceiling**: it proves a weaker growing-window analogue, not Lemma 4.
+
+However, the **large-prime-span lemma** (Step 4: a prime p > (N−1)R divides at most one of the first N terms, because two terms divisible by p have difference a nonzero multiple of p but |difference| ≤ span < p) is **clean, provable, and verified** (max count among large primes = 0 in every test case). The cell-counting (Step 5: Σ_{p≤span} (span/p+1)² ≤ span²·Σ1/p² + 2·span·Σ1/p + π(span)) is a legitimate aggregate bound. The honest gap (Step 6: aggregate coverage does not force per-cell coverage; the threshold is (N−1)R not R) is correctly named.
+
+**Why CHANGES REQUESTED, not RETHINK:** the large-prime-span lemma is a real, provable result worth certifying into `lemmas/` (it is a P6-native fact about the sequence's prime structure, distinct from anything the descent or propagation routes produce). The route is genuinely different in mechanism (aggregate counting, not descent or propagation). One builder round to produce the clean lemma + definitively characterize the growing-window ceiling is worth the slot — it tells next round's orchestrator definitively that counting alone cannot close, so the crux effort should concentrate on Routes D and P.
+
+**Bounded build deliverable this round:**
+1. **PROVE the large-prime-span lemma (Step 4)** — clean, mechanism: two terms divisible by p > span have difference a nonzero multiple of p but |difference| ≤ span < p, contradiction. **Certify into `lemmas/large-prime-span-divides-at-most-one-term.md`.** This is one paragraph.
+2. **Derive the cell-count bound (Step 5)** — Σ_{p≤span} (⌈span/p⌉+1)² ≤ span²·Σ1/p² + 2·span·Σ1/p + π(span). Flag the analytic heaviness of Σ1/p² < ½ (Euler product; no Jacobsthal/Siegel in knowledge_base — re-derive or import carefully, cite the knowledge_base entry).
+3. **State the central gap (Step 6) explicitly:** the counting yields "every pair shares a prime ≤ (N−1)R" (growing window), NOT "≤ R" (fixed Lemma-4 bound); sharpening to R requires the free-rider dichotomy = the crux itself. Also: aggregate coverage does not force per-cell coverage (a cell may be uncovered even if the aggregate count is high).
+4. **Write Steps 1–3, 7** (inherit gap bound, form grid, inherit Theorem).
+5. Output: a partial approach with one certified lemma (large-prime-span) + an honest characterization of the growing-window ceiling. Do NOT claim the grid proves Lemma 4 for the fixed R.
+
+## Registration / copy log
+- **REGISTERED** (cold-start Elo 1500): `propagation-bezout`, `grid-counting-shared-primes`. Both CHANGES REQUESTED (not RETHINK), so both enter the population as live members.
+- **COPY: declined.** No copies this round. The copy mechanism needs a *certified shared prefix* (a lemma or sub-proof that has been reviewer-certified in one approach, which a twin can branch from). Round 2 has no certified gap-fill yet — the free partial lemma (multiple-of-R) is about to be certified *this* round, and Route D's descent is still unproven. Branching now risks the single-gap trap (if the shared prefix has a flaw, both twins die together). Defer any copy request until Route D's prefix (Steps 4a–4c) or the free partial lemma is certified and a second viable gap-fill exists to branch on.
+
+## Ranking (post-update Elo)
+
+| rank | slug | Elo | note |
+|---|---|---|---|
+| 1 | essential-monovariant | 1584 | leader: Lemmas 1–3 + Theorem certified conditional; Route D attack + free partial lemma in hand. Best lever on the crux. |
+| 2 | crude-reduced-type | 1579 | Steps 1–6 certified-correct (un-built); second complete conditional-on-crux scaffold. Inherits the crux, does not attack it directly. |
+| 3 | grid-counting-shared-primes | 1502 | new; clean large-prime-span lemma (provable); growing-window ceiling (yields ≤(N−1)R, not ≤R). Genuinely different mechanism. |
+| 4 | propagation-bezout | 1499 | new; genuinely different mechanism (propagation from consecutive seed); circularity risk confirmed (shift algebra likely needs Lemma 4). Partial expected. |
+| 5 | covering-system-redundancy | 1445 | dormant; restatement of crude wall in covering vocabulary. No builder slot. |
+| 6 | translation-self-similarity | 1391 | dormant; literal set-translation mechanism FALSE (R1 counterexample); reduces to crude wall. No builder slot. |
+
+Pairwise comparisons emitted (anchored to promise/risk; round 2 still has no builder outcomes): essential > crude, essential > propagation, essential > grid-counting, essential > covering, essential > translation; crude > propagation, crude > grid-counting, crude > covering, crude > translation; propagation > covering, propagation > translation; grid-counting > covering, grid-counting > translation; propagation ≈ grid-counting (draw — both new, both with honest gaps, comparable promise/risk); covering > translation.
+
+## Build set
+
+Four approaches this round — two advances (one closing the leader's gap via Route D, one building the certified conditional scaffold) and two new genuinely-different-mechanism crux attacks (propagation, counting). All four are bounded, write-able tasks per the STUCK-RECOVERY constraint; none is "close the crux." Each builder owns its own approach file, so parallel builds never collide.
+
+build set: essential-monovariant, crude-reduced-type, propagation-bezout, grid-counting-shared-primes
+
+## For the orchestrator
+
+The field is now genuinely diverse in *mechanism*: three distinct proof routes to the crux (Lemma 4) — descent + CRT-coprime-shift (Route D, in `essential-monovariant`), propagation from the consecutive seed (Route P, `propagation-bezout`), and grid-covering counting (Route G, `grid-counting-shared-primes`) — plus two conditional-on-crux bridges (`essential-monovariant`'s Theorem, `crude-reduced-type`'s Steps 8–10) and two dormant restatements. The crux is NOT yet advancing to closure, but the leader has its sharpest lever ever (Route D's CRT finite reduction + the free multiple-of-R partial lemma about to be certified). Watch next round for: (a) whether Route D's stripped-auxiliary-transversal closes or honestly reports the obstruction (the transversal-enlargement-vs-x-≤-a_i tension is the wall — if it does not yield a second constraint on (i_0, j_0) this round, the orchestrator should commission a genuinely different crux attack next round, e.g. a Zsigmondy-style distinct-large-prime counting or a Hall's-theorem transversal characterization); (b) whether `propagation-bezout`'s "extremal-forces-equality" sub-lemma yields a real partial independent of the circular Bezout step — if yes, it becomes a live fourth route; if no, it drops to a flagged restatement; (c) whether `grid-counting`'s large-prime-span lemma certifies cleanly (it should — it is provable) and whether the growing-window ceiling is definitively confirmed (it should be — the counting cannot reach the fixed R without the crux itself). The diversity state is healthy: no two active approaches share a mechanism, so the field will not stall together on a single wall.

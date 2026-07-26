@@ -1,0 +1,50 @@
+{
+  "fixpoint-attractor": {
+    "copied_from": null,
+    "elo": 1484.3129618753092,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "fixpoint-attractor",
+    "stale": false,
+    "summary": "Least/greatest-fixpoint of the AND-OR game operator; W=\ud835\udcaf when r=0, C={no \u03b8-multiple} is G-closed when r\u22600. Re-skin of the mod-\u03b8 wall."
+  },
+  "geometric-anchor": {
+    "copied_from": null,
+    "elo": 1482.4604827547544,
+    "expanded": 1,
+    "last_note": "Clean rigorous dyadic-IF partial (altitude + bisector + induction, \u2264a moves for N=2^a, self-contained, no mod-\u03b8). Honest deferrals GAP-D1 (non-dyadic IF) and GAP-D2 (entire ONLY) to mod-theta-descent \u2014 both now resolvable by import of the certified obstruction + create-move. Dyadic-IF lemma certified.",
+    "last_outcome": "partial",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "geometric-anchor",
+    "stale": true,
+    "summary": "Synthetic geometry: altitude (\u03b8=90\u00b0) + bisector (2\u03b8\u2192\u03b8) + dyadic induction for \u03b8=180/2^a. Independent IF route for dyadic N; defers non-dyadic IF and the ONLY direction to mod-theta-descent."
+  },
+  "mod-theta-descent": {
+    "copied_from": null,
+    "elo": 1545.8278203282016,
+    "expanded": 1,
+    "last_note": "SOLVED both directions: create-move + k-descent (IF, \u2264N\u22121 moves, all N\u22652 incl. non-integer-degree \u03b8) and four-case mod-\u03b8 obstruction (ONLY, arbitrary \u03b3, uniform over rational/irrational \u03b8); numerically verified; obstruction lemma certified. No gaps.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "mod-theta-descent",
+    "stale": true,
+    "summary": "Direct mod-\u03b8 lattice + k-descent; Shan-Yu's mod-\u03b8 \"no \u03b8-multiple\" invariant (ONLY, four-case) + Mulan's create-multiple/k-descent (IF). Workhorse, both directions worked out."
+  },
+  "torsion-subgroup": {
+    "copied_from": null,
+    "elo": 1487.3987350417349,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "torsion-subgroup",
+    "stale": false,
+    "summary": "\u211d/\u03b8\u2124 circle-group framing; win \u21d4 180 is torsion (r\u0304=0\u0304). Makes the arbitrary-\u03b3 robustness of the 0\u0304-free invariant transparent. Re-skin of the mod-\u03b8 wall."
+  }
+}

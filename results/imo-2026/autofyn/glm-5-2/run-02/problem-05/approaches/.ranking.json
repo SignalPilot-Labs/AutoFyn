@@ -1,0 +1,26 @@
+{
+  "gm-lipschitz-partition": {
+    "copied_from": null,
+    "elo": 1469.4695015289756,
+    "expanded": 2,
+    "last_note": "Part B gap closed via maximal-connected-component boundary-push (\u03b2=\u221e, \u03b1=0); Fact 5 Part A still correct; full proof complete \u2014 APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "gm-lipschitz-partition",
+    "stale": true,
+    "summary": "Analytic/Lipschitz route: Fact 5 |g(z)-g(y)| <= (sqrt(f(z))-sqrt(f(y)))^2 derived from RHS at x=f(z). Partition path doomed (large-deviation branch self-consistent); pivot to Fact 5 + close-encounter for (A), cover iteration for (B). Fact 5 lemma worth certifying."
+  },
+  "orbit-close-encounter": {
+    "copied_from": null,
+    "elo": 1530.5304984710244,
+    "expanded": 1,
+    "last_note": "SOLVED \u2014 complete rigorous proof verified. Equality-forcing preamble, g\u22650, injectivity, Part A (close-encounter + star contradiction: x \u2264 9c_a\u00b2/(16(c_b\u2212c_a))), Part B (maximal-component argument: boundary-push drives \u03b1\u21920, \u03b2\u2192\u221e), synthesis all correct. Two minor cosmetic errors (QM\u00b2\u2212AM\u00b2 gap off by factor 2; star-star justification glib) \u2014 neither load-bearing. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "orbit-close-encounter",
+    "stale": false,
+    "summary": "Algebraic/orbit-AP route: (star) cross-level-set constraint + close-encounter lemma forces g to one positive value (A); cover iteration around a fixed point forces g equiv 0 (B). Handles wild g. (B) repair needed: use 2*sqrt(c*x0) zero-region radius, quadratic cover growth."
+  }
+}

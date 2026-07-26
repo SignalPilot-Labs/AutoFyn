@@ -1,0 +1,5 @@
+# proof-outliner per-role rules
+
+ALWAYS: Verify explorer claims with a quick Python computation (gcd identities, monovariant decrease, small-case simulation) before building an approach skeleton on them — the explorers' terrain is right 99% of the time but a 30-line script catches the 1% and sharpens the skeleton (round 1, imo-2026-01: confirmed gcd(min,|a−b|)=gcd(a,b) and local confluence on random triples before writing skeletons).
+NEVER: Keep an approach whose framing collapses to an existing one's measure. The ideal/divisibility-lattice framing for the gcd/lcm blackboard problem reduces exactly to the Ω monovariant (rank of the divisor lattice = Ω of the total product); cutting it as a technique-clone was correct (round 1, imo-2026-01).
+NEVER: Expect the knowledge_base.md to contain every heavy theorem you invoke. Newman's lemma, Dickson's lemma, Dershowitz–Manna multiset order are NOT in KB — the skeleton must state such tools precisely and name them as external theorems, or the reviewer rejects them (round 1, imo-2026-01).

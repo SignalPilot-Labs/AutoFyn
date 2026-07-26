@@ -1,0 +1,2 @@
+ALWAYS: For blackboard gcd/lcm process problems, factor the move per-prime first — (a,b) → (min(a,b), |a-b|) is a subtractive Euclidean step, giving a per-prime gcd invariant that pins the final value AND a ΣΩ+count monovariant that terminates. (round 1, imo-2026-01)
+NEVER: Use product-of-all-entries as the sole termination argument for gcd/lcm board processes — it is constant in the coprime case (m,n → 1, mn) so cannot prove termination alone. (round 1, imo-2026-01)
