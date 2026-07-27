@@ -1,0 +1,38 @@
+{
+  "confluence-unique-normal-form": {
+    "copied_from": null,
+    "elo": 1468.7023986633528,
+    "expanded": 1,
+    "last_note": "Complete; Newman's lemma on multiset rewrite (positioned-board failure honestly switched to multisets); Lemma P per-prime confluence proved from scratch; overlapping critical pair joins via unique normal form, no circularity. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "confluence-unique-normal-form",
+    "stale": true,
+    "summary": "Termination via (P,c); part (b) via Newman's lemma (terminating + locally confluent => unique normal form M). Critical-pair joinability on multisets; per-prime Euclidean normal form."
+  },
+  "integer-termination-invariant-pin": {
+    "copied_from": null,
+    "elo": 1500.0339081301693,
+    "expanded": 1,
+    "last_note": "Complete; valuation-free (P,c) lex potential for (a), radical-support invariant for exactly-one, D_p pin for (b); all steps verified. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "integer-termination-invariant-pin",
+    "stale": true,
+    "summary": "Valuation-free part (a) via (P,c) lex + radical-support invariant for c>=1; part (b) via D_p invariant pinning M=prod p^{D_p}."
+  },
+  "per-prime-euclidean-invariant": {
+    "copied_from": null,
+    "elo": 1531.263693206478,
+    "expanded": 1,
+    "last_note": "Complete rigorous proof of both parts; (W,c) lex monovariant terminates (3 disjoint cases, no move fixes both coords), radical/D_p invariant gives exactly-one and pins M=prod p^{D_p}; verified numerically. APPROVE.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "per-prime-euclidean-invariant",
+    "stale": true,
+    "summary": "Valuation route for both halves: (W,c) lex monovariant terminates; D_p=gcd of positionwise p-valuations is invariant and pins terminal M=prod p^{D_p}."
+  }
+}

@@ -1,0 +1,3 @@
+ALWAYS: verify explorer claims numerically before outlining (run a small python sim of the invariant + termination + uniqueness on random boards) — caught that the {6,10} case distinguishes gcd-of-valuations (D_3=1 -> M=30) from min-of-valuations (would wrongly give M=2), round 1.
+NEVER: propose the staged "Euclidean-phase then coprime-merge-phase" framing for imo-2026-01 — non-coprime states persist mid-process for arbitrary move orders (verified on {4,8,3}), so the two-phase split is unjustified, round 1.
+ALWAYS: field at least one approach whose part-(b) mechanism differs from the invariant-pin, to avoid the single-shared-gap trap where all approaches die together if the shared invariant is flawed, round 1.

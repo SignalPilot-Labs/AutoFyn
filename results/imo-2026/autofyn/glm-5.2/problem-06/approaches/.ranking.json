@@ -1,0 +1,98 @@
+{
+  "bertrand-dickson-eviction": {
+    "copied_from": null,
+    "elo": 1421.3133206178802,
+    "expanded": 1,
+    "last_note": "Lemma 5 (gap bound at promotion, a_i-a_{i-1}\u2264\u220fO) correct and non-circular but insufficient (depends on a_{i-1}\u2192\u221e); Bertrand does NOT evict (honestly admitted); antichain claim self-corrected (verified on a1=30); conditional pipeline correct. Wall open.",
+    "last_outcome": "partial",
+    "last_round": 1,
+    "selected": 4,
+    "slug": "bertrand-dickson-eviction",
+    "stale": false,
+    "summary": "Evict large primes via Bertrand small-composite transversal, then Dickson's lemma (WQO) forces minimal-support antichain finite and stabilizing; CRT finish."
+  },
+  "bounded-gap-lcm-reduction": {
+    "copied_from": null,
+    "elo": 1394.3365921733662,
+    "expanded": 2,
+    "last_note": "Thin round: crux verdict Prop 2.2 (W1 does NOT bound mtp product, counterfamily {5,97}) + Prop 2.4 (SPT\u21d2mtp\u2264primorial) correct; GAP-3 open (unique-connector stands, free-rider eviction needs crash mechanism, aimo-0678 DEAD, strong free-rider universality FALSE a1=15). mtp monovariant unchanged (certified r2). No new lemmas.",
+    "last_outcome": "partial",
+    "last_round": 129,
+    "selected": 3,
+    "slug": "bounded-gap-lcm-reduction",
+    "stale": false,
+    "summary": "Prove gaps d_n bounded by G (aimo-0678 dual), reduce a_n mod lcm(1..G) to finite state; finiteness of load-bearing primes becomes a consequence."
+  },
+  "density-promotion-bound": {
+    "copied_from": null,
+    "elo": 1617.1431189809048,
+    "expanded": 3,
+    "last_note": "Linchpin correction (equality-promos are genuine new minimals; T* transversal not member) + W1-vs-SPT distinction (W1 does NOT bound mtp; needs SPT) load-bearing for correctness; freeze-lock overclaim struck; GAP-1\u2192SPT, GAP-3 open with {2,q} obstruction. 3 lemmas certified.",
+    "last_outcome": "advanced",
+    "last_round": 129,
+    "selected": 4,
+    "slug": "density-promotion-bound",
+    "stale": false,
+    "summary": "Prove structural prime set S finite via Mertens/\u03a31/p transversal-density bound, then finite-state greedy on residues mod L=\u220fS gives periodicity."
+  },
+  "large-prime-descent": {
+    "copied_from": null,
+    "elo": 1582.7844649178114,
+    "expanded": 2,
+    "last_note": "Self-contained re-packaging APPROVED: every lemma inlined (descent + 4 sub-lemmas + \u00a76.1\u20136.5 Finish), zero surviving proof-step imports, only CRT cited to knowledge_base.md; both \u00a76.4 containments justified, $a_{n+1}-a_n\\le L$ correct, descent intact, $a_1=15$ check reproduced. Status solved.",
+    "last_outcome": "verified-milestone",
+    "last_round": 131,
+    "selected": 0,
+    "slug": "large-prime-descent",
+    "stale": true,
+    "summary": "Rad-divisibility descent (a_m\u227aa_n, substitute large prime p\u2192q^k, q|gcd(a_1,a_n)) \u27f9 every prec-minimal is a_1^2-smooth \u27f9 P_ess\u2286{p\u2264a_1^2} finite \u27f9 \u03b4's post-stabilization finish. Published mechanism, no open conjectures."
+  },
+  "omega-induction-loaded": {
+    "copied_from": null,
+    "elo": 1310.4270170761738,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 3,
+    "slug": "omega-induction-loaded",
+    "stale": false,
+    "summary": "Structural induction on omega(a_1)=k with loaded hypothesis |S|<=g(k); promoted primes bounded by induction; reduce to lower-omega instance. Speculative."
+  },
+  "pstar-core-straggler": {
+    "copied_from": null,
+    "elo": 1519.467675756829,
+    "expanded": 1,
+    "last_note": "Cov-monovariant (Lemma B) proved SPT-free + verified; Lemma C self-refuted honestly (a1=35,175 confirmed); Lemma D self-blocking proved; GAP-S' (termination after Cov stabilizes) open. 3 lemmas certified.",
+    "last_outcome": "advanced",
+    "last_round": 129,
+    "selected": 1,
+    "slug": "pstar-core-straggler",
+    "stale": false,
+    "summary": "Structural Cov-monovariant: bounds crash primes \u2286P(a_1) via bounded monotone Cov; avoids SPT entirely; wall = smooth-number crash inevitability (Lemma C, 2^k\u00b7p forced)."
+  },
+  "smooth-window-crash": {
+    "copied_from": null,
+    "elo": 1467.75174467053,
+    "expanded": 1,
+    "last_note": "Entering-2 (E1) + Equality-Case Corollary (C1 mod W1) proved; W1/W2/GAP-3 open; W1-vs-SPT correction honest (GAP-1 conditional on SPT not W1; {2,97} obstruction). Entering-2 certified.",
+    "last_outcome": "partial",
+    "last_round": 129,
+    "selected": 2,
+    "slug": "smooth-window-crash",
+    "stale": false,
+    "summary": "Analytic crash: p*-smooth valid numbers forced into the mtp-window arrive as tight small-support minimals that refine the family to self-blocking."
+  },
+  "transversal-single-cycle-finish": {
+    "copied_from": null,
+    "elo": 1686.7760658065047,
+    "expanded": 1,
+    "last_note": "Conditional theorem (M finite \u27f9 a_{n+T}=a_n+L for all n\u22651) fully rigorous and computationally verified on a1=15,429; lemmas correct, no-transient/single-cycle/period-sum all discharged; wall (finiteness of M) open by design.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 4,
+    "slug": "transversal-single-cycle-finish",
+    "stale": false,
+    "summary": "Assuming minimal-support family stabilizes, rigorously build post-stabilization machinery: free-rider lemma, squarefree L, CRT residue set, and the distinctive single-cycle/period-sum=L proof."
+  }
+}

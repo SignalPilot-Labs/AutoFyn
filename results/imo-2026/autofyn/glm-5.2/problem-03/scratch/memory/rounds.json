@@ -1,0 +1,25 @@
+{
+  "pr_title": "Solve IMO 2026 Problem 3: c(n)=2^n/(2^{n+1}−1) — c(1)=2/3 & c(2)=4/7 fully proved (both bounds), c(3)≥8/15 lower bound proved (reproducible script); general-n conjecture stated with open gaps flagged (partial). Branch: glm5.2-imo2026-03.",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "Round 1: imo-2026-03 partial (n=1 solved, reduction proved, gaps open)",
+      "ended_at": "2026-07-15T20:13:26Z"
+    },
+    {
+      "n": 2,
+      "summary": " ended without summary -- autocommit",
+      "ended_at": "2026-07-15T20:37:58Z"
+    },
+    {
+      "n": 3,
+      "summary": "imo-2026-03: proved L(2) lower bound (c(2)≥4/7), fixed equality wording, added latex+md deliverables",
+      "ended_at": "2026-07-15T21:56:58Z"
+    },
+    {
+      "n": 4,
+      "summary": "imo-2026-03: U(2) APPROVED (c(2)=4/7 fully solved both bounds); L(3) proved+verified (c(3)≥8/15); deliverables synced",
+      "ended_at": "2026-07-15T23:39:23Z"
+    }
+  ]
+}

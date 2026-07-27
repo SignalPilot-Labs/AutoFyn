@@ -1,0 +1,7 @@
+ALWAYS: sanity-check a minimax conjecture with brute-force full-lookahead optimal play (not just the proposed optimal config) before outlining — for imo-2026-03 the conjecture c(n)=2^n/(2^{n+1}-1) held for n=1,2,3 and the geometric config was the unique LB optimum (round 1).
+ALWAYS: when searching continuous cut games, restrict candidate cuts to "fragment matches an existing piece size / half / boundary" — these are exactly the piecewise-linear breakpoints of the alternating-sum objective and make the optimal search tractable (round 1).
+NEVER: trust a myopic greedy strategy as an upper-bound strategy without testing — greedy 1-step XY failed 36/400 (n=2) and 67/400 (n=3) on imo-2026-03, whereas full-lookahead optimal always met the bound (round 1).
+
+ALWAYS: verify a lead's claimed identity on the smallest case before outlining around it — Lead 1's "r_final = r_0 + R" for the imo-2026-03 rank integral was FALSE (n=1 halving predicts D=2, true D=1; it omits the −1 toggle on (M,s]); the corrected toggle-pair view is what's usable (round 3).
+ALWAYS: reformulate a minimax alternating-sum bound via the even-sum identity (D≥1 ⟺ 2nd-picker's take ≤ tail mass) — it can make one whole case trivial, as it did for imo-2026-03 Case A (round 3).
+NEVER: treat the difference-game value f(P) as a general lower bound on min_XY D — for imo-2026-03 it overestimates ({0.7,0.3}: f=0.4 > minD=0.3); it only certifies attainability (an upper bound on min_XY D) and equals the value only on the specific extremal config (round 3).

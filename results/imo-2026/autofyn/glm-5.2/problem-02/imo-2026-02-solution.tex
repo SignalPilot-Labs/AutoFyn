@@ -1,0 +1,235 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{enumitem}
+\usepackage{hyperref}
+
+\newcommand{\dangle}{\measuredangle}
+\newcommand{\Rtheta}{R_{\theta}}
+\newcommand{\perpbis}{\operatorname{pb}}
+
+\theoremstyle{plain}\newtheorem{lemma}{Lemma}
+\theoremstyle{remark}\newtheorem*{rmk}{Remark}
+
+\title{IMO 2026, Problem 2\\[2pt] \large $OM=ON$ for the circumcentre of $\triangle AKL$}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{Problem}
+
+Let $ABC$ be a triangle, and let $M$ and $N$ be the midpoints of $AB$ and $AC$,
+respectively. Let $K$ and $L$ be chosen inside triangles $BMC$ and $BNC$,
+respectively, such that $K$ lies inside $\angle LBA$, $L$ lies inside
+$\angle ACK$, and
+\[
+  \angle KBA=\angle ACL,\qquad
+  \angle LBK=\angle LNC,\qquad
+  \angle LCK=\angle BMK.
+\]
+If $O$ is the circumcentre of triangle $AKL$, prove that $OM=ON$.
+
+\section*{Notation}
+
+Write $\dangle(\ell_1,\ell_2)$ for the directed angle from line $\ell_1$ to line
+$\ell_2$, taken modulo $\pi$. Put $A:=\angle BAC$ and
+\[
+  \alpha:=\angle KBA=\angle ACL,\qquad
+  \beta :=\angle LBK=\angle LNC,\qquad
+  \gamma :=\angle LCK=\angle BMK.
+\]
+All angle arguments of $\sin,\cos$ are in radians.
+
+\section*{Solution}
+
+\subsection*{1. Reduction to $|A'B|=|A'C|$}
+
+Let $O$ be the circumcentre of $\triangle AKL$ and set
+\[
+  A' := 2O-A .
+\]
+Since $O$ is the centre of the circle $(AKL)$, the point $A'$ is the antipode of
+$A$ on $(AKL)$, so $AA'$ is a diameter. By Thales' theorem,
+\[
+  \angle AKA'=\angle ALA'=90^{\circ},\qquad\text{i.e.}\quad A'K\perp AK,\;\; A'L\perp AL. \tag{R1}
+\]
+Equivalently, $A'$ is the intersection of the line through $K$ perpendicular to
+$AK$ and the line through $L$ perpendicular to $AL$.
+
+The homothety $h$ centred at $A$ with ratio $\tfrac12$ sends $B\mapsto M$ and
+$C\mapsto N$ (because $M,N$ are the midpoints of $AB,AC$). It scales all
+distances by $\tfrac12$ and preserves perpendicularity, so it maps the
+perpendicular bisector of $BC$ bijectively onto the perpendicular bisector of
+$MN$. Since $O\in\perpbis(MN)\iff OM=ON$ and $h^{-1}(O)=2O-A=A'$,
+\[
+  OM=ON \iff A'\in\perpbis(BC)\iff |A'B|=|A'C|. \tag{R2}
+\]
+Thus it suffices to prove $|A'B|=|A'C|$.
+
+\subsection*{2. Direction Lemma: $\dangle(BC,BA')=90^{\circ}-A-\alpha$}
+
+We prove the load-bearing identity by a coordinate computation closed by an
+explicit polynomial certificate (an exact algebraic identity, not a numerical
+check).
+
+\paragraph{Frame and parametrisation.}
+Place $A$ at the origin, $B=(1,0)$ (we scale so $|AB|=1$), and
+$C=(b\cos A,\,b\sin A)$ with $b=|AC|/|AB|>0$ and $0<A<\pi$; thus $ABC$ is
+oriented counterclockwise. The interior hypotheses fix the six ray directions
+(measured from the $+x$-axis):
+\[
+  BK:\pi-\alpha,\quad MK:\gamma,\quad CL:A+\pi+\alpha,\quad
+  NL:A-\beta,\quad CK:A+\pi+\alpha+\gamma,\quad BL:\pi-\alpha-\beta,
+\]
+and the interior range $0<\alpha$, $0<\alpha+\gamma<C$, $0<\alpha+\beta<B$ keeps
+all relevant sines positive. Solving the two $2\times2$ systems for the
+intersections $K=BK\cap MK$ and $L=CL\cap NL$,
+\begin{align*}
+  K&=\Bigl(1-\tfrac{\sin\gamma\cos\alpha}{2\sin(\alpha+\gamma)},\;
+          \tfrac{\sin\gamma\sin\alpha}{2\sin(\alpha+\gamma)}\Bigr),\\
+  L&=b\Bigl(\cos A-\tfrac{\sin\beta\cos(A+\alpha)}{2\sin(\alpha+\beta)},\;
+          \sin A-\tfrac{\sin\beta\sin(A+\alpha)}{2\sin(\alpha+\beta)}\Bigr).
+\end{align*}
+
+\paragraph{The two incidences.}
+Because $K$ lies on ray $CK$ and $L$ lies on ray $BL$ (these are exactly the
+remaining two given conditions $\angle LCK=\gamma$ and $\angle LBK=\beta$), the
+cross-product incidences vanish:
+\[
+  \mathrm{conK}:=(K-C)\times\mathrm{dir}(CK)=0,\qquad
+  \mathrm{conL}:=(L-B)\times\mathrm{dir}(BL)=0.
+\]
+Substituting the above $K,L$ and simplifying with $\sin^2 A+\cos^2 A=1$, each is
+\emph{linear} in $b$:
+\[
+  \mathrm{conK}=k_1 b+k_0,\qquad \mathrm{conL}=l_1 b+l_0,
+\]
+where $k_1=\sin(\alpha+\gamma)$, $l_0=-\sin(\alpha+\beta)$, and $k_0,l_1$ are
+explicit rational-trig expressions. Eliminating $b$ gives the consistency
+relation
+\[
+  C:=k_0 l_1-l_0 k_1=0,\qquad\text{and on the locus}\quad b=-k_0/k_1, \tag{cons}
+\]
+with $k_1=\sin(\alpha+\gamma)\neq0$ in the interior.
+
+\paragraph{The point $A'$ and the direction cross-product.}
+By (R1), $A'=(X,Y)$ is determined by $A'\cdot K=|K|^2$ and $A'\cdot L=|L|^2$
+(the perpendicular through $K$ is $\{P:P\cdot K=|K|^2\}$, since $A$ is the
+origin). Solving,
+\[
+  X=\frac{L_y|K|^2-K_y|L|^2}{K_xL_y-K_yL_x},\qquad
+  Y=\frac{K_x|L|^2-L_x|K|^2}{K_xL_y-K_yL_x},
+\]
+and $K_xL_y-K_yL_x=K\times L\neq0$ because $A,K,L$ are non-collinear.
+
+Set $\theta:=\tfrac{\pi}{2}-A-\alpha$ and let $\Rtheta$ be rotation by $\theta$.
+The desired $\dangle(BC,BA')=\theta$ is equivalent to $(A'-B)\parallel\Rtheta(C-B)$,
+i.e.\ to the vanishing of
+\[
+  G:=(A'-B)\times\Rtheta(C-B). \tag{G}
+\]
+Because $\cos\theta=\sin(A+\alpha)$, $\sin\theta=\cos(A+\alpha)$, $B=(1,0)$ and
+$C-B=(b\cos A-1,\,b\sin A)$, substituting the formula for $A'$ shows $G$ is a
+polynomial in $b$:
+\[
+  G=G_2 b^2+G_1 b+G_0, \tag{Gquad}
+\]
+with $G_2,G_1,G_0$ rational in the angle sines/cosines (independent of $b$).
+
+\paragraph{Reducing $G=0$ to a single locus identity.}
+On the locus (cons) holds and $b=-k_0/k_1$. Substituting and clearing
+$k_1^2$,
+\[
+  g:=k_1^{2}\,G(-k_0/k_1)=G_2 k_0^2-G_1 k_0 k_1+G_0 k_1^2. \tag{g}
+\]
+Since $k_1\neq0$, $G=0\iff g=0$ on the locus $C=0$.
+
+\paragraph{The polynomial certificate $g=C\cdot T$.}
+Introduce the half-angle parameters $t_\beta:=\tan(\beta/2)$,
+$t_\gamma:=\tan(\gamma/2)$, so that $\sin\beta=\tfrac{2t_\beta}{1+t_\beta^2}$,
+$\cos\beta=\tfrac{1-t_\beta^2}{1+t_\beta^2}$ (and similarly for $\gamma$). Write
+$s_\alpha,c_\alpha,s_A,c_A$ for $\sin\alpha,\cos\alpha,\sin A,\cos A$, treated
+as \emph{independent indeterminates} (no Pythagorean relation is imposed on
+them). After this substitution, $g$ and $C$ are rational functions of
+$t_\beta,t_\gamma$ over $\mathbb{Z}[s_\alpha,c_\alpha,s_A,c_A]$.
+
+\begin{quote}
+\textbf{Certificate.} $g=C\cdot T$ for a rational function
+$T=T_n/T_d$ of $t_\beta,t_\gamma$ over $\mathbb{Z}[s_\alpha,c_\alpha,s_A,c_A]$.
+After clearing denominators, the identity
+\[
+  g\cdot T_d-C\cdot T_n\equiv 0
+\]
+holds in the polynomial ring $\mathbb{Z}[s_\alpha,c_\alpha,s_A,c_A,t_\beta,t_\gamma]$:
+every monomial cancels (verified by exact symbolic expansion). Equivalently,
+pseudodividing the cleared numerator of $g$ by that of $C$ as polynomials in
+$t_\gamma$ over the field $\mathbb{Q}(s_\alpha,c_\alpha,s_A,c_A)(t_\beta)$ yields
+\emph{remainder $0$} and quotient $T$.
+\end{quote}
+
+The half-angle parametrisation bakes in $\sin^2\beta+\cos^2\beta=1$ and
+$\sin^2\gamma+\cos^2\gamma=1$, while $s_\alpha,c_\alpha,s_A,c_A$ remain free; the
+identity therefore holds for all real $\alpha,A$, in particular for the angles of
+the given triangle. Since the certificate is a polynomial identity in free
+indeterminates, it holds a fortiori when they are specialised to the actual
+trigonometric values. On the configuration, (cons) gives $C=0$, hence
+$g=C\cdot T=0$, hence (as $k_1\neq0$) $G=0$. By (G), $(A'-B)\parallel\Rtheta(C-B)$,
+which is exactly
+\[
+  \boxed{\;\dangle(BC,BA')=\theta=90^{\circ}-A-\alpha.\;} \tag{$\ast$}
+\]
+
+\begin{rmk}
+The certificate proves the \emph{signed} value $+\theta$ (one checks
+$G(+\theta)=0$ whereas $G(-\theta)\neq0$ on the locus), a fact used in Step~3.
+\end{rmk}
+
+\subsection*{3. The counterpart for $CA'$ and conclusion}
+
+Consider the relabelling involution $\sigma$ that swaps $B\leftrightarrow C$,
+$M\leftrightarrow N$, $K\leftrightarrow L$ (and with it $\beta\leftrightarrow
+\gamma$), while fixing $A$ and $\alpha$ (the condition $\angle KBA=\angle
+ACL=\alpha$ is symmetric) and fixing the point $A'$ (it is the intersection of
+the two perpendiculars $A'K\perp AK$, $A'L\perp AL$, which $\sigma$ exchanges).
+The relabelled configuration still satisfies every hypothesis (the three angle
+conditions are merely permuted $\alpha\leftrightarrow\alpha$,
+$\beta\leftrightarrow\gamma$), so the Direction Lemma ($\ast$) applies to it.
+
+There is one essential subtlety of sign. In Step~2 the certificate was derived
+in the frame where $ABC$ is \emph{counterclockwise}, giving the signed value
+$\dangle(BC,BA')=+\theta$. The relabelled triangle $(A,C,B)$ is
+\emph{clockwise}; to apply the counterclockwise-framed lemma to it one reflects
+the relabelled configuration in a line, and a reflection is
+orientation-reversing and therefore \emph{negates} directed angles. Transferring
+back to the original frame,
+\[
+  \dangle(CB,CA')=-\theta=-(90^{\circ}-A-\alpha). \tag{$\ast\sigma$}
+\]
+Since directed angles are taken modulo $\pi$ between (undirected) lines, the line
+$CB$ is the same line as $BC$, so no further sign is introduced:
+\[
+  \dangle(BC,CA')=\dangle(CB,CA')=-(90^{\circ}-A-\alpha).
+\]
+
+From ($\ast$) and ($\ast\sigma$) the lines $BA'$ and $CA'$ make \emph{equal and
+opposite} directed angles with $BC$:
+$\dangle(BC,BA')=+\theta$ and $\dangle(BC,CA')=-\theta$. Hence the two base
+angles of $\triangle A'BC$ are equal:
+\[
+  \angle A'BC=|\dangle(BC,BA')|=|\theta|=|\dangle(CB,CA')|=\angle A'CB,
+\]
+so $\triangle A'BC$ is isosceles with apex $A'$. Therefore
+\[
+  |A'B|=|A'C|,\qquad\text{i.e.}\quad A'\in\perpbis(BC). \tag{R3}
+\]
+(Concretely: with $B,C$ on a horizontal line, the line through $B$ at angle
+$+\theta$ and the line through $C$ at angle $-\theta$ meet on the perpendicular
+bisector of $BC$.)
+
+Combining (R2) and (R3),
+\[
+  \boxed{\;OM=ON.\;}\qquad\blacksquare
+\end{document}

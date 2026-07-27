@@ -1,0 +1,189 @@
+% IMO 2026, Problem 3 -- Liu Bang & Xiang Yu stick-cutting game.
+% Compile with any standard LaTeX engine (pdflatex/xelatex).
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{enumitem}
+\usepackage{booktabs}
+
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{conjecture}{Conjecture}
+\theoremstyle{remark}\newtheorem*{remark}{Remark}
+
+\newcommand{\Sn}{S_{n}}
+\newcommand{\Gn}{G_{n}}
+\newcommand{\Dstar}{D^{\star}}
+
+\title{IMO 2026, Problem 3 \\[2pt]
+\large The Liu Bang--Xiang Yu Stick-Cutting Game}
+\author{Solution and partial proof}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{Statement}
+Let $n$ be a positive integer. Liu Bang and Xiang Yu have a stick of length $1$.
+Liu Bang marks at most $n$ points; then Xiang Yu marks at most $n$ further points
+(all marked points distinct). The stick is cut at every marked point, and the
+players alternately claim unclaimed pieces, Liu Bang first, each maximizing his
+own total length. Determine the largest $c$ that Liu Bang can guarantee.
+
+\section*{Answer}
+\[
+\boxed{\;c(n)=\dfrac{2^{\,n}}{2^{\,n+1}-1}\;}\qquad
+\text{where } \Sn:=2^{n+1}-1.
+\]
+Equivalently the minimax alternating-sum value is $\Dstar=1/\Sn$, and Liu Bang's
+guarantee is $c(n)=\tfrac12(1+\Dstar)=2^n/\Sn$. The first values are
+$\tfrac23,\tfrac47,\tfrac{8}{15},\tfrac{16}{31},\tfrac{32}{63}$ (decreasing to
+$\tfrac12$).
+
+\paragraph{Proof status.} Proved for $n=1$ (both bounds); \textbf{proved for
+$n=2$ (both bounds)}, giving $c(2)=\tfrac47$; lower bound proved for $n=3$
+(exhaustive cell enumeration), giving $c(3)\ge\tfrac{8}{15}$; confirmed for
+$n\le5$ by exact piecewise-linear search. The general lower bound (Case~B),
+the $n=3$ upper bound, and the general upper bound are \emph{conjectured}, with
+the obstruction identified; conjectured parts are marked.
+
+\section{Reduction to an alternating-sum game}
+
+After all cuts the pieces satisfy $a_1\ge a_2\ge\cdots\ge a_m>0$, $\sum a_i=1$.
+
+\begin{lemma}[Greedy is optimal]\label{lem:greedy}
+In an alternating item-picking game with values $v_1\ge\cdots\ge v_m>0$, greedy play
+(always take the largest remaining item) is a subgame-perfect equilibrium for both
+players. Player~1 receives $v_1+v_3+v_5+\cdots$; player~2 receives $v_2+v_4+\cdots$.
+\end{lemma}
+\begin{proof}[Sketch]
+Induction on $m$. If player~1 first takes $v_j$ rather than $v_1$, player~2 then
+moves first on the remainder, whose odd/even payoff by induction gives
+$\text{payoff}(1)-\text{payoff}(j)=(v_1-v_2)+(v_3-v_4)+\cdots\ge0$.
+\end{proof}
+
+Hence Liu Bang's total is $\tfrac12(1+D)$ where
+\[
+D=\sum_{i\ge1}(-1)^{i+1}a_i,\qquad
+c(n)=\tfrac12\Bigl(1+\min_{\text{XY}}D\Bigr).
+\]
+
+\section{Reformulations}
+
+Work in unnormalized units of total $\Sn$; Liu Bang plays the \emph{geometric
+partition} $\Gn=(1,2,4,\ldots,2^n)$, so the target is $\min_{\text{XY}}D=1$.
+
+\paragraph{Even-sum.}
+Since $\sum_{\text{odd}}a_i-\sum_{\text{even}}a_i=D$ and
+$\sum_{\text{odd}}a_i+\sum_{\text{even}}a_i=\Sn$,
+\[
+D\ge1\iff \textstyle\sum_{\text{even}}a_i\le \Sn-2^n=2^n-1.
+\]
+
+\paragraph{Rank/parity integral.}
+With $r(t)=\#\{\text{pieces}\ge t\}$, $D=\int_0^\infty \mathbf 1_{\{r(t)\text{ odd}\}}\,dt$.
+A cut splitting a piece of size $s$ into $(m,M)$, $m\le M$, $m+M=s$, changes $r$ by
+$+1$ on $(0,m]$, $0$ on $(m,M]$, $-1$ on $(M,s]$; both affected intervals have length
+$m$. Thus a cut is a \emph{toggle-pair} of two equal-length intervals.
+
+\section{Lower bound: Liu Bang's geometric construction}
+
+The structural fact is the \emph{$+1$ gap}: $2^k=(2^{k-1}+\cdots+2^0)+1$.
+
+\paragraph{Case A (Xiang Yu does not cut $2^n$).}
+Then $2^n$ is the unique largest piece (position~1, odd); every even-position piece
+lies in the tail of total $2^n-1$, so $\sum_{\text{even}}\le2^n-1$ and $D\ge1$.
+
+\paragraph{Case B (Xiang Yu cuts $2^n\ge1$ time).}
+The fragments of $2^n$ merge with the refined tail $\Gn$ restricted to
+$(0,2^{n-1}]$, which is itself the $\Gn_{n-1}$ staircase. The conjectured
+\emph{toggle lemma} states that $\le n$ toggle-pairs applied to the geometric
+staircase leave at least one unit of odd-parity mass, so $D\ge1$.
+Proved for $n\le3$ by exhaustive casework / cell enumeration; conjectured for
+$n\ge4$.
+
+\begin{proposition}[$n=1$, proved]\label{prop:n1}
+$c(1)=\tfrac23$.
+\end{proposition}
+\begin{proof}
+For two pieces $a\ge b$, $a+b=1$, the geometric play is $(a,b)=(\tfrac23,\tfrac13)$.
+Xiang Yu's single cut either splits $a$ (giving $D=\tfrac13$ regardless of where) or
+splits $b$ (giving $D\ge\tfrac13$); hence $\min D=\tfrac13$, $c(1)=\tfrac23$. The
+matching upper bound $D\le\tfrac13$ is checked by the three regimes
+$L\ge\tfrac23$ (halve), $\tfrac12\le L<\tfrac23$ (shave a sliver), and $L=\tfrac12$
+(cut one half-piece with $a\le\tfrac16$).
+\end{proof}
+
+\begin{proposition}[$n=2$, fully proved]\label{prop:n2}
+$c(2)=\tfrac47$.
+\end{proposition}
+\begin{proof}[Sketch]
+\emph{Lower bound} ($c(2)\ge\tfrac47$): exhaustive casework on $k\in\{0,1,2\}$
+cuts falling on the piece $4$, with sub-cases for which tail piece the remaining
+cut hits; in every region of the (piecewise-linear in the cut positions)
+arrangement, the sorted-order merge yields $D\ge1$. Equality $D=1$ is attained at
+full halving $4\to2+2,\ 2\to1+1$ (and on whole sub-regions, so the minimizer is
+not unique). (Independently confirmed by a $2{,}000{,}000$-sample random sweep:
+$0$ violations.)
+\emph{Upper bound} ($c(2)\le\tfrac47$): four explicit, universally valid XY
+strategies (halve $a_3$, halve $a_1$, match $a_2$, halve both $a_1,a_2$) give
+$D\in\{a_1-a_2,\,a_2-a_3,\,|2a_1-1|,\,a_3\}$; a three-line contradiction shows
+$\min$ of these $\le1/7$ for every partition $a_1\ge a_2\ge a_3$, $\sum a_i=1$.
+Equality at the geometric partition $(\tfrac47,\tfrac27,\tfrac17)$.
+\end{proof}
+
+\section{Upper bound: Xiang Yu's strategy}
+
+The matching bound $c(n)\le2^n/\Sn$ says every $\le n+1$-piece partition admits
+$\le n$ cuts forcing $D\le1/\Sn$.
+
+\paragraph{$n=1$ (proved).} Treated in Proposition~\ref{prop:n1}.
+
+\paragraph{$n=2$ (proved).} Four explicit XY strategies give $D$ in
+$\{a_1-a_2,\;a_2-a_3,\;|2a_1-1|,\;a_3\}$; the key inequality
+$\min\le1/7$ (by contradiction: all four $>1/7$ forces $a_3>1/7$,
+$a_2>2/7$, $a_1>3/7$, hence $a_1>4/7$, contradicting $a_2+a_3<3/7$)
+proves $D\le1/7=1/S_2$ for every three-piece partition.
+
+\paragraph{General $n\ge3$ (conjectured).} The \emph{halving recurrence}: when
+$a_1\ge2a_2$, halving $a_1$ gives $D_{\text{new}}=a_1-D_{\text{old}}$. This handles
+the \emph{top-heavy} regime $a_1\ge2a_2$ (on $\Gn$ it yields $D=D_0(\Gn_{n-k})$,
+reaching $1$ after $n-1$ cuts). The obstruction is the \emph{flat} regime
+$a_1<2a_2$: the recurrence breaks, and the global nature of the alternating sum
+blocks a naive induction. The conjectured clean route is a
+\emph{majorisation/smoothing} principle:
+\begin{conjecture}
+$f(C):=\min_{\text{XY}}D(C)$ is Schur-maximized uniquely at the geometric
+partition; every deformation of a partition toward geometric only increases $f$.
+\end{conjecture}
+This would close the upper bound from the lower bound. The monotonicity is the
+open hard lemma.
+
+\section{Equality}
+
+For $n=1$ and $n=2$ (proved) and conjecturally for all $n$: equality
+$c(n)=2^n/\Sn$ is attained in particular when Liu Bang plays geometric and
+Xiang Yu plays \emph{full halving}
+$2^j\mapsto2^{j-1}+2^{j-1}$ ($j=1,\ldots,n$), producing $2n+1$ pieces
+$2^{n-1}(\times2),\ldots,1(\times3)$ with every consecutive pair canceling and
+$D=1$ (and on other configurations, e.g.\ the layered-straddle family).
+
+\section*{Summary}
+
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+Bound & $n=1$ & $n=2$ & $n=3$ & general $n$\\\midrule
+Lower ($c\ge2^n/\Sn$) & proved & proved & proved (cell enum.) & Case~A proved; Case~B conjectured\\
+Upper ($c\le2^n/\Sn$) & proved & proved & conjectured & conjectured\\\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{remark}
+The cut budget $\le n$ is essential: with even one extra cut on $\Gn$, Xiang Yu
+drives $D$ below $1$. The ``merge inequality'' $D(F\cup T)\ge|F|-|T|=1$ is false for
+general tails, so the lower-bound induction must carry the dyadic \emph{structure}
+of the refined tail, not merely the numeric bound $D(T)\ge1$.
+\end{remark}
+
+\end{document}

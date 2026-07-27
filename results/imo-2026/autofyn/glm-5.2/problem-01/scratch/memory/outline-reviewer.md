@@ -1,0 +1,1 @@
+ALWAYS: numerically test local confluence on the actual carrier (positioned tuples vs multisets) before accepting a Newman's-lemma outline — a per-prime joinability proof does NOT lift to positioned boards when the terminal position of the survivor is undetermined (imo-2026-01 round 1: positioned-board local confluence failed 72/1331 triples, multiset passed 1331/1331).

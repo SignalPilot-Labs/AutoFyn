@@ -1,0 +1,38 @@
+{
+  "attractor-level-fixpoint": {
+    "copied_from": null,
+    "elo": 1500.0339081301693,
+    "expanded": 1,
+    "last_note": "Same engine as direct approach (Lemma R+F, four-case closure, n=2 base) framed as fixed-point attractor; determinacy \u00a75 is correct but redundant restatement of the dichotomy. APPROVE/solved.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "attractor-level-fixpoint",
+    "stale": true,
+    "summary": "Game-theoretic least/greatest-fixed-point duality; distinctive hard gap is the determinacy/no-draw clause for the uncountable angle-triple state space, with explicit level bound W_{n-1}=X."
+  },
+  "chip-transfer-monovariant": {
+    "copied_from": null,
+    "elo": 1468.7023986633528,
+    "expanded": 1,
+    "last_note": "Necessity (Theorem N = four-case closure in q-space) rigorous; Lemma FRAC proven. Sufficiency conceded (transfer monovariant dead-end verified). Minor dead-end labeling error (fixed point is from index 0, not 2). CHANGES REQUESTED/partial.",
+    "last_outcome": "partial",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "chip-transfer-monovariant",
+    "stale": true,
+    "summary": "Euclidean-descent in q-space (q_i=angle/\u03b8); t=1 transfer op sufficiency converges to Lemma R; distinctive content is the necessity Kronecker/periodic-orbit route for irrational and rational-non-1/n 180/\u03b8."
+  },
+  "direct-four-case-interval": {
+    "copied_from": null,
+    "elo": 1531.263693206478,
+    "expanded": 1,
+    "last_note": "Complete rigorous characterization both directions; four-case closure, Lemma R, Lemma F, n=2 base all verified symbolically and by simulation (n=2..5, 0 failures); APPROVE/solved.",
+    "last_outcome": "verified-milestone",
+    "last_round": 1,
+    "selected": 0,
+    "slug": "direct-four-case-interval",
+    "stale": true,
+    "summary": "Canonical direct proof: four-case B_\u03b8-free closure for necessity + Lemma R induction (m\u03b8\u2192(m\u22121)\u03b8) and Lemma F interval-contains-integer for sufficiency."
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "pr_title": "Solve IMO 2026 P5: f(x)=x+c (c≥0) — orbit-monotonicity-sandwich proof",
+  "rounds": [
+    {
+      "n": 2,
+      "summary": "Solved IMO 2026 P5: f(x)=x+c (c≥0). Verified full proof via orbit-monotonicity-sandwich (master squeeze + asymptotic pinning + boundary contradiction); certified master-squeeze lemma.",
+      "ended_at": "2026-07-23T20:51:34Z"
+    },
+    {
+      "n": 3,
+      "summary": "Harden density route (2nd verified solution); orbit SOLVED",
+      "ended_at": "2026-07-23T21:06:54Z"
+    }
+  ]
+}

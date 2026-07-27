@@ -1,0 +1,10 @@
+{
+  "pr_title": "IMO 2026 P2 (geometry, OM=ON) — rigorous proof (antipode reduction + signed direction-lemma certificate + orientation-reversal symmetry) + LaTeX and commentary deliverables. Branch: glm5.2-imo2026-03",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "Solve IMO 2026 P2 (geometry OM=ON); rigorous proof + LaTeX/commentary",
+      "ended_at": "2026-07-15T23:57:52Z"
+    }
+  ]
+}
