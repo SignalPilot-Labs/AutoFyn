@@ -1,0 +1,46 @@
+spf built N=400000
+scanning 153 odd composite seeds
+  LARGE Pess a1=511 |Pess|=50 |M|=49 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=679 |Pess|=51 |M|=50 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=725 |Pess|=51 |M|=50 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=775 |Pess|=51 |M|=50 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=833 |Pess|=50 |M|=49 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=867 |Pess|=58 |M|=57 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=1083 |Pess|=57 |M|=56 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=1445 |Pess|=54 |M|=52 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=1587 |Pess|=65 |M|=66 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=2023 |Pess|=21 |M|=20 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=2047 |Pess|=45 |M|=44 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=2523 |Pess|=73 |M|=74 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=2527 |Pess|=58 |M|=58 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=2783 |Pess|=45 |M|=44 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=2883 |Pess|=60 |M|=57 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=3201 |Pess|=69 |M|=70 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=3509 |Pess|=55 |M|=53 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=4107 |Pess|=82 |M|=84 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=4205 |Pess|=73 |M|=75 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=4805 |Pess|=66 |M|=66 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=5043 |Pess|=73 |M|=70 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=5547 |Pess|=79 |M|=78 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=5819 |Pess|=65 |M|=64 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=5887 |Pess|=54 |M|=50 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=6627 |Pess|=83 |M|=84 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=9251 |Pess|=60 |M|=59 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=15341 |Pess|=40 |M|=39 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=19343 |Pess|=38 |M|=37 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=26071 |Pess|=46 |M|=49 (not stabilized in 200 terms); mtp skipped
+  LARGE Pess a1=27869 |Pess|=43 |M|=46 (not stabilized in 200 terms); mtp skipped
+scanned 123 seeds in 0.2s
+max(mtp/a1)=0.4000 at a1=15
+max(mtp)=226 at a1=19549
+mtp<=a1: 123, mtp>a1: 0
+
+Extremals (ratio>0.25 or mtp>40 or maxgap>mtp or slow):
+      a1                factors   mtp maxgap gap>mtp |M| maxEnt  ratio  secs
+      15                 [3, 5]     6      6   False   3      2  0.400   0.0
+     247               [13, 19]    78     66   False   7      7  0.316   0.0
+      35                 [5, 7]    10     10   False   4      3  0.286   0.0
+     667               [23, 29]    58     58   False   5     13  0.087   0.0
+     899               [29, 31]    58     58   False   6     23  0.065   0.0
+   19549             [113, 173]   226    226   False   5    109  0.012   0.0
+    8303               [19, 23]    46     46   False   8    181  0.006   0.0

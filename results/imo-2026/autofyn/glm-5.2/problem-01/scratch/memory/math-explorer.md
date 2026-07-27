@@ -1,0 +1,3 @@
+ALWAYS: for gcd/lcm blackboard rewrite problems, rewrite the move as (gx,gy)->(g,xy) with gcd(x,y)=1 first — it makes the product-monovariant (P->P/g) and the per-prime Euclidean step (min,|α-β|) both visible in one line (round 1, imo-2026-01).
+ALWAYS: termination of a board rewrite with both "value-decreasing" and "count-decreasing" moves is cleanly handled by a lexicographic pair (P, c); check that P stays constant exactly when c drops (round 1).
+NEVER: claim a valuation-free closed form for a quantity that is "gcd of per-prime exponents" — that operation is not a divisibility-lattice (meet/join) operation, so no gcd/lcm expression in the raw integers realizes it; you must invoke v_p to NAME it (round 1, imo-2026-01).

@@ -1,0 +1,2 @@
+ALWAYS: verify the established reduction numerically with a small Python/fsolve construction before committing the outline (because a wrong sign convention in the ray directions silently produces a non-interior family where the theorem fails) — round 1, imo-2026-02.
+NEVER: parametrize a point by all the cevians through it at once; two lines determine it and the third is the (trig-Ceva) constraint that reduces the parameter count — using three over-determines and hides the 1-parameter structure needed for the identity (round 1, imo-2026-02).

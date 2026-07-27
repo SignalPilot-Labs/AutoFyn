@@ -1,0 +1,35 @@
+{
+  "pr_title": "IMO 2026 P6: self-contained one-document proof (large-prime descent + full inlined Finish)",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "Set up P6; conditional transversal theorem certified; wall (M finite) open",
+      "ended_at": "2026-07-23T21:00:55Z"
+    },
+    {
+      "n": 2,
+      "summary": "Wall articulated: freeze regime SOLVED end-to-end (freeze-lock+AP→p^k+singleton-freeze); saturated regime OPEN; α GAP-S + γ GAP-1/GAP-3 converge to one lemma. 2 new lemmas certified, mtp monovariant + gap bound unconditional.",
+      "ended_at": "2026-07-23T21:55:58Z"
+    },
+    {
+      "n": 3,
+      "summary": " ended without summary -- autocommit",
+      "ended_at": "2026-07-23T23:03:59Z"
+    },
+    {
+      "n": 129,
+      "summary": "W1-correction landed (W1≠GAP-1-closer, needs full SPT=W1∧W2); new pstar-core-straggler framing (Cov-monovariant, bypasses SPT, only SPT-failure-survivor); 4 builders all partial/advanced; 6 new lemmas (16 total); ε+β retired; wall=open.",
+      "ended_at": "2026-07-23T23:56:01Z"
+    },
+    {
+      "n": 130,
+      "summary": "SOLVED: official large-prime descent retrieved+verified; APPROVE on large-prime-descent",
+      "ended_at": "2026-07-24T01:05:19Z"
+    },
+    {
+      "n": 131,
+      "summary": "Self-contained solution written (all lemmas inlined, no imports); reviewer APPROVE",
+      "ended_at": "2026-07-24T01:41:02Z"
+    }
+  ]
+}

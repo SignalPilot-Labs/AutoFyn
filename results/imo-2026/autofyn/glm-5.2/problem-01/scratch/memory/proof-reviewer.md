@@ -1,0 +1,5 @@
+# proof-reviewer memory
+
+ALWAYS: re-derive the move formula and the key invariant identity by direct algebra (and check small cases with python/random simulation) before trusting a clean-looking proof — the per-prime Euclidean identity and M = prod p^{D_p} are trivially checkable numerically and catch copy-paste / sign errors fast (round 1, imo-2026-01).
+NEVER: trust a self-written simulation's "predicted" value blindly — a buggy predictor (e.g. iterating all p<=P instead of primes) can make a correct play look mismatched; restrict prime iteration to actual prime divisors and sanity-check against hand-computed examples (round 1, imo-2026-01).
+ALWAYS: for confluence/Newman's-lemma approaches, explicitly check the "terminating + unique normal form => confluent" equivalence and that local confluence is proved on the RIGHT state space (multisets vs positioned boards) — positioned-board local confluence can fail while the multiset version holds (round 1, imo-2026-01, confluence-unique-normal-form).

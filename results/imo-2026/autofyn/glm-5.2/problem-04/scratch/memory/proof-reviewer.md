@@ -1,0 +1,6 @@
+# proof-reviewer per-role rules
+
+ALWAYS: re-derive the four-case telescoping identities with sympy (they reduce to C, A, B, 180) before trusting any necessity proof for the Mulan triangle game — the "exhaustive" claim is only valid because each child's bad angle is binary (because the inherited angle is safe by hypothesis), and that logical step is easy to hand-wave (round 1).
+ALWAYS: simulate the Mulan winning strategy against a worst-case Shan-Yu (keep the child that delays the win) across several n and many random triangles — it catches positivity-bound bugs in Lemma-R-style descents that symbolic checks miss (round 1).
+NEVER: accept a "determinacy / no-draw" section as a genuine new theorem when it just restates the exhaustive dichotomy plus two proven implications — it is redundant, not load-bearing; do not let it pad a proof's apparent strength (round 1, attractor approach).
+NEVER: trust the builder's arithmetic in a conceded dead-end illustration without recomputing — the chip-transfer approach swapped which greedy cut of q=(3,2,3) yields the fixed point (index 0 gives (3,2,3), index 2 gives (2,2,4), the reverse of what was written); the conclusion stood but the example was wrong (round 1).

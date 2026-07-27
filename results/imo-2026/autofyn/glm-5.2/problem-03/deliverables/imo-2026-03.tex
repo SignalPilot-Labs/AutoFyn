@@ -1,0 +1,410 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{amsmath,amsthm,amssymb}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem*{openproblem}{Open Problem / Conjecture}
+
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\LB}{\mathrm{LB}}
+\newcommand{\XY}{\mathrm{XY}}
+\newcommand{\Sn}{S_n}
+
+\title{IMO 2026 Problem 3 --- Solution}
+\author{Proval Team}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\textbf{Status: PARTIAL.} The value $c(n)=\dfrac{2^n}{2^{n+1}-1}$ is
+\emph{conjectured} (strongly supported numerically for $n=1,\dots,5$) and is
+\emph{rigorously proved} only for $n=1$ (both directions). For general $n$,
+the lower bound is proved in Case~A and reduced to an open interleaving gap in
+Case~B; the upper bound is open. Every gap is flagged with an
+\textsc{Open Problem / Conjecture} environment. Nothing unproved is presented
+as a theorem.
+\end{center}
+
+\section{Problem Statement}
+
+Let $n$ be a positive integer. Liu Bang and Xiang Yu have a stick of length $1$
+and want to divide it between themselves. Liu Bang marks at most $n$ points on
+the stick, and then Xiang Yu marks at most $n$ points on the stick. The marked
+points are distinct. Then, the stick is cut at all marked points, creating a
+number of pieces. Afterwards, they take turns claiming any unclaimed piece of
+the stick, with Liu Bang going first. Each player's goal is to maximise the
+total length of their own pieces. For each $n$, determine the largest value
+$c$ such that Liu Bang may guarantee a total length of at least $c$,
+regardless of Xiang Yu's play.
+
+\section{Answer}
+
+\begin{conjecture}[Value of $c(n)$]
+For every positive integer $n$,
+\[
+\boxed{\,c(n)=\dfrac{2^{\,n}}{2^{\,n+1}-1}\,}.
+\]
+Equivalently, writing $S_n:=2^{n+1}-1$, the minimax alternating-sum value
+(introduced below) is $D^\star=1/S_n$, and $c(n)=\tfrac{1}{2}(1+1/S_n)=2^n/S_n$.
+\end{conjecture}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{c|c|c|c}
+\toprule
+$n$ & $S_n=2^{n+1}-1$ & $D^\star=1/S_n$ & $c(n)=2^n/S_n$ \\
+\midrule
+$1$ & $3$  & $1/3$   & $2/3$  \\
+$2$ & $7$  & $1/7$   & $4/7$  \\
+$3$ & $15$ & $1/15$  & $8/15$ \\
+$4$ & $31$ & $1/31$  & $16/31$\\
+$5$ & $63$ & $1/63$  & $32/63$\\
+\bottomrule
+\end{tabular}
+\caption{Verified values. $c(1)=2/3$ is proved rigorously below; $c(2),\dots,c(5)$ are confirmed by continuous optimal-XY search (numerical certificate, not a proof).}
+\end{table}
+
+\section{Setup: Reduction to the Alternating-Sum Game}
+
+Normalise the total length to $1$. Throughout, let $S_n:=2^{n+1}-1$.
+
+\begin{lemma}[Greedy is optimal in the alternating item-picking game]\label{lem:greedy}
+Let $v_1\ge v_2\ge\cdots\ge v_m>0$ be item values. Two players pick
+alternately, player~1 first, each maximising their own total. Then greedy
+play---always take the largest remaining item---is a subgame-perfect
+equilibrium for \emph{both} players; the resulting payoff is that player~1
+receives $v_1+v_3+v_5+\cdots$ (odd positions) and player~2 receives
+$v_2+v_4+v_6+\cdots$ (even positions).
+\end{lemma}
+
+\begin{proof}
+By strong induction on $m$. The cases $m\le 2$ are immediate. For $m\ge 3$,
+suppose player~1's first pick is $v_j$ ($j\in\{1,\dots,m\}$); write $R_j$ for
+the multiset $\{v_1,\dots,v_m\}\setminus\{v_j\}$. After player~1 takes $v_j$,
+player~2 moves first on $R_j$; by the induction hypothesis (applied to the
+$(m-1)$-item game on $R_j$, with player~2 now in the ``first player'' role),
+player~2 obtains the odd-position sum of $R_j$ (sorted) and player~1 obtains
+the even-position sum of $R_j$. Hence player~1's total payoff is
+\[
+\mathrm{payoff}(j)=v_j+(\text{even-position sum of the sorted multiset }R_j).
+\]
+
+We claim $\mathrm{payoff}(1)\ge\mathrm{payoff}(j)$ for every $j$.
+
+Sort $R_j$: it is $v_1,\dots,v_{j-1},v_{j+1},\dots,v_m$ (the original order
+with $v_j$ removed, still decreasing). Its even-position ($2$nd, $4$th,
+$\dots$) elements are:
+\begin{itemize}[leftmargin=2em]
+\item if $j=2k+1$ is odd: $\{v_2,v_4,\dots,v_{2k}\}\cup\{v_{2k+3},v_{2k+5},\dots\}$;
+\item if $j=2k$ is even: $\{v_2,v_4,\dots,v_{2k-2}\}\cup\{v_{2k+1},v_{2k+3},\dots\}$.
+\end{itemize}
+
+In the odd case $j=2k+1$,
+\begin{align*}
+\mathrm{payoff}(j) &= v_{2k+1}+(v_2+v_4+\cdots+v_{2k})+(v_{2k+3}+v_{2k+5}+\cdots),\\
+\mathrm{payoff}(1) &= v_1+(v_3+v_5+\cdots)\\
+&= v_1+(v_3+v_5+\cdots+v_{2k-1})+v_{2k+1}+(v_{2k+3}+v_{2k+5}+\cdots).
+\end{align*}
+Subtracting,
+\[
+\mathrm{payoff}(1)-\mathrm{payoff}(j)=(v_1-v_2)+(v_3-v_4)+\cdots+(v_{2k-1}-v_{2k})\ge 0,
+\]
+since the sequence is decreasing. The even case $j=2k$ is analogous:
+\[
+\mathrm{payoff}(1)-\mathrm{payoff}(j)=(v_1-v_2)+(v_3-v_4)+\cdots+(v_{2k-1}-v_{2k})\ge 0.
+\]
+Thus player~1's optimal first move is $v_1$ (greedy), and the induction
+hypothesis then forces greedy thereafter. The same argument, applied to
+player~2 as the first mover on $R_1$, shows greedy is optimal for player~2 as
+well.
+\end{proof}
+
+\begin{corollary}[Reduction]\label{cor:reduction}
+In the original game, after all cuts the final pieces sorted descending
+$b_1\ge b_2\ge\cdots\ge b_m$ satisfy: under optimal play in the claiming phase,
+Liu Bang receives $\tfrac{1}{2}(1+\D)$ and Xiang Yu receives
+$\tfrac{1}{2}(1-\D)$, where
+\[
+\D:=b_1-b_2+b_3-b_4+\cdots=\sum_{i}(-1)^{i+1}b_i
+\]
+is the alternating sum of the resulting multiset. Hence LB's guaranteed payoff
+equals $\tfrac{1}{2}(1+\min_{\XY}\D)$, and the game reduces to:
+\begin{itemize}[leftmargin=2em]
+\item LB chooses a partition of $[0,1]$ into at most $n+1$ pieces;
+\item XY then adds at most $n$ cuts;
+\item the payoff-relevant quantity is the alternating sum $\D$ of the resulting
+multiset; LB maximises the guaranteed $\D$, XY minimises it.
+\end{itemize}
+The conjectured value is $\min_{\XY}\D\ge 1/S_n$ for LB's geometric partition,
+and $\min_{\XY}\D\le 1/S_n$ against every LB partition.
+\end{corollary}
+
+\begin{proof}[Proof of Corollary~\ref{cor:reduction}]
+The total length is $1=\sum_i b_i$; LB's odd-position sum plus XY's
+even-position sum is $1$, and their difference is $\D$, so LB's take is
+$(1+\D)/2$. Substituting the guaranteed $\D=\min_{\XY}\D$ gives LB's guaranteed
+payoff.
+\end{proof}
+
+Two reformulations are used in the analysis:
+\begin{itemize}[leftmargin=2em]
+\item[(i)] $\D=1-2\cdot(\text{XY's even-position sum})$, so minimising $\D$
+is the same as maximising XY's take.
+\item[(ii)] \emph{Parity-integral identity:} $\D=\int_0^{b_1}\mathbf{1}_{r(t)\text{ odd}}\,dt$,
+where $r(t):=\#\{\text{pieces of size}\ge t\}$; each piece $b_i$ contributes
+the interval $(0,b_i]$ to $r(t)$, and summing the parity indicator over $t$
+gives the alternating sum.
+\end{itemize}
+
+\section{Lower Bound: $\D\ge 1/S_n$ for LB's Geometric Partition (Partial)}
+
+We scale to integer units: LB plays the \emph{geometric partition}
+\[
+G_n=(1,2,4,\dots,2^n),\qquad\text{total }S_n=2^{n+1}-1,
+\]
+and the target becomes $\D\ge 1$ in these units (i.e.\ $\D\ge 1/S_n$ after
+rescaling to total $1$). The central structural fact is the
+\textbf{``$+1$ gap''}:
+\begin{equation}\label{eq:plusone}
+\text{for every }k\ge 1,\qquad 2^k=(1+2+\cdots+2^{k-1})+1. \tag{$\dagger$}
+\end{equation}
+Equivalently, each geometric piece exceeds the sum of ALL smaller geometric
+pieces by exactly $1$; in particular the largest piece $2^n$ exceeds the sum of
+all the others ($2^n-1$) by exactly $1$---the target.
+
+Define the proposition
+\[
+\mathbf{L(n)}:\;\text{every refinement of }G_n\text{ by at most }n\text{ cuts has }\D\ge 1.
+\]
+
+\subsection{Base case $L(1)$ (proved)}
+
+$G_1=(1,2)$, total $3$, one cut allowed. XY either cuts the piece $2$ or cuts
+the piece $1$.
+\begin{itemize}[leftmargin=2em]
+\item \textbf{Cut $2$ into $(a,2-a)$, $0<a<2$.} The three pieces are
+$\{1,a,2-a\}$. By symmetry ($a\leftrightarrow 2-a$) assume $a\ge 1$, so
+$2-a\le 1\le a$; the sorted order is $a,1,2-a$, and
+$\D=a-1+(2-a)=1$. (At $a=1$ this is the halving $2\to 1+1$, giving
+$\{1,1,1\}$ with $\D=1-1+1=1$.) So cutting $2$ always gives $\D=1$.
+\item \textbf{Cut $1$ into $(a,1-a)$, $0<a<1$.} The pieces are
+$\{2,a,1-a\}$; sorted (assume $a\ge 1-a$, i.e.\ $a\ge 1/2$, by symmetry) as
+$2,a,1-a$, and $\D=2-a+(1-a)=3-2a$. Since $0<a<1$, we have
+$1<3-2a<3$; in particular $\D>1$ strictly.
+\end{itemize}
+In every case $\D\ge 1$, with equality iff XY halves the piece $2$. This proves
+$L(1)$: the bound $1/S_1=1/3$ is attained (after rescaling) by LB's geometric
+partition $(1/3,2/3)$ and XY's halving of the $2/3$-piece. $\qed$
+
+\subsection{Case A of the inductive step (proved for all $n$)}
+
+\begin{lemma}[Case A: XY does not cut $2^n$]\label{lem:caseA}
+Suppose XY uses $0$ cuts on the piece $2^n$ (so $2^n$ is intact and all $\le n$
+cuts fall on the tail $(1,2,\dots,2^{n-1})$). Then $\D\ge 1$.
+\end{lemma}
+\begin{proof}
+Then $b_1=2^n$, and every other piece is at most $2^{n-1}<2^n$, so $2^n$
+occupies position~$1$ alone. Writing $\D_{\text{tail}}$ for the alternating
+sum of the refined tail (positions $2,3,\dots$, with the sign $-$ at
+position~$2$),
+\[
+\D=2^n-\D_{\text{tail}}.
+\]
+Now $\D_{\text{tail}}=(\text{odd-position tail pieces})-(\text{even-position tail
+pieces})\le(\text{odd-position tail pieces})\le(\text{sum of all tail pieces})
+=2^n-1$. Therefore
+\[
+\D\ge 2^n-(2^n-1)=1. \qedhere
+\]
+\end{proof}
+
+Case~A is far stronger than required: it does not even need the inductive
+hypothesis, only that the total tail mass is $2^n-1$. It shows XY is forced to
+cut $2^n$ if XY hopes to approach the bound.
+
+\subsection{Case B of the inductive step (framework; GAP)}
+
+Suppose XY uses $k\ge 1$ cuts on $2^n$, producing fragments
+$F=(f_1\ge f_2\ge\cdots\ge f_{k+1}>0)$ with $\sum f_i=2^n$ (consuming $k$
+cuts), and refines the tail $G_{n-1}=(1,\dots,2^{n-1})$ with at most
+$n-k\le n-1$ cuts into a multiset $T$ of total $2^n-1$. The final multiset is
+the sorted merge of $F$ and $T$.
+
+\textbf{Intended inductive reduction.} The tail $T$ is a refinement of
+$G_{n-1}$ by $\le n-1$ cuts, so the inductive hypothesis $L(n-1)$ applies to
+$T$ \emph{as a standalone game} and gives $\D(T)\ge 1$. The intended mechanism
+is the ``$+1$ gap'' invariant~\eqref{eq:plusone}: cutting the dominant piece
+$2^n$ sends its fragments to positions where they contribute favourably to $\D$
+\emph{unless} XY interleaves a fragment between the top ranks of the merge;
+any such interleaving consumes a cut, and the remaining $\le n-k$ cuts then
+face (in the relevant sub-structure) the smaller geometric instance $G_{n-1}$,
+to which $L(n-1)$ applies and forces the residual alternating sum to be $\ge 1$.
+The equality case is \emph{full halving}---split every geometric piece $2^j$
+($j=1,\dots,n$) into two equal halves $2^{j-1}+2^{j-1}$, producing the $2n+1$
+pieces $2^{n-1}(\times2),2^{n-2}(\times2),\dots,1(\times3)$, whose alternating
+sum is exactly $1$ (every consecutive pair cancels, leaving a single unit).
+
+\textbf{Settled instances.} $L(1)$ is proved above. $L(2)$ (i.e.\ $\D\ge 1$ for
+$G_2=(1,2,4)$ under $\le 2$ cuts) is verified exhaustively over the continuous
+cut positions: the function $\D$ is piecewise-linear in the two cut positions,
+its breakpoints occur exactly where two pieces coincide in the sorted order,
+and at every such breakpoint one checks $\D\ge 1$ directly (the minimum,
+$\D=1$, is attained uniquely at full halving $(4\to2+2,\;2\to1+1)$, giving
+$\{2,2,1,1,1\}$ with $\D=2-2+1-1+1=1$). The same continuous breakpoint check
+confirms $L(3),L(4),L(5)$.
+
+\begin{openproblem}[General lower-bound Case B]
+The general Case~B requires proving, for arbitrary $n$ and arbitrary fragment
+multisets $F$ of $2^n$ (arising from $k\ge 1$ cuts) merged with arbitrary
+refined tails $T$ (arising from $\le n-k$ cuts on $G_{n-1}$), that the merged
+alternating sum is $\ge 1$.
+\begin{itemize}[leftmargin=2em]
+\item The bold inequality ``$\D(\mathrm{merge})\ge\sum F-\sum T=1$'' is
+\textbf{false} for arbitrary multisets (counterexample:
+$F=\{5,5,5,5\}$, $T=\{4,4,4,4\}$: the sorted merge
+$5,5,5,5,4,4,4,4$ has $\D=0<4=\sum F-\sum T$).
+\item The merge lemma is TRUE (tested, $0$ violations in $20\,000$ trials,
+$n=2,\dots,5$) when $T$ is an \emph{actual} refinement of $G_{n-1}$ (the real
+inductive hypothesis), but FALSE for general tails with $\D(T)\ge 1$ (thousands
+of violations, min $\D\approx 0.03$). Hence the induction must carry the
+\emph{dyadic/geometric structure} of the tail (each piece is a fragment of some
+$2^j$, $j\le n-1$), not merely the numeric bound $\D(T)\ge 1$.
+\item A clean invariant formalising ``the $+1$ gap survives refinement under
+$\le n$ cuts''---for instance a parity/rank-function argument via the identity
+$\D=\int\mathbf{1}_{r(t)\text{ odd}}\,dt$, where each cut of a piece of size
+$s$ into $(m,M)$ ($m\le M$, $m+M=s$) changes $r(t)$ by $+1$ on $(0,m]$ and $-1$
+on $(M,s]$---has \textbf{not} been closed.
+\end{itemize}
+This is the \textbf{open lower-bound gap}: the interleaving of the fragments
+of $2^n$ with the refined tail $G_{n-1}$, using the cut budget $\le n$ together
+with~\eqref{eq:plusone}, is not proved here.
+\end{openproblem}
+
+\section{Upper Bound: $\D\le 1/S_n$ Against Every LB Partition (Partial)}
+
+\subsection{Base case $U(1)$ (proved, boundary fixed)}
+
+LB makes $\le 2$ pieces; let the largest be $L\ge 1/2$ and the rest have total
+$R=1-L\le 1/2$. (If LB makes a single piece, $L=1,R=0$, covered by the first
+branch.) XY has $1$ cut. Target $\D\le 1/3$.
+\begin{itemize}[leftmargin=2em]
+\item \textbf{If $L\ge 2/3$:} XY halves $L$ into $(L/2,L/2)$. The pieces are
+$L/2,L/2,R$; since $L\ge 2/3$ we have $L/2\ge 1/3\ge R$, so the sorted order is
+$L/2,L/2,R$, and $\D=L/2-L/2+R=R=1-L\le 1/3$. Equality at $L=2/3$ (geometric).
+\item \textbf{If $1/2\le L<2/3$} (so $R=1-L>1/3$ and $2L-1<1/3$): XY shaves a
+sliver $t$ off $L$, with $0<t\le\min(R,2L-1)$ (such $t$ exists since $R>1/3>0$
+and $2L-1\ge 0$ when $L>1/2$), producing $(L-t,t)$. Because $t\le R$ and
+$t\le 2L-1\le L-t$, the sorted order is $(L-t),R,t$, and
+$\D=(L-t)-R+t=L-R=2L-1<1/3$.
+\item \textbf{Boundary $L=1/2$ exactly} (so $R=1/2$, two equal pieces---the
+shaving argument above degenerates since $2L-1=0$ forces $t\le 0$): XY cuts
+one of the two $1/2$-pieces into $(a,1/2-a)$ with $0<a\le 1/4$ (so
+$a\le 1/2-a$). The three pieces are $1/2$ (uncut), $1/2-a,a$; sorted descending
+$1/2,1/2-a,a$, and $\D=1/2-(1/2-a)+a=2a$. XY chooses $a\le 1/6$, giving
+$\D=2a\le 1/3$ (and $a\to 0$ drives $\D\to 0$). Hence $\D\le 1/3=1/S_1$.
+\end{itemize}
+All three branches give $\D\le 1/3=1/S_1$, with equality at $L=2/3$ (LB's
+geometric partition) and at the boundary $L=1/2$ with the $(1/3,1/6)$ cut.
+Combined with the lower bound $L(1)$, this proves $c(1)=2/3$ rigorously. $\qed$
+
+\subsection{General $U(n)$ (open)}
+
+\begin{openproblem}[General upper bound]
+For $n\ge 2$, no rigorous XY strategy is proved here. The following routes are
+recorded as dead ends or open:
+\begin{itemize}[leftmargin=2em]
+\item \textbf{Myopic greedy} (``always cut to minimise $\D$ immediately'')
+\textbf{fails}: $36/400$ failures at $n=2$, $67/400$ at $n=3$; e.g.\ on
+$(0.4,0.35,0.25)$ greedy-halve gives $\D=0.25>1/7$, whereas the optimal
+``match'' gives $\D=0.05$.
+\item \textbf{``Halve-or-match'' hybrid} (halve the largest $a_1$ if
+$a_1\ge 2a_2$, else match $a_1$ to $a_2$) reduces the config by one piece per
+cut and preserves $\D$ = alternating sum of the residual conceptual config,
+giving exactly $1/S_n$ on the geometric config. But the scale-invariant
+induction $V(C,m)\le T/S_m$ (total $T$, $m$ cuts) \textbf{fails for $m\ge 2$}:
+the per-step reduction is $\max(a_1,2a_2)\ge 2T/(m+2)$, and
+$2T/(m+2)<T\cdot 2^m/S_m$ for $m\ge 2$, so neither branch always meets its
+sufficient condition. In the ``flat'' regime (both $a_1<T\cdot 2^m/S_m$ and
+$a_2<T\cdot 2^{m-1}/S_m$) the hybrid under-delivers.
+\item \textbf{Hall/pairing} (pair pieces into cancelling equal-consecutive
+pairs, each contributing $0$ to $\D$, leaving a leftover $\le 1/S_n$) is not
+forced for arbitrary LB configs: the pairing strategies tested leave a leftover
+exceeding $1/S_n$ on some random configs for $n\ge 3$
+($n=3$: $0.0757>1/15$; $n=4$: $0.0407>1/31$; $n=5$: $0.0228>1/63$).
+\item \textbf{Majorisation / smoothing (most promising, unproved).} The
+function $f(C):=\XY\text{'s optimal }\D\text{ against the LB partition }C$
+appears to be Schur-maximised \emph{uniquely} at the geometric partition: for
+$n=2,3$, over $200$--$800$ random configs the ratio
+$f(C)/(1/S_n)$ never exceeds $1$ and equals $1$ only at the geometric config.
+A smoothing lemma---every LB partition can be continuously deformed toward the
+geometric partition while only \emph{increasing} $f$---would immediately yield
+the upper bound from the lower-bound value $f(\text{geometric})=1/S_n$. This
+smoothing monotonicity is the conjectured but \textbf{unproved} heart of the
+upper bound.
+\end{itemize}
+\end{openproblem}
+
+\section{Numerical Evidence}
+
+A continuous optimal-XY search was run for $n=1,\dots,5$. The candidate cut set
+is $\{\text{fragment}=\text{an existing piece}\}\cup\{\text{fragment}=\text{half a
+piece}\}$, which contains every breakpoint at which the sorted order (and hence
+the piecewise-linear form $\D$) changes slope; the search therefore returns the
+exact piecewise-linear minimum of $\D$ as a function of the cut positions. This
+is a \emph{numerical certificate}, not a proof step.
+
+\begin{center}
+\begin{tabular}{c|c|c|c}
+\toprule
+$n$ & $\min_{\XY}\D$ (search) & $1/S_n$ & LB partition attaining it \\
+\midrule
+$1$ & $1/3$   & $1/3$   & $(1/3,2/3)$ \\
+$2$ & $1/7$   & $1/7$   & $(1/7,2/7,4/7)$ \\
+$3$ & $1/15$  & $1/15$  & $(1/15,2/15,4/15,8/15)$ \\
+$4$ & $1/31$  & $1/31$  & geometric \\
+$5$ & $1/63$  & $1/63$  & geometric \\
+\bottomrule
+\end{tabular}
+\end{center}
+In every case the minimum is attained \emph{uniquely} by LB playing the
+geometric partition and XY playing full halving ($2^j\to2^{j-1}+2^{j-1}$ for
+each $j=1,\dots,n$). Non-geometric LB configs were searched on a grid
+($n=1,2,3$) with full-lookahead optimal XY: the max guaranteed $\D$ is attained
+\emph{uniquely} at the geometric config; every other config lets XY drive $\D$
+strictly below $1/S_n$ (often to $0$). The conjecture is not contradicted.
+
+\section{Status}
+
+\begin{itemize}[leftmargin=2em]
+\item \textbf{Proved rigorously:} the greedy-pick reduction
+(Lemma~\ref{lem:greedy}, Corollary~\ref{cor:reduction}); the lower bound for
+$n=1$ ($L(1)$); the lower-bound Case~A for all $n$ (Lemma~\ref{lem:caseA}); the
+upper bound for $n=1$ ($U(1)$, all three branches incl.\ the $L=1/2$ boundary).
+These together give a \textbf{complete rigorous proof of $c(1)=2/3$}.
+\item \textbf{Conjectured (not proved), strongly supported numerically:}
+$c(n)=2^n/(2^{n+1}-1)$ for all $n$, confirmed for $n=2,3,4,5$ by continuous
+optimal-XY search.
+\item \textbf{Open gap (lower bound):} general Case~B---the interleaving of the
+fragments of $2^n$ with the refined tail $G_{n-1}$ under the cut budget $\le n$
+and the ``$+1$ gap''~\eqref{eq:plusone}. Requires a structural invariant carrying
+the dyadic structure of the tail, not merely $\D(T)\ge 1$.
+\item \textbf{Open gap (upper bound):} a rigorous XY strategy for $n\ge 2$, or a
+majorisation/smoothing proof that the geometric config Schur-maximises XY's
+optimal $\D$.
+\end{itemize}
+
+The general case is a \textbf{conjecture} supported by numerical evidence, not a
+complete proof. The status of this solution is \textbf{PARTIAL}.
+
+\end{document}

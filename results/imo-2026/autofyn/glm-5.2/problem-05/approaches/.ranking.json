@@ -1,0 +1,50 @@
+{
+  "density-contradiction": {
+    "copied_from": null,
+    "elo": 1529.1019714486795,
+    "expanded": 2,
+    "last_note": "Gaps A and B genuinely closed (Kronecker target c0=a-b verified; zero-set propagation case-independent, reaches +inf). New pre-existing gap found in Section 7 R2: off-by-one indexing (cross-distance uses m*beta but Bezout eq uses (m+1)q, dropping -dq term; |D|=rho claimed but actually |D|=|rho\u00b1dq|). Conclusion still valid (fixed numerator, growing denom), one-line re-index fixes it. Status partial, CHANGES REQUESTED.",
+    "last_outcome": "partial",
+    "last_round": 3,
+    "selected": 0,
+    "slug": "density-contradiction",
+    "stale": true,
+    "summary": "Uniqueness by contradiction: Kronecker density of incommensurate forward orbits lands one orbit in the squeeze neighborhood of another's image point, forcing equal g-values; avoids monotonicity."
+  },
+  "extremal-infimum": {
+    "copied_from": null,
+    "elo": 1454.0725493088232,
+    "expanded": 0,
+    "last_note": null,
+    "last_outcome": null,
+    "last_round": null,
+    "selected": 0,
+    "slug": "extremal-infimum",
+    "stale": false,
+    "summary": "Let m=inf g>=0; split on attainment; squeeze propagates minimal value to image-point neighborhoods; cofinal orbit covers a ray; drag constancy across gap region."
+  },
+  "master-sos-identity": {
+    "copied_from": null,
+    "elo": 1484.8008133213305,
+    "expanded": 1,
+    "last_note": "Master Squeeze Lemma PROVEN both directions (sympy exact) and CERTIFIED into lemmas/master-squeeze.md. Direct algebraic kill honestly open (sub-routes need regularity not given; optimization bound retracted correctly). partial status correct. Lemma is load-bearing engine for the field.",
+    "last_outcome": "advanced",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "master-sos-identity",
+    "stale": true,
+    "summary": "SOS identity combines both inequalities into master squeeze |g(x)-g(y)|(g(x)+g(y)+2x+2y)<=(x-f(y))^2; attempt direct algebraic kill; certain deliverable is the certifiable master-inequality lemma shared by all approaches."
+  },
+  "orbit-monotonicity-sandwich": {
+    "copied_from": null,
+    "elo": 1532.0246659211668,
+    "expanded": 1,
+    "last_note": "VERIFIED SOLVED. Master squeeze proven in-file (sympy-checked); asymptotic pinning + boundary contradiction at sup{g=0} all valid; all cases covered. Full proof written to current.md.",
+    "last_outcome": "verified-milestone",
+    "last_round": 2,
+    "selected": 0,
+    "slug": "orbit-monotonicity-sandwich",
+    "stale": true,
+    "summary": "Pin g on arithmetic orbits via g\u2218f=g; prove f monotone; trap every point between orbit lattice points; squeeze error to zero; cross gap region via small-y orbit."
+  }
+}

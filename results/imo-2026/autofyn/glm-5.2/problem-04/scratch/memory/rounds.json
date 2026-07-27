@@ -1,0 +1,10 @@
+{
+  "pr_title": "IMO 2026 P4 (Shan-Yu/Mulan triangle game): Mulan wins iff θ=180°/n (n≥2 integer) — proven both directions",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "Solve IMO 2026 P4: θ=180°/n characterization proven both directions",
+      "ended_at": "2026-07-23T21:00:15Z"
+    }
+  ]
+}

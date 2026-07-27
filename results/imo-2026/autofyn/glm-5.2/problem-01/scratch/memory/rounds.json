@@ -1,0 +1,10 @@
+{
+  "pr_title": "Solve IMO 2026 Problem 1 (Confucius gcd/lcm blackboard): prove termination with one survivor M and M independent of choices. Three independent rigorous proofs APPROVED — per-prime Euclidean invariant (canonical), integer product monovariant, and multiset-confluence via Newman's lemma. M = ∏_p p^{D_p} where D_p = gcd of p-valuations of the initial board.",
+  "rounds": [
+    {
+      "n": 1,
+      "summary": "Solved IMO 2026 P1 (imo-2026-01) both parts: 3 APPROVED approaches",
+      "ended_at": "2026-07-23T20:04:37Z"
+    }
+  ]
+}
