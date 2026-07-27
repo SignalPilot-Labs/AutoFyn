@@ -47,6 +47,5 @@ Bottom line: I could not produce a complete, rigorous solution. Here's exactly w
 Time:
 
 add those up
-✻ Cogitated for 45m 25s
-  Churned for 44m 47s
-  ✻ Churned for 12m 31s
+✻ Cogitated for 1h 42m 43s
+

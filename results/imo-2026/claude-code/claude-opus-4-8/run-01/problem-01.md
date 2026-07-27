@@ -1,5 +1,5 @@
 
-Cooked for 3m 16s
+Cooked for 6m 32s
 ⏺ Solution
 
   Throughout, for a positive integer $x$ and prime $p$, write $v_p(x)$ for the exponent of $p$ in $x$, and let
@@ -220,4 +220,3 @@ Cooked for 3m 16s
   $(\min(a,b),|a-b|)$ — a subtractive Euclidean step — which preserves $\gcd(a,b)$ and hence the gcd $D_p$ of
   all exponents of $p$. The surviving number $M$ is exactly $\prod_p p^{D_p}$.
 
-✻ Cooked for 3m 16s

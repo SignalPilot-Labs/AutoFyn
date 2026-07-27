@@ -91,6 +91,5 @@
   $x,y$.
 
 
-✻ Churned for 36m 50s
-✻ Cooked for 38m 53s
-✻ Crunched for 7m 10s
+✻ Churned for 1h 22m 53s
+

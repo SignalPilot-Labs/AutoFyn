@@ -1,4 +1,4 @@
-Crunched for 33m 6s
+Crunched for 1h 6m 12s
 ⏺ Answer
 
 $$\boxed{f(x) = x + c \quad\text{for an arbitrary constant } c \ge 0.}$$
@@ -79,4 +79,3 @@ under telescoping (Lemma 3) — this is why $M$ must be exactly constant rather
 I sanity‑checked $f(x)=x+c$ numerically at generic points and at the equality locus $x=y+c$ (both inequalities
 become equalities there), and verified each algebraic reduction above.
 
-✻ Crunched for 33m 6s

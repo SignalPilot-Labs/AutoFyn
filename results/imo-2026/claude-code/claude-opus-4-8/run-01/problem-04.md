@@ -1,4 +1,4 @@
-✻ Cooked for 39m 9s
+✻ Cooked for 1h 18m 18s
 
 Setting up the mechanics of a cut
 
@@ -120,4 +120,3 @@ Mulan can guarantee victory iff $\theta=\dfrac{180^\circ}{n}$ for some integer $
 is an integer multiple of $\theta$. For every other $\theta$ (in particular every $\theta>90^\circ$), Shan‑Yu
 can keep all angles out of the finite set ${\theta,2\theta,\dots}$ forever and never lose.
 
-✻ Cooked for 39m 9s
