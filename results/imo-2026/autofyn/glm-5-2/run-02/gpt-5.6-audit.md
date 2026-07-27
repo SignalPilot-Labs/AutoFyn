@@ -7,24 +7,24 @@ I audited the selected `current.md` for Problems 1–6 against the statements in
 carry part of the proof. I independently executed the exact symbolic verifier
 used in Problem 2.
 
-I used the requested harsh, completion-based IMO standard. A complete proof,
-or one needing only a genuinely tiny local repair, receives 7. A missing
-load-bearing theorem receives 0 even if important special cases or promising
-ideas are proved. Exact reproducible code is accepted; labels such as
-`solved`, reviewer approval, and numerical sampling are not evidence by
-themselves.
+I used the requested harsh, completion-based IMO standard. A complete proof
+receives 7; a proof with a genuine but uniquely local, mechanical repair
+receives 6. A missing load-bearing theorem receives 0 even if important
+special cases or promising ideas are proved. Exact reproducible code is
+accepted; labels such as `solved`, reviewer approval, and numerical sampling
+are not evidence by themselves.
 
 ## Executive verdict
 
 | Problem | Verdict | Score |
 |---|---|---:|
 | 1 | Complete | 7/7 |
-| 2 | Complete exact computer-assisted proof | 7/7 |
+| 2 | Exact algebra, but the geometric-to-directed-angle bridge needs a local repair | 6/7 |
 | 3 | General problem is explicitly unsolved | 0/7 |
 | 4 | Complete characterization | 7/7 |
 | 5 | Complete characterization | 7/7 |
 | 6 | Complete bounded-prime and periodicity proof | 7/7 |
-| **Total** |  | **35/42** |
+| **Total** |  | **34/42** |
 
 ## Problem 1 — 7/7
 
@@ -48,7 +48,7 @@ at every prime, so it is independent of play.
 
 **Verdict: complete, 7/7.**
 
-## Problem 2 — 7/7
+## Problem 2 — 6/7
 
 The coordinate proof turns the first two angle equations into two homogeneous
 linear equations in `K-B`. Their determinant factors as
@@ -88,13 +88,31 @@ LHS - D0*G_prop == 0 ... True
 
 The proof also addresses the necessary nonvanishing facts: strict interiority
 excludes `K=B` and `L=C`, and the defined circumcircle gives the relevant
-nonzero determinant. The polynomial angle equations are used only as necessary
-conditions, so extra algebraic branches cause no logical problem.
+nonzero determinant.
+
+There is nevertheless a missing bridge before the exact algebra applies.
+The hypotheses give equal **unsigned** angles, whereas `e1=e2=e3=0` encode
+equal directed angles modulo `pi`. Equal unsigned angles can have opposite
+orientations; in that case the cross/dot encoding need not vanish. The
+submission calls the implication “empirically verified and standard,” and an
+approach file incorrectly says ordinary-angle equality implies directed-angle
+equality modulo `pi`.
+
+The four containment hypotheses do repair the issue mechanically. Expressing
+`K` and `L` by positive barycentric/cone combinations gives matching
+strict cross-product signs for the two vector pairs in each of the three angle
+equalities. Those sign checks show that every genuine configuration satisfies
+`e1=e2=e3=0`. They are short and introduce no new strategy, but they are
+absent from the submitted proof.
+
+Once those signs are supplied, possible extra algebraic branches cause no
+logical problem because the polynomial equations are used only in the
+necessary direction.
 
 This would not be an ordinary handwritten Olympiad solution, but under the
 user's explicit code-allowed rule it is a complete exact certificate.
 
-**Verdict: complete computer-assisted proof, 7/7.**
+**Verdict: complete after a local orientation repair, 6/7.**
 
 ## Problem 3 — 0/7
 
@@ -233,4 +251,4 @@ Five of the six solutions are complete. Problem 3 contains substantial
 small-case work, but the general theorem requested by the problem remains
 open, so it receives no credit under the requested standard.
 
-**Final score: 35/42.**
+**Final score: 34/42.**

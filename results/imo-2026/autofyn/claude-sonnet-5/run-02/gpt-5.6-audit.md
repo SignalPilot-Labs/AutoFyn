@@ -16,22 +16,23 @@ when the code constructs and exactly checks the claimed certificate. A
 floating-point experiment or an unavailable computation is not accepted.
 
 I use the strict completion-based standard requested for these audits: a
-complete proof, or one needing only a genuinely tiny local repair, receives
-7. A submission missing a load-bearing direction or theorem receives 0. In
-particular, extensive research notes or proofs of special cases do not become
-a solution to a statement quantified over every positive integer.
+complete proof receives 7; a proof with a genuine but uniquely local,
+mechanical repair receives 6. A submission missing a load-bearing direction
+or theorem receives 0. In particular, extensive research notes or proofs of
+special cases do not become a solution to a statement quantified over every
+positive integer.
 
 ## Executive verdict
 
 | Problem | Verdict | Score |
 |---|---|---:|
 | 1 | Complete | 7/7 |
-| 2 | Complete, including the exact algebraic certificate | 7/7 |
+| 2 | Exact certificate, but one exceptional denominator branch needs a local repair | 6/7 |
 | 3 | No general proof; both general minimax directions remain open | 0/7 |
 | 4 | Complete characterization | 7/7 |
 | 5 | Complete | 7/7 |
 | 6 | No general proof; decisive FAH and termination hypotheses remain open | 0/7 |
-| **Total** |  | **28/42** |
+| **Total** |  | **27/42** |
 
 ## Problem 1 — 7/7
 
@@ -97,7 +98,7 @@ are unnecessary; the preceding argument is self-contained.
 
 **Verdict: complete, 7/7.**
 
-## Problem 2 — 7/7
+## Problem 2 — 6/7
 
 ### Geometric reduction
 
@@ -139,13 +140,36 @@ unsigned equality really implies its displayed polynomial equation, not a
 supplementary-angle branch. The sign argument uses only containment, so it is
 not circular.
 
-The same cone calculations correctly establish the two necessary
-nonvanishing factors:
+The cone calculation correctly establishes
+`D2=-cross(K-B,A-C)<0` from the positive-combination expression for
+`K-B` at vertex `B` of triangle `BMC`. The submitted proof's separate
+argument for `D != 0`, however, contains a real exceptional-case gap. It
+says strict interiority of `L` in triangle `BNC` implies `l1 != 1`.
+That is false when `p>1`, because `N_x=(p+1)/2>1` and the interior of
+`BNC` can cross the line `x=1`.
 
-- `D != 0`; otherwise `eq1=0` forces a nonsingular homogeneous system whose
-  only solution is `K=B`, contradicting strict interiority.
-- `D2=-cross(K-B,A-C)<0` from the positive-combination expression for
-  `K-B` at vertex `B` of triangle `BMC`.
+The failure occurs on admissible configurations, not merely on an extraneous
+algebraic component. For example, with
+
+\[
+p=\frac65,\quad q=\frac35,\quad
+K=\left(\frac{17}{16}-\frac{\sqrt{201}}{48}\right)
+  \left(\frac{21}{25},\frac3{25}\right),
+\]
+
+\[
+L=\left(1,\frac{17-\sqrt{209}}{40}\right),
+\]
+
+all three angle equations and all four strict containment conditions hold,
+while `D=0` and `l1=1`. Thus the elimination
+`l2=S(l1-1)/D` and the later denominator `4DD3` are undefined there.
+
+There is a short mechanical repair. The reflection exchanging
+`B,M,K` with `C,N,L` sends `p` to `1-p` and preserves the full
+hypothesis system, so one may assume `p<=1`. Then strict interiority in
+`BNC` does give `l1<1`, and the submitted nonsingular-system argument
+proves `D!=0`.
 
 The remaining denominator is proportional to twice the signed area of
 `AKL`. Since the problem calls `AKL` a triangle and supplies its
@@ -189,10 +213,11 @@ selected `current.md` uses the corrected formula, and the checker verifies
 the direct substitution is zero. The historical typo therefore does not
 affect the submitted proof.
 
-With `X=eq2_num=0`, the identity and `D2!=0` force the target numerator to
-zero; the nonzero denominator then gives the required equality.
+After the reflection normalization above, `X=eq2_num=0`, the identity, and
+`D2!=0` force the target numerator to zero; the nonzero denominator then
+gives the required equality.
 
-**Verdict: complete, 7/7.**
+**Verdict: complete after a local exceptional-branch repair, 6/7.**
 
 ## Problem 3 — 0/7
 
@@ -500,4 +525,4 @@ section. They contain extensive useful mathematics, but the missing portions
 are precisely the general statements demanded by the problems. Under a
 completion-based IMO standard they therefore receive no points.
 
-**Final score: 28/42.**
+**Final score: 27/42.**

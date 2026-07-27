@@ -6,11 +6,12 @@ I audited the six submitted Markdown solutions against the corresponding
 statements in `problems.jsonl`. For Problem 2 I also inspected and executed
 the retained exact algebra verifier in `code/om_on_proof_verify.py`.
 
-I used the requested harsh, completion-based IMO standard. A complete proof,
-or one needing only a genuinely tiny local correction, receives 7. A missing
-load-bearing argument or a wrong answer receives 0; substantial progress does
-not by itself earn partial credit. Code is accepted when it constitutes a
-reproducible rigorous certificate rather than a numerical experiment.
+I used the requested harsh, completion-based IMO standard. A complete proof
+receives 7; a proof with a genuine but uniquely local, mechanical repair
+receives 6. A missing load-bearing argument or a wrong answer receives 0;
+substantial progress does not by itself earn partial credit. Code is accepted
+when it constitutes a reproducible rigorous certificate rather than a
+numerical experiment.
 
 ## Executive verdict
 
@@ -19,10 +20,10 @@ reproducible rigorous certificate rather than a numerical experiment.
 | 1 | Complete | 7/7 |
 | 2 | Complete exact computer-assisted proof | 7/7 |
 | 3 | Both general bounds contain load-bearing gaps | 0/7 |
-| 4 | Complete after a transparent one-line typo repair | 7/7 |
+| 4 | Correct characterization, but the interval/cut lemma needs a local repair | 6/7 |
 | 5 | Wrong characterization; valid translations are omitted | 0/7 |
 | 6 | Central lemma and passage from eventual to global periodicity are unproved | 0/7 |
-| **Total** |  | **21/42** |
+| **Total** |  | **20/42** |
 
 ## Problem 1 — 7/7
 
@@ -120,7 +121,7 @@ These are the two central directions of the problem, not tiny omissions.
 
 **Verdict: incomplete, 0/7.**
 
-## Problem 4 — 7/7
+## Problem 4 — 6/7
 
 The characterization
 
@@ -135,24 +136,33 @@ scaled angles are nonintegral. The cut identities show that if one child gains
 an integral scaled angle, the other child remains entirely nonintegral. This
 gives a valid invariant avoiding `theta` forever.
 
-When `180°/theta=n` is integral, the interval argument finds a cut that puts an
-integral angle in both possible children. The peeling step then reduces an
-integer angle `k` until angle 1 is reached, so Mulan wins after finitely many
-moves.
+When `180°/theta=n` is integral, the peeling step correctly reduces an
+integer angle `k` until angle 1 is reached. The preceding seed argument,
+however, lists `(a,b+c)` as one of the cut-realizable intervals and uses it
+in the proof. That interval is generally not realizable by a cevian split.
+The list also duplicates `(b,a+b)` and omits valid intervals, so this is
+more than cosmetic notation.
 
-There is a local formula typo in the last interval case. If
+The seed lemma has a short repair. Let `a=min(a,b,c)` and
+`m=ceil(a)`. Then `m` lies in at least one of the two realizable intervals
 
 \[
-m\in(v,n-w)=(v,u+v),
+(a,a+b),\qquad(a,a+c).
 \]
 
-the cut parameter should be `sigma=m-v`, not `sigma=n-w-m`. Then the two
-created integral angles are `m` and `n-m`, and `0<sigma<u` follows immediately.
-The surrounding text already states the intended equality `v+sigma=m`, so
-this is a transparent one-line substitution error. A duplicated interval in
-the list is likewise cosmetic.
+Indeed, if both upper endpoints were at most `m`, then
+`n+a=(a+b)+(a+c)<=2m`. For `n>=3`, using `a<=n/3` and
+`m<a+1` gives simultaneously `n-a<2` and `n-a>=2n/3>=2`, a
+contradiction; `n=2` is immediate because then `m=1`. Choosing the
+corresponding apex and setting `sigma=m-a` gives integral angles `m` and
+`n-m` in the two children.
 
-**Verdict: complete up to a tiny local repair, 7/7.**
+The submitted cut parameter also has a local formula error: in the general
+interval `m in (v,u+v)`, it must be `sigma=m-v`, not
+`sigma=n-w-m`. With these two local corrections, both children are good and
+the peeling argument completes the proof.
+
+**Verdict: complete after a local interval/cut repair, 6/7.**
 
 ## Problem 5 — 0/7
 
@@ -231,9 +241,9 @@ universal statement.
 
 ## Final assessment
 
-Problems 1, 2, and 4 are complete, with only a tiny typo in Problem 4. Problems
-3 and 6 lack their load-bearing general arguments. Problem 5 is not merely
-incomplete: it gives the wrong family and relies on an explicit invalid
-algebraic rewrite.
+Problems 1 and 2 are complete. Problem 4 has the correct characterization and
+strategy but needs a short interval/cut repair. Problems 3 and 6 lack their
+load-bearing general arguments. Problem 5 is not merely incomplete: it gives
+the wrong family and relies on an explicit invalid algebraic rewrite.
 
-**Final score: 21/42.**
+**Final score: 20/42.**

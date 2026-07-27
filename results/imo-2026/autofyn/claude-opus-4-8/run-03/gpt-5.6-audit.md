@@ -13,25 +13,25 @@ not treated as mathematical evidence. Where Problem 2 relied on a large
 symbolic identity but retained no checker file, I independently reconstructed
 the coordinate polynomials and verified the exact normal-form computation.
 
-I use the requested strict completion-based standard: a complete proof, or
-one requiring only a genuinely tiny local repair, receives 7. A missing
-load-bearing direction or lemma receives 0.
+I use the requested strict completion-based standard: a complete proof
+receives 7; a proof with a genuine but uniquely local, mechanical repair
+receives 6. A missing load-bearing direction or lemma receives 0.
 
 ## Executive verdict
 
 | Problem | Verdict | Score |
 |---|---|---:|
 | 1 | Complete | 7/7 |
-| 2 | Complete after one local nonvanishing repair; exact algebra verified | 7/7 |
+| 2 | Exact algebra verified; one local nonvanishing repair is required | 6/7 |
 | 3 | Complete; the prior lower-bound gap is genuinely closed | 7/7 |
 | 4 | Complete characterization | 7/7 |
 | 5 | Complete | 7/7 |
 | 6 | Complete; the fresh-prime descent is valid | 7/7 |
-| **Total** |  | **42/42** |
+| **Total** |  | **41/42** |
 
-This full score is justified. In particular, Problems 3 and 6 are not merely
-relabeled versions of the incomplete run-02 files: run-03 contains new
-arguments that actually close their former central gaps.
+Problems 3 and 6 are not merely relabeled versions of the incomplete run-02
+files: run-03 contains new arguments that actually close their former central
+gaps.
 
 ## Problem 1 — 7/7
 
@@ -92,7 +92,7 @@ The simulations are merely corroborative. The proof before them is complete.
 
 **Verdict: complete, 7/7.**
 
-## Problem 2 — 7/7
+## Problem 2 — 6/7
 
 ### Coordinate and orientation reductions
 
@@ -210,7 +210,7 @@ This is a one-line local replacement using quantities already displayed in
 the proof; it adds no new strategy or difficult lemma. With it, the exact
 ideal identity directly yields `T=0` for every admissible configuration.
 
-**Verdict: complete with a tiny local repair, 7/7.**
+**Verdict: complete after a local nonvanishing repair, 6/7.**
 
 ## Problem 3 — 7/7
 
@@ -589,11 +589,11 @@ the conditional machinery from earlier rounds.
 
 ## Final coordinator-style assessment
 
-All six submissions solve their problems. Problems 3 and 6 deserve special
-credit for supplying genuinely new general arguments that close the gaps
-left in earlier runs. Problem 2 contains one flawed continuity paragraph,
-but the displayed coefficient has an immediate strictly negative geometric
-form, and the exact algebraic identity independently checks; this is a tiny
-local repair rather than a missing proof strategy.
+All six submissions contain the core arguments needed to solve their
+problems. Problems 3 and 6 supply genuinely new general arguments that close
+the gaps left in earlier runs. Problem 2 contains one flawed continuity
+paragraph; the displayed coefficient has an immediate strictly negative
+geometric form, so this is a local repair rather than a missing proof
+strategy.
 
-**Final score: 42/42.**
+**Final score: 41/42.**
